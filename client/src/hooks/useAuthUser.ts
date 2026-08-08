@@ -2,8 +2,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 
 import { useAuth0 } from "@auth0/auth0-react";
 import { User } from "../types/userTypes";
-
-const API_BASE_URL = process.env.REACT_APP_API_BASE_URL;
+import { API_BASE_URL } from "../config";
 
 const useAuthUser = () => {
   const { user: authUser, isLoading } = useAuth0();
