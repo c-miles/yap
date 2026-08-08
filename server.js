@@ -11,6 +11,7 @@ import { Server } from "socket.io";
 import { socketEvents } from "./sockets/socketEvents.js";
 import roomRoutes from "./routes/roomRoutes.js";
 import userRoutes from "./routes/userRoutes.js";
+import turnRoutes from "./routes/turnRoutes.js";
 
 dotenv.config();
 connect(process.env.MONGODB_URI);
@@ -25,6 +26,7 @@ app.use(cors());
 
 app.use("/rooms", roomRoutes);
 app.use("/user", userRoutes);
+app.use("/turn-credentials", turnRoutes);
 
 app.use(express.static(path.join(__dirname, "client/build")));
 
