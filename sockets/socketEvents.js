@@ -1,106 +1,103 @@
+// sockets/socketEvents.js
 import { Message } from "../models/Message.js";
 import { Room } from "../models/Room.js";
+import { createRoomRegistry } from "./roomRegistry.js";
+import {
+  upsertParticipant,
+  removeParticipant,
+  setMediaState,
+  listOtherParticipants,
+} from "../services/roomParticipants.js";
 
 export const socketEvents = (io) => {
-  // Track socket to room/user mapping for cleanup
-  const socketToRoom = new Map();
-  const socketToUser = new Map();
+  const registry = createRoomRegistry();
+
+  // The single leave path: used by leaveRoom, disconnect, and stale-socket
+  // replacement. Removes the participant from the DB, tells the room, and
+  // clears the registry. Participants are always physically removed — the
+  // old isActive half-state left dead entries that eventually made rooms
+  // reject every join.
+  async function handleLeave(socket, { leaveChannel = false } = {}) {
+    const left = registry.leave(socket.id);
+    if (!left) {
+      return;
+    }
+    const { roomId, userId } = left;
+
+    try {
+      await removeParticipant(Room, roomId, userId, socket.id);
+    } catch (error) {
+      console.error("Error removing participant:", error);
+    }
+
+    socket.to(roomId).emit("userLeft", { userId });
+    if (leaveChannel) {
+      socket.leave(roomId);
+    }
+  }
+
+  // Relays an offer/answer/candidate to one user in the sender's room.
+  // fromUserId is stamped from the registry — the client-supplied value is
+  // ignored, so a client cannot impersonate another user in signaling.
+  function relayToUser(socket, targetUserId, event, payload) {
+    const roomId = registry.getRoom(socket.id);
+    const fromUserId = registry.getUser(socket.id);
+    if (!roomId || !fromUserId) {
+      return;
+    }
+    const targetSocketId = registry.getSocketId(roomId, targetUserId);
+    if (!targetSocketId) {
+      return;
+    }
+    io.to(targetSocketId).emit(event, { ...payload, fromUserId });
+  }
 
   io.on("connection", (socket) => {
-
-    socket.on("disconnect", async () => {
-      const roomId = socketToRoom.get(socket.id);
-      const userId = socketToUser.get(socket.id);
-
-      if (roomId && userId) {
-        // Remove user from room in database
-        try {
-          const room = await Room.findById(roomId);
-          if (room) {
-            room.participants = room.participants.filter(
-              (p) => p.userId !== userId
-            );
-            await room.save();
-
-            // Notify other users in room
-            socket.to(roomId).emit("userLeft", { userId });
-          }
-        } catch (error) {
-          console.error("Error handling disconnect:", error);
-        }
-
-        // Cleanup maps
-        socketToRoom.delete(socket.id);
-        socketToUser.delete(socket.id);
-      }
-    });
+    socket.on("disconnect", () => handleLeave(socket));
+    socket.on("leaveRoom", () => handleLeave(socket, { leaveChannel: true }));
 
     socket.on("joinRoom", async ({ roomId, userId, username, profilePicture }) => {
       try {
-        const room = await Room.findById(roomId);
-        if (!room) {
+        const participant = {
+          userId,
+          socketId: socket.id,
+          joinedAt: new Date(),
+          username,
+          profilePicture,
+          mediaState: { video: false, audio: true }, // match client's initial state
+        };
+
+        const result = await upsertParticipant(Room, roomId, participant);
+        if (result === "not-found") {
           socket.emit("error", { message: "Room not found" });
           return;
         }
-
-        // Check room capacity
-        const activeParticipants = room.participants.filter(p => p.isActive);
-        if (activeParticipants.length >= room.maxParticipants) {
+        if (result === "full") {
           socket.emit("error", { message: "Room is full" });
           return;
         }
 
-        // Add user to room
-        const newParticipant = {
-          userId,
-          socketId: socket.id,
-          username,
-          profilePicture,
-          isActive: true,
-          mediaState: { video: false, audio: true }  // Match client's initial state
-        };
-
-        // Check if user already exists (reconnecting)
-        const existingIndex = room.participants.findIndex(p => p.userId === userId);
-        if (existingIndex !== -1) {
-          room.participants[existingIndex] = { ...room.participants[existingIndex], ...newParticipant };
-        } else {
-          room.participants.push(newParticipant);
+        const { replacedSocketId } = registry.join(socket.id, roomId, userId);
+        if (replacedSocketId) {
+          // Same user from a new socket (refresh/second tab): drop the old one.
+          const staleSocket = io.sockets.sockets.get(replacedSocketId);
+          staleSocket?.disconnect(true);
         }
 
-        await room.save();
-
-        // Track socket associations
-        socketToRoom.set(socket.id, roomId);
-        socketToUser.set(socket.id, userId);
-
-        // Join socket room
         socket.join(roomId);
 
-        // Send current participants to new user
-        const otherParticipants = room.participants
-          .filter(p => p.userId !== userId && p.isActive)
-          .map(p => ({
-            userId: p.userId,
-            username: p.username,
-            profilePicture: p.profilePicture,
-            mediaState: p.mediaState
-          }));
+        const others = await listOtherParticipants(Room, roomId, userId);
+        socket.emit("currentParticipants", others);
 
-        socket.emit("currentParticipants", otherParticipants);
-
-        // Notify others of new user
         socket.to(roomId).emit("userJoined", {
           userId,
           username,
           profilePicture,
-          mediaState: { video: false, audio: true }  // Match client's initial state
+          mediaState: { video: false, audio: true },
         });
 
-        // Send existing messages
         const messages = await Message.find({ roomId }).sort({ timestamp: 1 });
         socket.emit("roomMessages", messages);
-
       } catch (error) {
         console.error("Error joining room:", error);
         socket.emit("error", { message: "Failed to join room" });
@@ -126,117 +123,44 @@ export const socketEvents = (io) => {
       }
     });
 
-    socket.on("toggleVideo", async ({ roomId, userId, videoEnabled }) => {
+    socket.on("toggleVideo", async ({ videoEnabled }) => {
+      const roomId = registry.getRoom(socket.id);
+      const userId = registry.getUser(socket.id);
+      if (!roomId || !userId) {
+        return;
+      }
       try {
-        // Update database
-        const room = await Room.findById(roomId);
-        if (room) {
-          const participant = room.participants.find(p => p.userId === userId);
-          if (participant) {
-            participant.mediaState.video = videoEnabled;
-            await room.save();
-          }
-        }
-
-        // Broadcast to others
+        await setMediaState(Room, roomId, userId, "video", videoEnabled);
         socket.to(roomId).emit("participantVideoToggled", { userId, videoEnabled });
       } catch (error) {
         console.error("Error toggling video:", error);
       }
     });
 
-    socket.on("toggleAudio", async ({ roomId, userId, audioEnabled }) => {
+    socket.on("toggleAudio", async ({ audioEnabled }) => {
+      const roomId = registry.getRoom(socket.id);
+      const userId = registry.getUser(socket.id);
+      if (!roomId || !userId) {
+        return;
+      }
       try {
-        // Update database
-        const room = await Room.findById(roomId);
-        if (room) {
-          const participant = room.participants.find(p => p.userId === userId);
-          if (participant) {
-            participant.mediaState.audio = audioEnabled;
-            await room.save();
-          }
-        }
-
-        // Broadcast to others
+        await setMediaState(Room, roomId, userId, "audio", audioEnabled);
         socket.to(roomId).emit("participantAudioToggled", { userId, audioEnabled });
       } catch (error) {
         console.error("Error toggling audio:", error);
       }
     });
 
-    // WebRTC Signaling - Targeted peer-to-peer communication
-    socket.on("sendOffer", ({ targetUserId, offer, fromUserId }) => {
-      const roomId = socketToRoom.get(socket.id);
-      if (roomId) {
-        // Find target user's socket
-        const targetSocket = [...socketToRoom.entries()]
-          .find(([socketId, room]) => room === roomId && socketToUser.get(socketId) === targetUserId);
-
-        if (targetSocket) {
-          io.to(targetSocket[0]).emit("receiveOffer", {
-            offer,
-            fromUserId
-          });
-        }
-      }
+    socket.on("sendOffer", ({ targetUserId, offer }) => {
+      relayToUser(socket, targetUserId, "receiveOffer", { offer });
     });
 
-    socket.on("sendAnswer", ({ targetUserId, answer, fromUserId }) => {
-      const roomId = socketToRoom.get(socket.id);
-      if (roomId) {
-        // Find target user's socket
-        const targetSocket = [...socketToRoom.entries()]
-          .find(([socketId, room]) => room === roomId && socketToUser.get(socketId) === targetUserId);
-
-        if (targetSocket) {
-          io.to(targetSocket[0]).emit("receiveAnswer", {
-            answer,
-            fromUserId
-          });
-        }
-      }
+    socket.on("sendAnswer", ({ targetUserId, answer }) => {
+      relayToUser(socket, targetUserId, "receiveAnswer", { answer });
     });
 
-    socket.on("sendIceCandidate", ({ targetUserId, candidate, fromUserId }) => {
-      const roomId = socketToRoom.get(socket.id);
-      if (roomId) {
-        // Find target user's socket
-        const targetSocket = [...socketToRoom.entries()]
-          .find(([socketId, room]) => room === roomId && socketToUser.get(socketId) === targetUserId);
-
-        if (targetSocket) {
-          io.to(targetSocket[0]).emit("receiveIceCandidate", {
-            candidate,
-            fromUserId
-          });
-        }
-      }
-    });
-
-    socket.on("leaveRoom", async ({ roomId, userId }) => {
-      try {
-        // Remove from database
-        const room = await Room.findById(roomId);
-        if (room) {
-          const participant = room.participants.find(p => p.userId === userId);
-          if (participant) {
-            participant.isActive = false;
-            await room.save();
-          }
-        }
-
-        // Leave socket room
-        socket.leave(roomId);
-        
-        // Notify others
-        socket.to(roomId).emit("userLeft", { userId });
-
-        // Cleanup maps
-        socketToRoom.delete(socket.id);
-        socketToUser.delete(socket.id);
-      } catch (error) {
-        console.error("Error leaving room:", error);
-      }
+    socket.on("sendIceCandidate", ({ targetUserId, candidate }) => {
+      relayToUser(socket, targetUserId, "receiveIceCandidate", { candidate });
     });
   });
 };
