@@ -1,17 +1,17 @@
 import React from "react";
-import { Socket, io } from "socket.io-client";
-
-const SERVER_URL = process.env.REACT_APP_API_BASE_URL || "http://localhost:3000";
+import { Socket } from "socket.io-client";
+import { getSocket } from "./socket";
 
 const useSocket = (): Socket | null => {
   const [socket, setSocket] = React.useState<Socket | null>(null);
 
   React.useEffect(() => {
-    const newSocket = io(SERVER_URL);
-    setSocket(newSocket);
+    const s = getSocket();
+    s.connect();
+    setSocket(s);
 
     return () => {
-      newSocket.close();
+      s.disconnect();
     };
   }, []);
 

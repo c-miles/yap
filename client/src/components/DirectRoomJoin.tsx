@@ -4,8 +4,7 @@ import { BeatLoader } from "react-spinners";
 import useAuthUser from "../hooks/useAuthUser";
 import { isValidRoomNameFormat } from "../utils/roomNameGenerator";
 import RoomContainer from "./Room";
-
-const API_BASE_URL = process.env.REACT_APP_API_BASE_URL;
+import { API_BASE_URL } from "../config";
 
 const DirectRoomJoin: React.FC = () => {
   const { roomId } = useParams<{ roomId: string }>();
