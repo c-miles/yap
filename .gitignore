@@ -5,5 +5,5 @@ node_modules/
 # macOS
 .DS_Store
 
-PROJECT_CONTEXT.md
-roadmap.html
+# local-only agent context
+CLAUDE.md
