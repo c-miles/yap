@@ -1,4 +1,5 @@
 import { Socket } from "socket.io-client";
+import { getIceServers } from "../../services/iceServers";
 
 interface PeerConnection {
   connection: RTCPeerConnection;
@@ -19,6 +20,18 @@ export class PeerConnectionManager {
     onConnectionStateChange: (userId: string, state: RTCPeerConnectionState) => void;
   };
 
+  private readonly handleReceiveOffer = async ({ offer, fromUserId }: { offer: RTCSessionDescriptionInit; fromUserId: string }) => {
+    await this.handleOffer(fromUserId, offer);
+  };
+
+  private readonly handleReceiveAnswer = async ({ answer, fromUserId }: { answer: RTCSessionDescriptionInit; fromUserId: string }) => {
+    await this.handleAnswer(fromUserId, answer);
+  };
+
+  private readonly handleReceiveIceCandidate = async ({ candidate, fromUserId }: { candidate: RTCIceCandidateInit; fromUserId: string }) => {
+    await this.handleIceCandidate(fromUserId, candidate);
+  };
+
   constructor(
     socket: Socket,
     userId: string,
@@ -35,23 +48,21 @@ export class PeerConnectionManager {
     this.callbacks = callbacks;
 
     this.setupSocketListeners();
+
+    // Warm the ICE server cache; createPeerConnection shares the in-flight
+    // fetch via the module-level `pending` promise, so this doesn't double-fetch.
+    void getIceServers();
   }
 
   private setupSocketListeners() {
     // Handle incoming offers
-    this.socket.on("receiveOffer", async ({ offer, fromUserId }: { offer: RTCSessionDescriptionInit; fromUserId: string }) => {
-      await this.handleOffer(fromUserId, offer);
-    });
+    this.socket.on("receiveOffer", this.handleReceiveOffer);
 
     // Handle incoming answers
-    this.socket.on("receiveAnswer", async ({ answer, fromUserId }: { answer: RTCSessionDescriptionInit; fromUserId: string }) => {
-      await this.handleAnswer(fromUserId, answer);
-    });
+    this.socket.on("receiveAnswer", this.handleReceiveAnswer);
 
     // Handle incoming ICE candidates
-    this.socket.on("receiveIceCandidate", async ({ candidate, fromUserId }: { candidate: RTCIceCandidateInit; fromUserId: string }) => {
-      await this.handleIceCandidate(fromUserId, candidate);
-    });
+    this.socket.on("receiveIceCandidate", this.handleReceiveIceCandidate);
   }
 
   setLocalStream(stream: MediaStream): void {
@@ -73,11 +84,15 @@ export class PeerConnectionManager {
       return;
     }
 
+    const iceServers = await getIceServers();
+
+    // Re-check after the await: an offer for this peer may have raced us.
+    if (this.peers.has(targetUserId)) {
+      return;
+    }
+
     const configuration: RTCConfiguration = {
-      iceServers: [
-        { urls: "stun:stun.l.google.com:19302" },
-        { urls: "stun:stun1.l.google.com:19302" },
-      ],
+      iceServers,
       iceTransportPolicy: "all",
       bundlePolicy: "max-bundle",
       rtcpMuxPolicy: "require"
@@ -324,6 +339,10 @@ export class PeerConnectionManager {
   }
 
   cleanup(): void {
+    this.socket.off("receiveOffer", this.handleReceiveOffer);
+    this.socket.off("receiveAnswer", this.handleReceiveAnswer);
+    this.socket.off("receiveIceCandidate", this.handleReceiveIceCandidate);
+
     this.removeAllPeers();
     if (this.localStream) {
       this.localStream.getTracks().forEach(track => track.stop());
