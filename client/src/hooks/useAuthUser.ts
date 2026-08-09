@@ -8,6 +8,8 @@ const useAuthUser = () => {
   const { user: clerkUser, isLoaded, isSignedIn } = useUser();
   const [userInfo, setUserInfo] = useState<User | null>(null);
   const [userExists, setUserExists] = useState<boolean | null>(null);
+  const [profileError, setProfileError] = useState(false);
+  const [retryNonce, setRetryNonce] = useState(0);
   const fetchedUserData = useRef(false);
 
   const createUser = useCallback(async (username: string) => {
@@ -43,6 +45,8 @@ const useAuthUser = () => {
   const checkUserExists = useCallback(async () => {
     if (!clerkUser || userExists !== null) return;
 
+    setProfileError(false);
+
     try {
       const response = await fetch(`${API_BASE_URL}/user/${clerkUser.id}`);
       if (response.status === 404) {
@@ -53,9 +57,11 @@ const useAuthUser = () => {
         setUserExists(true);
       } else {
         console.error("Failed to check user existence");
+        setProfileError(true);
       }
     } catch (error) {
       console.error("Error checking user existence:", error);
+      setProfileError(true);
     }
   }, [clerkUser, userExists]);
 
@@ -64,7 +70,13 @@ const useAuthUser = () => {
       checkUserExists();
       fetchedUserData.current = true;
     }
-  }, [checkUserExists, isLoaded, clerkUser]);
+  }, [checkUserExists, isLoaded, clerkUser, retryNonce]);
+
+  const retryProfileLoad = useCallback(() => {
+    setProfileError(false);
+    fetchedUserData.current = false;
+    setRetryNonce((n) => n + 1);
+  }, []);
 
   const validateUsername = (username: string): string => {
     const regex = /^[a-zA-Z0-9_]+$/;
@@ -140,6 +152,8 @@ const useAuthUser = () => {
     clerkUser,
     isAuthenticated: isSignedIn === true,
     isLoading: !isLoaded,
+    profileError,
+    retryProfileLoad,
   };
 };
 

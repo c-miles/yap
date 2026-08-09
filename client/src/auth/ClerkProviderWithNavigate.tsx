@@ -24,6 +24,39 @@ const ClerkProviderWithNavigate: React.FC<{ children: React.ReactNode }> = ({ ch
     routerPush: (to: string) => navigate(to),
     routerReplace: (to: string) => navigate(to, { replace: true }),
     afterSignOutUrl: "/",
+    appearance: {
+      // variable names per @clerk/react 6.x (Core 3): colorForeground/
+      // colorMutedForeground/colorInput* — the older colorText* names are
+      // silently ignored by this version
+      variables: {
+        colorPrimary: "#475569",
+        colorPrimaryForeground: "#f8fafc",
+        colorBackground: "#1e293b",
+        colorForeground: "#f8fafc",
+        colorMutedForeground: "#cbd5e1",
+        colorNeutral: "#f8fafc",
+        colorInput: "#0f172a",
+        colorInputForeground: "#f8fafc",
+        colorBorder: "#334155",
+        colorDanger: "#f87171",
+        borderRadius: "0.5rem",
+        fontFamily: "Inter, system-ui, -apple-system, sans-serif",
+      },
+      // the social-provider buttons derive their idle border from neutral
+      // shades that vanish on our dark surface — give them a real outline
+      elements: {
+        socialButtonsIconButton: {
+          border: "1px solid #334155",
+          backgroundColor: "#0f172a",
+          "&:hover": { backgroundColor: "#334155" },
+        },
+        socialButtonsBlockButton: {
+          border: "1px solid #334155",
+          backgroundColor: "#0f172a",
+          "&:hover": { backgroundColor: "#334155" },
+        },
+      },
+    },
   };
 
   return <ClerkProvider {...clerkProviderProps}>{children}</ClerkProvider>;

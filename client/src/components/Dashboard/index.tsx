@@ -7,7 +7,7 @@ import useRoomActions from "../../hooks/useRoomActions";
 import Dashboard from "./Dashboard";
 
 const DashboardContainer: React.FC = () => {
-  const { userInfo, userExists, handleUsernameSubmit, isAuthenticated, isLoading } = useAuthUser();
+  const { userInfo, userExists, handleUsernameSubmit, isAuthenticated, isLoading, profileError, retryProfileLoad } = useAuthUser();
   const clerk = useClerk();
   const { createRoom, joinRoom } = useRoomActions();
 
@@ -45,6 +45,8 @@ const DashboardContainer: React.FC = () => {
       isAuthenticated={isAuthenticated}
       isLoading={isLoading}
       onLogin={onLogin}
+      profileError={profileError}
+      onRetryProfile={retryProfileLoad}
     />
   );
 };
