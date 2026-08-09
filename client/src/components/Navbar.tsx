@@ -1,10 +1,11 @@
 import React, { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { useAuth0 } from "@auth0/auth0-react";
+import { useUser, useClerk } from "@clerk/react";
 import { User, ChevronDown } from "lucide-react";
 
 const Navbar: React.FC = () => {
-  const { user, logout } = useAuth0();
+  const { user } = useUser();
+  const { signOut } = useClerk();
   const navigate = useNavigate();
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
@@ -21,11 +22,8 @@ const Navbar: React.FC = () => {
   }, []);
 
   const handleLogout = () => {
-    logout({
-      logoutParams: {
-        returnTo: process.env.REACT_APP_AUTH0_LOGOUT_REDIRECT_URI,
-      },
-    });
+    // Redirect target comes from ClerkProviderWithNavigate's afterSignOutUrl.
+    signOut();
   };
 
   const navigateToDashboard = () => {
@@ -51,10 +49,10 @@ const Navbar: React.FC = () => {
               onClick={() => setIsOpen(!isOpen)}
               className="flex items-center gap-2 p-2 rounded-lg hover:bg-primary transition-colors"
             >
-              {user.picture ? (
-                <img 
-                  src={user.picture} 
-                  alt={user.name || 'User'}
+              {user.imageUrl ? (
+                <img
+                  src={user.imageUrl}
+                  alt={user.fullName || 'User'}
                   className="w-8 h-8 rounded-full"
                 />
               ) : (

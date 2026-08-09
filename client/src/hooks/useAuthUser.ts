@@ -1,26 +1,26 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 
-import { useAuth0 } from "@auth0/auth0-react";
+import { useUser } from "@clerk/react";
 import { User } from "../types/userTypes";
 import { API_BASE_URL } from "../config";
 
 const useAuthUser = () => {
-  const { user: authUser, isLoading } = useAuth0();
+  const { user: clerkUser, isLoaded, isSignedIn } = useUser();
   const [userInfo, setUserInfo] = useState<User | null>(null);
   const [userExists, setUserExists] = useState<boolean | null>(null);
   const fetchedUserData = useRef(false);
 
   const createUser = useCallback(async (username: string) => {
-    if (!authUser) return "User not authenticated";
+    if (!clerkUser) return "User not authenticated";
 
     try {
       const response = await fetch(`${API_BASE_URL}/user/`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          email: authUser.email || null, // null for GitHub users without public email
-          picture: authUser.picture,
-          id: authUser.sub,
+          email: clerkUser.primaryEmailAddress?.emailAddress ?? null, // null for GitHub users without public email
+          picture: clerkUser.imageUrl,
+          id: clerkUser.id,
           username,
         }),
       });
@@ -38,13 +38,13 @@ const useAuthUser = () => {
       console.error("Error creating user:", error);
       return "Failed to create user";
     }
-  }, [authUser]);
+  }, [clerkUser]);
 
   const checkUserExists = useCallback(async () => {
-    if (!authUser || userExists !== null) return;
+    if (!clerkUser || userExists !== null) return;
 
     try {
-      const response = await fetch(`${API_BASE_URL}/user/${authUser.sub}`);
+      const response = await fetch(`${API_BASE_URL}/user/${clerkUser.id}`);
       if (response.status === 404) {
         setUserExists(false);
       } else if (response.ok) {
@@ -57,14 +57,14 @@ const useAuthUser = () => {
     } catch (error) {
       console.error("Error checking user existence:", error);
     }
-  }, [authUser, userExists]);
+  }, [clerkUser, userExists]);
 
   useEffect(() => {
-    if (!fetchedUserData.current && !isLoading && authUser) {
+    if (!fetchedUserData.current && isLoaded && clerkUser) {
       checkUserExists();
       fetchedUserData.current = true;
     }
-  }, [checkUserExists, isLoading, authUser]);
+  }, [checkUserExists, isLoaded, clerkUser]);
 
   const validateUsername = (username: string): string => {
     const regex = /^[a-zA-Z0-9_]+$/;
@@ -133,7 +133,14 @@ const useAuthUser = () => {
     [checkUsernameAvailability, userInfo, userExists, createUser]
   );
 
-  return { userInfo, userExists, handleUsernameSubmit };
+  return {
+    userInfo,
+    userExists,
+    handleUsernameSubmit,
+    clerkUser,
+    isAuthenticated: isSignedIn === true,
+    isLoading: !isLoaded,
+  };
 };
 
 export default useAuthUser;
