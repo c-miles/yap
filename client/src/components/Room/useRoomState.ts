@@ -17,23 +17,12 @@ export interface Participant {
   connectionState?: RTCPeerConnectionState;
 }
 
-export default function useRoomState(username?: string) {
+export default function useRoomState() {
   const { roomId } = useParams<{ roomId: string }>();
   const location = useLocation();
   const state = location.state as LocationState;
 
   const isHost = state?.isHost || false;
-
-  // TODO: Switch this to user's auth0 id
-  const userIdRef = useRef<string>(Math.random().toString(36).substring(2, 15));
-  const usernameRef = useRef<string>(username || `User${userIdRef.current.substring(0, 4)}`);
-
-  // Update username when it changes
-  useEffect(() => {
-    if (username) {
-      usernameRef.current = username;
-    }
-  }, [username]);
 
   // Track all participants in the room
   const [participants, setParticipants] = useState<Map<string, Participant>>(new Map());
@@ -113,8 +102,6 @@ export default function useRoomState(username?: string) {
   return {
     isHost,
     roomId,
-    userIdRef,
-    usernameRef,
     participants,
     roomError,
     isConnecting,

@@ -14,17 +14,21 @@ interface LocationState {
 }
 
 const RoomContainer: React.FC = () => {
-  const { userInfo } = useAuthUser();
+  const { userInfo, clerkUser } = useAuthUser();
   const socket = useSocket();
   const location = useLocation();
   const state = location.state as LocationState;
-  
+
   const [roomName] = useState<string | undefined>(state?.friendlyName);
+
+  // stable identity: the clerk user id. DirectRoomJoin guarantees we're
+  // authenticated before this component renders.
+  const localUserId = clerkUser?.id ?? "";
+  const localUsername = userInfo?.username || clerkUser?.username || clerkUser?.firstName || "Guest";
+  const localPicture = userInfo?.picture ?? clerkUser?.imageUrl;
 
   const {
     roomId,
-    userIdRef,
-    usernameRef,
     participants,
     roomError,
     isConnecting,
@@ -36,7 +40,7 @@ const RoomContainer: React.FC = () => {
     updateParticipantStream,
     updateParticipantConnectionState,
     setMultipleParticipants,
-  } = useRoomState(userInfo?.username);
+  } = useRoomState();
 
   // Callbacks for peer connection events
   const handleStreamAdded = useCallback((userId: string, stream: MediaStream) => {
@@ -64,7 +68,7 @@ const RoomContainer: React.FC = () => {
     resetAllPeers,
   } = usePeerConnection({
     socket,
-    userId: userIdRef.current,
+    userId: localUserId,
     roomId: roomId || "",
     onStreamAdded: handleStreamAdded,
     onStreamRemoved: handleStreamRemoved,
@@ -87,7 +91,7 @@ const RoomContainer: React.FC = () => {
   } = useMediaStream({ 
     roomId, 
     socket, 
-    userPicture: userInfo?.picture,
+    userPicture: localPicture,
     onStreamUpdated: updateLocalStream 
   });
 
@@ -95,11 +99,11 @@ const RoomContainer: React.FC = () => {
     if (!socket || !roomId) return;
     socket.emit("joinRoom", {
       roomId,
-      userId: userIdRef.current,
-      username: usernameRef.current || userInfo?.username || "Anonymous",
-      profilePicture: userInfo?.picture,
+      userId: localUserId,
+      username: localUsername,
+      profilePicture: localPicture,
     });
-  }, [socket, roomId, userIdRef, usernameRef, userInfo]);
+  }, [socket, roomId, localUserId, localUsername, localPicture]);
 
   const hasJoinedRef = useRef(false);
 
@@ -110,7 +114,7 @@ const RoomContainer: React.FC = () => {
 
   // Join room when socket and stream are ready (and no permission error)
   useEffect(() => {
-    if (socket && roomId && userIdRef.current && streamReady && stream && setLocalStream && !hasJoinedRef.current && !permissionError) {
+    if (socket && roomId && localUserId && streamReady && stream && setLocalStream && !hasJoinedRef.current && !permissionError) {
       // Set local stream in peer connection manager
       setLocalStream(stream);
 
@@ -119,7 +123,7 @@ const RoomContainer: React.FC = () => {
       hasJoinedRef.current = true;
       setIsConnecting(true);
     }
-  }, [socket, roomId, userIdRef, streamReady, stream, setLocalStream, setIsConnecting, permissionError, emitJoinRoom]);
+  }, [socket, roomId, localUserId, streamReady, stream, setLocalStream, setIsConnecting, permissionError, emitJoinRoom]);
 
   // Handle socket events
   useEffect(() => {
@@ -177,6 +181,13 @@ const RoomContainer: React.FC = () => {
       setIsConnecting(false);
     };
 
+    const handleDisconnect = (reason: string) => {
+      // the server kicks the older socket when this account joins elsewhere
+      if (reason === "io server disconnect") {
+        setRoomError("You joined this room from another tab or device.");
+      }
+    };
+
     socket.io.on("reconnect", handleReconnect);
     socket.on("currentParticipants", handleCurrentParticipants);
     socket.on("userJoined", handleUserJoined);
@@ -184,6 +195,7 @@ const RoomContainer: React.FC = () => {
     socket.on("participantVideoToggled", handleVideoToggled);
     socket.on("participantAudioToggled", handleAudioToggled);
     socket.on("error", handleError);
+    socket.on("disconnect", handleDisconnect);
 
     return () => {
       socket.io.off("reconnect", handleReconnect);
@@ -193,6 +205,7 @@ const RoomContainer: React.FC = () => {
       socket.off("participantVideoToggled", handleVideoToggled);
       socket.off("participantAudioToggled", handleAudioToggled);
       socket.off("error", handleError);
+      socket.off("disconnect", handleDisconnect);
     };
   }, [socket, stream, emitJoinRoom, setMultipleParticipants, addParticipant, removeParticipant, updateParticipantMediaState, connectToPeer, disconnectFromPeer, setRoomError, setIsConnecting, setLocalStream, resetAllPeers]);
 
@@ -205,12 +218,10 @@ const RoomContainer: React.FC = () => {
     // Emit to other users
     if (socket && roomId) {
       socket.emit("toggleVideo", {
-        roomId,
-        userId: userIdRef.current,
         videoEnabled: !videoEnabled,
       });
     }
-  }, [toggleVideo, togglePeerVideo, videoEnabled, socket, roomId, userIdRef]);
+  }, [toggleVideo, togglePeerVideo, videoEnabled, socket, roomId]);
 
   // Handle local audio toggle
   const handleToggleAudio = useCallback(() => {
@@ -220,20 +231,15 @@ const RoomContainer: React.FC = () => {
     // Emit to other users
     if (socket && roomId) {
       socket.emit("toggleAudio", {
-        roomId,
-        userId: userIdRef.current,
         audioEnabled: !audioEnabled,
       });
     }
-  }, [toggleAudio, togglePeerAudio, audioEnabled, socket, roomId, userIdRef]);
+  }, [toggleAudio, togglePeerAudio, audioEnabled, socket, roomId]);
 
   // Handle leaving room
   const handleLeaveRoom = useCallback(() => {
     if (socket && roomId) {
-      socket.emit("leaveRoom", {
-        roomId,
-        userId: userIdRef.current,
-      });
+      socket.emit("leaveRoom");
     }
 
     // Reset join flag for next room
@@ -241,19 +247,19 @@ const RoomContainer: React.FC = () => {
 
     // Navigate back to dashboard
     window.location.href = "/dashboard";
-  }, [socket, roomId, userIdRef]);
+  }, [socket, roomId]);
 
   return (
     <Room
       audioEnabled={audioEnabled}
       localStream={stream}
-      localUserId={userIdRef.current}
-      localUsername={usernameRef.current || userInfo?.username || "Anonymous"}
+      localUserId={localUserId}
+      localUsername={localUsername}
       localVideoEnabled={videoEnabled}
       localVideoRef={localVideoRef}
       participants={participants}
       permissionError={permissionError}
-      profilePicture={userInfo?.picture}
+      profilePicture={localPicture}
       retryMediaAccess={retryMediaAccess}
       retryVideoAccess={retryVideoAccess}
       setVideoPermissionError={setVideoPermissionError}
@@ -265,7 +271,7 @@ const RoomContainer: React.FC = () => {
       toggleAudio={handleToggleAudio}
       toggleVideo={handleToggleVideo}
       onLeaveRoom={handleLeaveRoom}
-      username={userInfo?.username}
+      username={localUsername}
       socket={socket}
     />
   );
