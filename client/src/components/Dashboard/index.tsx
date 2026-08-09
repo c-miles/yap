@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { useClerk } from "@clerk/react";
 
 import useAuthUser from "../../hooks/useAuthUser";
 import useRoomActions from "../../hooks/useRoomActions";
@@ -6,8 +7,11 @@ import useRoomActions from "../../hooks/useRoomActions";
 import Dashboard from "./Dashboard";
 
 const DashboardContainer: React.FC = () => {
-  const { userInfo, userExists, handleUsernameSubmit } = useAuthUser();
+  const { userInfo, userExists, handleUsernameSubmit, isAuthenticated, isLoading } = useAuthUser();
+  const clerk = useClerk();
   const { createRoom, joinRoom } = useRoomActions();
+
+  const onLogin = () => clerk.openSignIn({ forceRedirectUrl: "/dashboard" });
 
   const [newUsername, setNewUsername] = useState<string>("");
   const [usernameError, setUsernameError] = useState<string>("");
@@ -38,6 +42,9 @@ const DashboardContainer: React.FC = () => {
       usernameError={usernameError}
       userInfo={userInfo}
       userExists={userExists}
+      isAuthenticated={isAuthenticated}
+      isLoading={isLoading}
+      onLogin={onLogin}
     />
   );
 };
