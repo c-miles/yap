@@ -1,5 +1,5 @@
 import React, { useEffect, useCallback, useRef, useState } from "react";
-import { useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import Room from "./Room";
 
 import useAuthUser from "../../hooks/useAuthUser";
@@ -17,6 +17,7 @@ const RoomContainer: React.FC = () => {
   const { userInfo, clerkUser } = useAuthUser();
   const socket = useSocket();
   const location = useLocation();
+  const navigate = useNavigate();
   const state = location.state as LocationState;
 
   const [roomName] = useState<string | undefined>(state?.friendlyName);
@@ -246,8 +247,8 @@ const RoomContainer: React.FC = () => {
     hasJoinedRef.current = false;
 
     // Navigate back to dashboard
-    window.location.href = "/dashboard";
-  }, [socket, roomId]);
+    navigate("/dashboard");
+  }, [socket, roomId, navigate]);
 
   return (
     <Room
