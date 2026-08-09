@@ -14,6 +14,8 @@ const baseProps = {
   userInfo: null,
   userExists: null,
   onLogin: jest.fn(),
+  profileError: false,
+  onRetryProfile: jest.fn(),
 };
 
 test("prompts logged-out visitors to log in instead of spinning forever", () => {
@@ -25,4 +27,9 @@ test("shows a spinner only while auth state is still loading", () => {
   const { container } = render(<Dashboard {...baseProps} isLoading={true} isAuthenticated={false} />);
   expect(container.querySelector("span")).not.toBeNull(); // BeatLoader renders spans
   expect(screen.queryByRole("button", { name: /log in/i })).toBeNull();
+});
+
+test("offers a retry instead of spinning forever when the profile fetch fails", () => {
+  render(<Dashboard {...baseProps} isLoading={false} isAuthenticated={true} profileError={true} />);
+  expect(screen.getByRole("button", { name: /try again/i })).toBeInTheDocument();
 });

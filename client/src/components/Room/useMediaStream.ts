@@ -1,5 +1,6 @@
 import { useEffect, useState, useRef } from "react";
 import { UseMediaStreamProps } from "../../types/mediaStreamTypes";
+import { VIDEO_CONSTRAINTS } from "./videoEncoding";
 
 export default function useMediaStream({ onStreamUpdated }: UseMediaStreamProps) {
   const [audioEnabled, setAudioEnabled] = useState(true);
@@ -12,6 +13,7 @@ export default function useMediaStream({ onStreamUpdated }: UseMediaStreamProps)
   const localVideoRef = useRef<HTMLVideoElement>(null);
   const streamRef = useRef<MediaStream | null>(null);
   const isInitialized = useRef(false);
+  const acquiringVideo = useRef(false);
 
   useEffect(() => {
     if (isInitialized.current) {
@@ -77,26 +79,52 @@ export default function useMediaStream({ onStreamUpdated }: UseMediaStreamProps)
 
   const toggleVideo = () => {
     if (stream) {
-      const videoTrack = stream.getVideoTracks()[0];
+      // ended tracks count as absent — iOS kills the video track outright on
+      // backgrounding/incoming calls, and a toggle-on has to recover from that
+      const videoTrack = stream.getVideoTracks().find((track) => track.readyState === "live");
       if (videoTrack) {
         // Video track exists, just toggle it
         videoTrack.enabled = !videoTrack.enabled;
         setVideoEnabled(videoTrack.enabled);
-      } else if (!videoEnabled) {
-        // No video track, request camera permission
+      } else {
+        // no live video track (never acquired, or iOS ended it mid-call) — and
+        // iOS allows only one live capture session, so a video-only getUserMedia
+        // here could mute our audio. acquire a fresh audio+video session, swap
+        // it in everywhere, then retire the old one.
+        if (acquiringVideo.current) {
+          return;
+        }
+        acquiringVideo.current = true;
         navigator.mediaDevices
-          .getUserMedia({ video: true })
-          .then((videoStream) => {
-            const newVideoTrack = videoStream.getVideoTracks()[0];
-            if (newVideoTrack && streamRef.current) {
-              streamRef.current.addTrack(newVideoTrack);
-              setStream(streamRef.current);
-              setVideoEnabled(true);
-              // Notify peer connections about the updated stream
-              onStreamUpdated?.(streamRef.current).catch(error => {
-                console.error('Error updating peer connections with new video track:', error);
-              });
+          .getUserMedia({ audio: true, video: VIDEO_CONSTRAINTS })
+          .then((freshStream) => {
+            if (!isInitialized.current) {
+              // room unmounted while the permission prompt was open — don't
+              // strand a live camera/mic session
+              freshStream.getTracks().forEach((track) => track.stop());
+              return;
             }
+
+            // read live mute state at swap time, not click time — the user may
+            // have toggled mute while the permission prompt was open
+            const wasAudioEnabled =
+              streamRef.current?.getAudioTracks().some((track) => track.enabled) ?? audioEnabled;
+            freshStream.getAudioTracks().forEach((track) => {
+              track.enabled = wasAudioEnabled;
+            });
+
+            const oldStream = streamRef.current;
+            streamRef.current = freshStream;
+            setStream(freshStream);
+            setVideoEnabled(true);
+
+            Promise.resolve(onStreamUpdated?.(freshStream))
+              .catch((error) => {
+                console.error("Error updating peer connections with new stream:", error);
+              })
+              .finally(() => {
+                oldStream?.getTracks().forEach((track) => track.stop());
+              });
           })
           .catch((error) => {
             console.error("Error getting video stream:", error);
@@ -107,6 +135,9 @@ export default function useMediaStream({ onStreamUpdated }: UseMediaStreamProps)
             } else {
               setVideoPermissionError('other');
             }
+          })
+          .finally(() => {
+            acquiringVideo.current = false;
           });
       }
     }

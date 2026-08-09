@@ -19,6 +19,8 @@ const Dashboard: React.FC<DashboardProps> = ({
   isAuthenticated,
   isLoading,
   onLogin,
+  profileError,
+  onRetryProfile,
 }) => {
   const showUsernameForm = userExists === false || !userInfo?.username;
   const [roomName, setRoomName] = useState("");
@@ -31,7 +33,7 @@ const Dashboard: React.FC<DashboardProps> = ({
 
   return (
     <div className="flex items-center justify-center min-h-[calc(100vh-64px)] p-8">
-      {isLoading || (isAuthenticated && userExists === null) ? (
+      {isLoading || (isAuthenticated && userExists === null && !profileError) ? (
         <BeatLoader color="#64748b" />
       ) : !isAuthenticated ? (
         <div className="w-full max-w-md">
@@ -40,6 +42,16 @@ const Dashboard: React.FC<DashboardProps> = ({
             <p className="text-text-muted mb-6">Log in to start or join a room</p>
             <Button variant="primary" className="w-full" onClick={onLogin}>
               Log in
+            </Button>
+          </div>
+        </div>
+      ) : profileError ? (
+        <div className="w-full max-w-md">
+          <div className="bg-surface p-8 rounded-lg border border-slate-700 text-center">
+            <h2 className="text-2xl font-bold text-text mb-4">Couldn't load your profile</h2>
+            <p className="text-text-muted mb-6">Something went wrong talking to the server</p>
+            <Button variant="primary" className="w-full" onClick={onRetryProfile}>
+              Try again
             </Button>
           </div>
         </div>

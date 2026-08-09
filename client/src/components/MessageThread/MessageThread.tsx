@@ -36,7 +36,7 @@ const MessageThread: React.FC<MessageThreadProps> = ({
         className="flex-1 overflow-y-auto p-4 space-y-3"
       >
         {messages.map((msg, index) => (
-          <div key={index} className="text-sm break-words">
+          <div key={msg._id ?? index} className="text-sm break-words">
             <span className="font-medium text-primary">
               {msg.username}:
             </span>{' '}

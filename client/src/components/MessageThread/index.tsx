@@ -15,29 +15,20 @@ const MessageThreadContainer: React.FC<{
       // Request existing room messages when component mounts
       socket.emit("getRoomMessages", { roomId });
 
-      socket.on("roomMessages", (roomMessages: Message[]) => {
+      const handleRoomMessages = (roomMessages: Message[]) => {
         setMessages(roomMessages);
-      });
+      };
 
-      socket.on("receiveMessage", (receivedMessage: Message) => {
-        setMessages((prevMessages) => {
-          // Skip duplicates: check if we already have this message by content and username
-          const isDuplicate = prevMessages.some((msg) =>
-            msg.message === receivedMessage.message &&
-            msg.username === receivedMessage.username
-          );
+      const handleReceiveMessage = (receivedMessage: Message) => {
+        setMessages((prevMessages) => [...prevMessages, receivedMessage]);
+      };
 
-          if (isDuplicate) {
-            return prevMessages;
-          }
-
-          return [...prevMessages, receivedMessage];
-        });
-      });
+      socket.on("roomMessages", handleRoomMessages);
+      socket.on("receiveMessage", handleReceiveMessage);
 
       return () => {
-        socket.off("receiveMessage");
-        socket.off("roomMessages");
+        socket.off("receiveMessage", handleReceiveMessage);
+        socket.off("roomMessages", handleRoomMessages);
       };
     }
   }, [socket, roomId]);
@@ -50,9 +41,7 @@ const MessageThreadContainer: React.FC<{
         message: messageContent,
         timestamp: new Date(),
       };
-      // Add message locally immediately for responsive UI
-      setMessages((prevMessages) => [...prevMessages, newMessage]);
-      // Send to other users via socket
+      // no local append — the server echoes receiveMessage to everyone, us included
       socket?.emit("sendMessage", newMessage);
     }
   };

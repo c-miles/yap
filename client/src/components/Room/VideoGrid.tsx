@@ -22,7 +22,16 @@ interface VideoElementProps {
   audioEnabled: boolean;
   profilePicture?: string;
   isLocal: boolean;
+  connectionState?: RTCPeerConnectionState;
 }
+
+const CONNECTION_LABELS: Partial<Record<RTCPeerConnectionState, string>> = {
+  new: "connecting…",
+  connecting: "connecting…",
+  disconnected: "reconnecting…",
+  failed: "connection lost",
+  closed: "connection lost",
+};
 
 const VideoElement: React.FC<VideoElementProps> = ({
   stream,
@@ -31,7 +40,8 @@ const VideoElement: React.FC<VideoElementProps> = ({
   videoEnabled,
   audioEnabled,
   profilePicture,
-  isLocal
+  isLocal,
+  connectionState
 }) => {
   // callback ref on purpose: this <video> mounts late (only once a video track
   // exists), usually without the stream ref changing — an effect keyed on
@@ -78,6 +88,10 @@ const VideoElement: React.FC<VideoElementProps> = ({
             </div>
           )}
         </div>
+      )}
+
+      {!isLocal && connectionState && CONNECTION_LABELS[connectionState] && (
+        <span className="connection-pill">{CONNECTION_LABELS[connectionState]}</span>
       )}
 
       <div className="video-overlay" aria-hidden="true">
@@ -136,7 +150,8 @@ const VideoGrid: React.FC<VideoGridProps> = ({
       videoEnabled: p.mediaState.video,
       audioEnabled: p.mediaState.audio,
       profilePicture: p.profilePicture,
-      isLocal: false
+      isLocal: false,
+      connectionState: p.connectionState
     }))
   ];
 

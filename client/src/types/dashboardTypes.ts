@@ -13,4 +13,6 @@ export interface DashboardProps {
   isAuthenticated: boolean;
   isLoading: boolean;
   onLogin: () => void;
+  profileError: boolean;
+  onRetryProfile: () => void;
 }
