@@ -33,13 +33,17 @@ const VideoElement: React.FC<VideoElementProps> = ({
   profilePicture,
   isLocal
 }) => {
-  const videoRef = React.useRef<HTMLVideoElement>(null);
-
-  React.useEffect(() => {
-    if (videoRef.current && stream) {
-      videoRef.current.srcObject = stream;
-    }
-  }, [stream, isLocal, userId, videoEnabled]);
+  // callback ref on purpose: this <video> mounts late (only once a video track
+  // exists), usually without the stream ref changing — an effect keyed on
+  // [stream] would miss the mount and leave the element unattached.
+  const attachStream = React.useCallback(
+    (el: HTMLVideoElement | null) => {
+      if (el && stream && el.srcObject !== stream) {
+        el.srcObject = stream;
+      }
+    },
+    [stream]
+  );
 
   // Check if video is actually enabled
   const hasActiveVideo = stream &&
@@ -56,7 +60,7 @@ const VideoElement: React.FC<VideoElementProps> = ({
     >
       {hasActiveVideo ? (
         <video
-          ref={videoRef}
+          ref={attachStream}
           autoPlay
           playsInline
           muted={isLocal}
