@@ -1,6 +1,7 @@
 import { Socket } from "socket.io-client";
 import { getIceServers } from "../../services/iceServers";
 import { isPolite, shouldIgnoreOffer } from "./negotiationState";
+import { withVideoBitrateCap } from "./videoEncoding";
 
 interface PeerConnection {
   connection: RTCPeerConnection;
@@ -75,14 +76,31 @@ export class PeerConnectionManager {
     this.socket.on("receiveIceCandidate", this.handleReceiveIceCandidate);
   }
 
+  private capVideoSender(sender: RTCRtpSender): void {
+    sender.setParameters(withVideoBitrateCap(sender.getParameters())).catch((error) => {
+      console.error("Error capping video bitrate:", error);
+    });
+  }
+
   setLocalStream(stream: MediaStream): void {
+    // a stale caller (closure over a retired stream) can't even revert the
+    // reference if every track it's holding is already dead
+    if (!stream.getTracks().some((track) => track.readyState === "live")) {
+      return;
+    }
     this.localStream = stream;
     // addTrack fires onnegotiationneeded, so late tracks renegotiate on their own
     this.peers.forEach((peer) => {
       stream.getTracks().forEach((track) => {
+        if (track.readyState === "ended") {
+          return; // a stale caller handed us a retired stream — never wire dead tracks
+        }
         const sender = peer.connection.getSenders().find((s) => s.track?.kind === track.kind);
         if (!sender) {
-          peer.connection.addTrack(track, stream);
+          const newSender = peer.connection.addTrack(track, stream);
+          if (track.kind === "video") {
+            this.capVideoSender(newSender);
+          }
         }
       });
     });
@@ -134,7 +152,13 @@ export class PeerConnectionManager {
 
     if (this.localStream) {
       this.localStream.getTracks().forEach((track) => {
-        pc.addTrack(track, this.localStream!);
+        if (track.readyState === "ended") {
+          return; // a stale caller handed us a retired stream — never wire dead tracks
+        }
+        const sender = pc.addTrack(track, this.localStream!);
+        if (track.kind === "video") {
+          this.capVideoSender(sender);
+        }
       });
     }
 
@@ -218,7 +242,7 @@ export class PeerConnectionManager {
     }
     if (peer.restartAttempts >= MAX_ICE_RESTARTS) {
       console.error(`Connection to ${peer.userId} failed after ${MAX_ICE_RESTARTS} ICE restarts; tearing down`);
-      // out of retries — tear down. black-tile UX + a rebuild path are issue #5.
+      // out of retries — tear down. the grid shows "connection lost"; an automatic rebuild path is future work.
       this.removePeer(peer.userId);
       return;
     }
@@ -362,7 +386,10 @@ export class PeerConnectionManager {
             console.error(`Error replacing ${track.kind} track for ${peer.userId}:`, error);
           });
         } else {
-          peer.connection.addTrack(track, stream);
+          const newSender = peer.connection.addTrack(track, stream);
+          if (track.kind === "video") {
+            this.capVideoSender(newSender);
+          }
         }
       });
     });
