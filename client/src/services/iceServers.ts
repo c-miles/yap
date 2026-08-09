@@ -7,12 +7,20 @@ export const STUN_FALLBACK: RTCIceServer[] = [
 
 const CACHE_TTL_MS = 60 * 60 * 1000;
 
+const FETCH_TIMEOUT_MS = 5000;
+
+// jsdom and old Safari lack AbortSignal.timeout — skip the timeout there instead of crashing
+function timeoutSignal(): AbortSignal | undefined {
+  return typeof AbortSignal !== "undefined" && typeof AbortSignal.timeout === "function"
+    ? AbortSignal.timeout(FETCH_TIMEOUT_MS)
+    : undefined;
+}
+
 let cached: RTCIceServer[] | null = null;
 let cachedAt = 0;
 let pending: Promise<RTCIceServer[]> | null = null;
 
-// Failure never blocks a call — worst case we run STUN-only, which is
-// exactly the pre-TURN behavior.
+// never throws — worst case we fall back to STUN-only (the pre-TURN behavior)
 export async function getIceServers(): Promise<RTCIceServer[]> {
   if (cached && Date.now() - cachedAt < CACHE_TTL_MS) {
     return cached;
@@ -24,7 +32,7 @@ export async function getIceServers(): Promise<RTCIceServer[]> {
 
   const fetchIceServers = async (): Promise<RTCIceServer[]> => {
     try {
-      const response = await fetch(`${API_BASE_URL}/turn-credentials`);
+      const response = await fetch(`${API_BASE_URL}/turn-credentials`, { signal: timeoutSignal() });
       if (!response.ok) {
         throw new Error(`status ${response.status}`);
       }
