@@ -1,7 +1,6 @@
 import { useEffect, useRef, useCallback } from "react";
 import { Socket } from "socket.io-client";
 import { PeerConnectionManager } from "./PeerConnectionManager";
-import { Participant } from "./useRoomState";
 
 // MediaConstraints interface removed as it's not being used
 
@@ -68,27 +67,16 @@ export default function usePeerConnection({
     peerManagerRef.current.setLocalStream(stream);
   }, []);
 
-  // Connect to a new peer
-  const connectToPeer = useCallback(async (targetUserId: string, isInitiator: boolean = true) => {
+  // initiating side only — answerers get their connection created lazily by handleOffer
+  const connectToPeer = useCallback(async (targetUserId: string) => {
     if (!peerManagerRef.current) return;
 
     try {
-      await peerManagerRef.current.createPeerConnection(targetUserId, isInitiator);
+      await peerManagerRef.current.createPeerConnection(targetUserId);
     } catch (error) {
       console.error(`Failed to connect to peer ${targetUserId}:`, error);
     }
   }, []);
-
-  // Connect to multiple peers (for when joining a room with existing participants)
-  const connectToMultiplePeers = useCallback(async (participants: Participant[]) => {
-    if (!peerManagerRef.current) return;
-
-    // Connect to each participant with proper initiator logic
-    for (const participant of participants) {
-      const shouldInitiate = userId > participant.userId;
-      await connectToPeer(participant.userId, shouldInitiate);
-    }
-  }, [connectToPeer, userId]);
 
   // Disconnect from a peer
   const disconnectFromPeer = useCallback((userId: string) => {
@@ -110,13 +98,18 @@ export default function usePeerConnection({
     await peerManagerRef.current?.updateLocalStream(stream);
   }, []);
 
+  // socket reconnects orphan every pc (server forgot us) — start fresh
+  const resetAllPeers = useCallback(() => {
+    peerManagerRef.current?.removeAllPeers();
+  }, []);
+
   return {
     setLocalStream,
     connectToPeer,
-    connectToMultiplePeers,
     disconnectFromPeer,
     toggleVideo,
     toggleAudio,
     updateLocalStream,
+    resetAllPeers,
   };
 }

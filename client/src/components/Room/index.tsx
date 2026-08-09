@@ -5,7 +5,7 @@ import Room from "./Room";
 import useAuthUser from "../../hooks/useAuthUser";
 import useMediaStream from "./useMediaStream";
 import usePeerConnection from "./usePeerConnection";
-import useRoomState from "./useRoomState";
+import useRoomState, { Participant } from "./useRoomState";
 import useSocket from "../../services/useSocket";
 
 interface LocationState {
@@ -57,11 +57,11 @@ const RoomContainer: React.FC = () => {
   const {
     setLocalStream,
     connectToPeer,
-    connectToMultiplePeers,
     disconnectFromPeer,
     toggleVideo: togglePeerVideo,
     toggleAudio: togglePeerAudio,
     updateLocalStream,
+    resetAllPeers,
   } = usePeerConnection({
     socket,
     userId: userIdRef.current,
@@ -91,6 +91,16 @@ const RoomContainer: React.FC = () => {
     onStreamUpdated: updateLocalStream 
   });
 
+  const emitJoinRoom = useCallback(() => {
+    if (!socket || !roomId) return;
+    socket.emit("joinRoom", {
+      roomId,
+      userId: userIdRef.current,
+      username: usernameRef.current || userInfo?.username || "Anonymous",
+      profilePicture: userInfo?.picture,
+    });
+  }, [socket, roomId, userIdRef, usernameRef, userInfo]);
+
   const hasJoinedRef = useRef(false);
 
   // Reset join flag when room changes
@@ -104,79 +114,87 @@ const RoomContainer: React.FC = () => {
       // Set local stream in peer connection manager
       setLocalStream(stream);
 
-      socket.emit("joinRoom", {
-        roomId,
-        userId: userIdRef.current,
-        username: usernameRef.current || userInfo?.username || "Anonymous",
-        profilePicture: userInfo?.picture,
-      });
+      emitJoinRoom();
 
       hasJoinedRef.current = true;
       setIsConnecting(true);
     }
-  }, [socket, roomId, userIdRef, usernameRef, userInfo, streamReady, stream, setLocalStream, setIsConnecting, permissionError]);
+  }, [socket, roomId, userIdRef, streamReady, stream, setLocalStream, setIsConnecting, permissionError, emitJoinRoom]);
 
   // Handle socket events
   useEffect(() => {
     if (!socket) return;
 
-    // Handle current participants when joining
-    socket.on("currentParticipants", async (participantsList) => {
+    // manager-level "reconnect" fires only on true RE-connections, never the
+    // first connect — so the initial (buffered) join can't double-fire
+    const handleReconnect = () => {
+      if (hasJoinedRef.current) {
+        // our old pcs are zombies (server forgot us) — reset so both sides build fresh
+        resetAllPeers();
+        emitJoinRoom();
+      }
+    };
+
+    const handleCurrentParticipants = (participantsList: Participant[]) => {
       setMultipleParticipants(participantsList);
       setIsConnecting(false);
 
-      // Ensure local stream is set and connect to all existing participants
+      // no peer connections here on purpose: each existing peer offers to us
+      // via its userJoined handler and we just answer. one offerer per pair =
+      // no initial glare (Chrome can wedge ICE gathering after a rolled-back offer).
       if (stream && setLocalStream) {
         setLocalStream(stream);
-        await connectToMultiplePeers(participantsList);
       }
-    });
+    };
 
-    // Handle new user joining
-    socket.on("userJoined", async (participant) => {
+    const handleUserJoined = async (participant: Participant) => {
+      // a rejoining user may not have gotten a userLeft for their old socket —
+      // drop any stale connection first
+      disconnectFromPeer(participant.userId);
       addParticipant(participant);
 
-      // Ensure local stream is set and connect to the new user
-      // Only initiate if our userId is lexicographically greater (to prevent collisions)
-      const shouldInitiate = userIdRef.current > participant.userId;
-
       if (stream && setLocalStream) {
         setLocalStream(stream);
-        await connectToPeer(participant.userId, shouldInitiate);
+        await connectToPeer(participant.userId);
       }
-    });
+    };
 
-    // Handle user leaving
-    socket.on("userLeft", ({ userId }) => {
+    const handleUserLeft = ({ userId }: { userId: string }) => {
       disconnectFromPeer(userId);
       removeParticipant(userId);
-    });
+    };
 
-    // Handle video toggle from other users
-    socket.on("participantVideoToggled", ({ userId, videoEnabled }) => {
+    const handleVideoToggled = ({ userId, videoEnabled }: { userId: string; videoEnabled: boolean }) => {
       updateParticipantMediaState(userId, { video: videoEnabled });
-    });
+    };
 
-    // Handle audio toggle from other users
-    socket.on("participantAudioToggled", ({ userId, audioEnabled }) => {
+    const handleAudioToggled = ({ userId, audioEnabled }: { userId: string; audioEnabled: boolean }) => {
       updateParticipantMediaState(userId, { audio: audioEnabled });
-    });
+    };
 
-    // Handle errors
-    socket.on("error", ({ message }) => {
+    const handleError = ({ message }: { message: string }) => {
       setRoomError(message);
       setIsConnecting(false);
-    });
+    };
+
+    socket.io.on("reconnect", handleReconnect);
+    socket.on("currentParticipants", handleCurrentParticipants);
+    socket.on("userJoined", handleUserJoined);
+    socket.on("userLeft", handleUserLeft);
+    socket.on("participantVideoToggled", handleVideoToggled);
+    socket.on("participantAudioToggled", handleAudioToggled);
+    socket.on("error", handleError);
 
     return () => {
-      socket.off("currentParticipants");
-      socket.off("userJoined");
-      socket.off("userLeft");
-      socket.off("participantVideoToggled");
-      socket.off("participantAudioToggled");
-      socket.off("error");
+      socket.io.off("reconnect", handleReconnect);
+      socket.off("currentParticipants", handleCurrentParticipants);
+      socket.off("userJoined", handleUserJoined);
+      socket.off("userLeft", handleUserLeft);
+      socket.off("participantVideoToggled", handleVideoToggled);
+      socket.off("participantAudioToggled", handleAudioToggled);
+      socket.off("error", handleError);
     };
-  }, [socket, stream, setMultipleParticipants, addParticipant, removeParticipant, updateParticipantMediaState, connectToPeer, connectToMultiplePeers, disconnectFromPeer, setRoomError, setIsConnecting, setLocalStream, userIdRef]);
+  }, [socket, stream, emitJoinRoom, setMultipleParticipants, addParticipant, removeParticipant, updateParticipantMediaState, connectToPeer, disconnectFromPeer, setRoomError, setIsConnecting, setLocalStream, resetAllPeers]);
 
 
   // Handle local video toggle

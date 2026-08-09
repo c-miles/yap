@@ -97,11 +97,17 @@ export default function useRoomState(username?: string) {
     });
   }, []);
 
-  // Set multiple participants at once (for initial load)
+  // bulk set (initial load + rejoin) — keep live streams so a rejoin
+  // doesn't blank out healthy tiles
   const setMultipleParticipants = useCallback((participantsList: Participant[]) => {
-    const newMap = new Map<string, Participant>();
-    participantsList.forEach(p => newMap.set(p.userId, p));
-    setParticipants(newMap);
+    setParticipants((prev) => {
+      const newMap = new Map<string, Participant>();
+      participantsList.forEach((p) => {
+        const existing = prev.get(p.userId);
+        newMap.set(p.userId, existing ? { ...p, stream: existing.stream, connectionState: existing.connectionState } : p);
+      });
+      return newMap;
+    });
   }, []);
 
   return {
