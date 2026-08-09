@@ -14,14 +14,14 @@ A modern 6-person video chat application built with WebRTC mesh networking. Conn
 - **Modern Dark UI**: "Slate Studio" design system with Tailwind CSS
 - **Responsive Layout**: Dynamic video grid that adapts from 1-6 participants  
 - **Audio/Video Controls**: Toggle camera and microphone with visual feedback
-- **User Authentication**: Secure Auth0 integration
+- **User Authentication**: Secure Clerk integration
 - **Human-Readable Room Names**: Auto-generated room names (e.g., "brave-blue-tiger")
 - **Mobile Responsive**: Works across desktop, tablet, and mobile devices
 
 ## 🏗️ Architecture
 
 ### Tech Stack
-- **Frontend**: React 18 + TypeScript, Tailwind CSS, Auth0, Socket.IO Client
+- **Frontend**: React 18 + TypeScript, Tailwind CSS, Clerk, Socket.IO Client
 - **Backend**: Node.js + Express (ES6 modules), MongoDB + Mongoose, Socket.IO
 - **Real-time**: WebRTC for video/audio, Socket.IO for signaling
 - **Database**: MongoDB with Mongoose ODM
@@ -62,18 +62,20 @@ A modern 6-person video chat application built with WebRTC mesh networking. Conn
 
 3. **Environment Variables**
    
-   Create a `.env` file in the root directory:
+   Create a `.env` file in the root directory (see `.env.example`):
    ```env
    # MongoDB Connection
    MONGODB_URI=mongodb://127.0.0.1:27017/yap
-   
-   # Auth0 Configuration (required for authentication)
-   AUTH0_DOMAIN=your-auth0-domain
-   AUTH0_CLIENT_ID=your-auth0-client-id
-   
-   # Server Configuration
-   PORT=3001
-   NODE_ENV=development
+
+   # Cloudflare TURN credentials (optional; STUN-only without them)
+   CLOUDFLARE_TURN_KEY_ID=your-turn-key-id
+   CLOUDFLARE_TURN_API_TOKEN=your-turn-api-token
+   ```
+
+   And a `client/.env` (see `client/.env.example`):
+   ```env
+   # Clerk publishable key (required for authentication)
+   REACT_APP_CLERK_PUBLISHABLE_KEY=pk_test_your-key
    ```
 
 4. **Database Setup**
@@ -178,17 +180,13 @@ yap/
 
 ## 🔧 Configuration
 
-### Auth0 Setup (Required for Authentication)
+### Clerk Setup (Required for Authentication)
 
-Authentication is handled through Auth0. You can use Auth0 or configure another authentication provider:
+Authentication is handled through [Clerk](https://clerk.com):
 
-1. Create Auth0 account at [auth0.com](https://auth0.com)
-2. Create a new application (Single Page Application)
-3. Configure callback URLs:
-   - **Allowed Callback URLs**: `http://localhost:3000`
-   - **Allowed Logout URLs**: `http://localhost:3000`
-   - **Allowed Web Origins**: `http://localhost:3000`
-4. Update `.env` with your Auth0 credentials
+1. Create a Clerk account and application (social sign-in works out of the box in development)
+2. Copy the application's **Publishable Key** into `client/.env` as `REACT_APP_CLERK_PUBLISHABLE_KEY`
+3. Keep the **Secret Key** in the root `.env` as `CLERK_SECRET_KEY` (used for server-side verification)
 
 ### MongoDB Configuration
 

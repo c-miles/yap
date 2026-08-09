@@ -1,11 +1,12 @@
 import React, { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { useAuth0 } from "@auth0/auth0-react";
+import { useUser } from "@clerk/react";
 import AuthenticationButton from "./AuthenticationButton";
 import WaveBackground from "./WaveBackground/WaveBackground";
 
 const LandingPage: React.FC = () => {
-  const { isAuthenticated } = useAuth0();
+  const { isSignedIn } = useUser();
+  const isAuthenticated = isSignedIn === true;
   const navigate = useNavigate();
 
   useEffect(() => {

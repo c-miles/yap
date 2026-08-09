@@ -10,4 +10,7 @@ export interface DashboardProps {
   userInfo: User | null;
   userExists: boolean | null;
   usernameError: string;
+  isAuthenticated: boolean;
+  isLoading: boolean;
+  onLogin: () => void;
 }
