@@ -2,10 +2,11 @@ import express from "express";
 import { uniqueNamesGenerator, adjectives, colors, animals } from "unique-names-generator";
 
 import { Room } from "../models/Room.js";
+import { requireAuthApi } from "../middleware/requireAuthApi.js";
 
 const router = express.Router();
 
-router.get("/find-by-name/:friendlyName", async (req, res) => {
+router.get("/find-by-name/:friendlyName", requireAuthApi, async (req, res) => {
   try {
     const friendlyName = req.params.friendlyName;
     const room = await Room.findOne({ friendlyName: friendlyName });
@@ -30,7 +31,7 @@ const generateFriendlyName = () => {
   });
 };
 
-router.post("/create", async (req, res) => {
+router.post("/create", requireAuthApi, async (req, res) => {
   try {
     let friendlyName;
     let attempts = 0;
