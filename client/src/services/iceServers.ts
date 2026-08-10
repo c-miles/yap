@@ -1,4 +1,5 @@
 import { API_BASE_URL } from "../config";
+import { getAuthToken } from "./authToken";
 
 export const STUN_FALLBACK: RTCIceServer[] = [
   { urls: "stun:stun.l.google.com:19302" },
@@ -32,7 +33,11 @@ export async function getIceServers(): Promise<RTCIceServer[]> {
 
   const fetchIceServers = async (): Promise<RTCIceServer[]> => {
     try {
-      const response = await fetch(`${API_BASE_URL}/turn-credentials`, { signal: timeoutSignal() });
+      const token = await getAuthToken();
+      const response = await fetch(`${API_BASE_URL}/turn-credentials`, {
+        signal: timeoutSignal(),
+        headers: token ? { Authorization: `Bearer ${token}` } : undefined,
+      });
       if (!response.ok) {
         throw new Error(`status ${response.status}`);
       }

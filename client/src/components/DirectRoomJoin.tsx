@@ -4,7 +4,7 @@ import { useClerk, useUser } from "@clerk/react";
 import { BeatLoader } from "react-spinners";
 import { isValidRoomNameFormat } from "../utils/roomNameGenerator";
 import RoomContainer from "./Room";
-import { API_BASE_URL } from "../config";
+import { authFetch } from "../services/authFetch";
 
 const DirectRoomJoin: React.FC = () => {
   const { roomId } = useParams<{ roomId: string }>();
@@ -50,7 +50,7 @@ const DirectRoomJoin: React.FC = () => {
     // friendly name in the URL — resolve it to the real room id
     (async () => {
       try {
-        const response = await fetch(`${API_BASE_URL}/rooms/find-by-name/${roomId}`);
+        const response = await authFetch(`/rooms/find-by-name/${roomId}`);
         if (!response.ok) {
           setError("Room not found or has expired");
           return;

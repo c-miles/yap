@@ -1,26 +1,33 @@
 import express from "express";
+import { getAuth } from "@clerk/express";
 import { User } from "../models/User.js";
+import { requireAuthApi } from "../middleware/requireAuthApi.js";
 
 const router = express.Router();
 
-router.get("/:id", async (req, res) => {
+router.get("/:id", requireAuthApi, async (req, res) => {
   try {
     const user = await User.findOne({ id: req.params.id });
-    if (user) {
-      res.json(user);
-    } else {
-      res.status(404).send("User not found");
+    if (!user) {
+      return res.status(404).send("User not found");
     }
+
+    if (getAuth(req).userId === req.params.id) {
+      return res.json(user);
+    }
+
+    res.json({ id: user.id, username: user.username, picture: user.picture });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
 });
 
-router.post("/", async (req, res) => {
+router.post("/", requireAuthApi, async (req, res) => {
   try {
-    const { email, picture, id, username } = req.body;
+    const { email, picture, username } = req.body;
+    const { userId } = getAuth(req);
     const newUser = new User({
-      id,
+      id: userId,
       email,
       picture,
       username,
@@ -33,14 +40,26 @@ router.post("/", async (req, res) => {
   }
 });
 
-router.put("/:id", async (req, res) => {
+router.put("/:id", requireAuthApi, async (req, res) => {
   try {
     const { id } = req.params;
-    const updates = req.body;
-
-    if (updates.username) {
-      updates.usernameLower = updates.username.toLowerCase();
+    if (getAuth(req).userId !== id) {
+      return res.status(403).json({ message: "Forbidden" });
     }
+    const { username } = req.body;
+
+    if (username === undefined) {
+      const user = await User.findOne({ id: id });
+      if (user) {
+        return res.json(user);
+      }
+      return res.status(404).send("User not found");
+    }
+
+    const updates = {
+      username,
+      usernameLower: username.toLowerCase(),
+    };
 
     const user = await User.findOneAndUpdate(
       { id: id },
@@ -58,7 +77,7 @@ router.put("/:id", async (req, res) => {
   }
 });
 
-router.get("/check-username/:username", async (req, res) => {
+router.get("/check-username/:username", requireAuthApi, async (req, res) => {
   try {
     const usernameLower = req.params.username.toLowerCase();
     const user = await User.findOne({ usernameLower: usernameLower });

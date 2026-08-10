@@ -1,12 +1,12 @@
 import { useCallback } from "react";
 import { useNavigate } from "react-router-dom";
-import { API_BASE_URL } from "../config";
+import { authFetch } from "../services/authFetch";
 
 const useRoomActions = () => {
   const navigate = useNavigate();
 
   const createRoom = () => {
-    fetch(`${API_BASE_URL}/rooms/create`, {
+    authFetch(`/rooms/create`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -25,7 +25,7 @@ const useRoomActions = () => {
 
   const joinRoom = useCallback(
     (roomName: string) => {
-      fetch(`${API_BASE_URL}/rooms/find-by-name/${roomName}`)
+      authFetch(`/rooms/find-by-name/${roomName}`)
         .then((response) => response.json())
         .then((data) => {
           if (data.roomId) {

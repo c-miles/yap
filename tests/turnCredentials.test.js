@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { fetchIceServers, STUN_FALLBACK } from "../services/turnCredentials.js";
+import { fetchIceServers, STUN_FALLBACK, CREDENTIAL_TTL_SECONDS } from "../services/turnCredentials.js";
 
 test("returns STUN fallback when credentials are not configured", async () => {
   const servers = await fetchIceServers({});
@@ -50,6 +50,7 @@ test("sends the key id in the URL and the token as a bearer header", async () =>
   await fetchIceServers({ keyId: "abc123", apiToken: "tok456", fetchFn });
   assert.match(seenUrl, /\/turn\/keys\/abc123\/credentials\/generate-ice-servers$/);
   assert.equal(seenOptions.headers.Authorization, "Bearer tok456");
+  assert.deepEqual(JSON.parse(seenOptions.body), { ttl: CREDENTIAL_TTL_SECONDS });
 });
 
 test("falls back to STUN when the provider errors", async () => {

@@ -3,7 +3,7 @@ export const STUN_FALLBACK = [
   { urls: "stun:stun1.l.google.com:19302" },
 ];
 
-const CREDENTIAL_TTL_SECONDS = 86400;
+export const CREDENTIAL_TTL_SECONDS = 7200;
 const FETCH_TIMEOUT_MS = 5000;
 
 // Mints ephemeral TURN credentials from Cloudflare Realtime. Never throws:

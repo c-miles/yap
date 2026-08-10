@@ -56,7 +56,8 @@ export const socketEvents = (io) => {
     socket.on("disconnect", () => handleLeave(socket));
     socket.on("leaveRoom", () => handleLeave(socket, { leaveChannel: true }));
 
-    socket.on("joinRoom", async ({ roomId, userId, username, profilePicture }) => {
+    socket.on("joinRoom", async ({ roomId, username, profilePicture }) => {
+      const userId = socket.data.userId;
       try {
         const participant = {
           userId,
@@ -104,7 +105,11 @@ export const socketEvents = (io) => {
       }
     });
 
-    socket.on("getRoomMessages", async ({ roomId }) => {
+    socket.on("getRoomMessages", async () => {
+      const roomId = registry.getRoom(socket.id);
+      if (!roomId) {
+        return;
+      }
       try {
         const messages = await Message.find({ roomId }).sort({ timestamp: 1 });
         socket.emit("roomMessages", messages);
@@ -113,7 +118,11 @@ export const socketEvents = (io) => {
       }
     });
 
-    socket.on("sendMessage", async ({ message, roomId, username }) => {
+    socket.on("sendMessage", async ({ message, username }) => {
+      const roomId = registry.getRoom(socket.id);
+      if (!roomId) {
+        return;
+      }
       try {
         const newMessage = new Message({ message, roomId, username });
         await newMessage.save();
