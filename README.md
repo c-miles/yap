@@ -1,233 +1,137 @@
-# Yap 🎥
+# Yap
 
-A modern 6-person video chat application built with WebRTC mesh networking. Connect face-to-face with up to 5 other people in high-quality peer-to-peer video calls with real-time messaging.
+Yap is a six-person video chat app. Each participant connects directly to every
+other participant over WebRTC, so audio and video flow peer-to-peer rather than
+through a central media server, with a lightweight Node server handling only
+sign-in, signaling, and chat history. Rooms are created and shared with
+human-readable names like `brave-blue-tiger`.
 
-![Video Chat Demo](https://img.shields.io/badge/WebRTC-Powered-blue)
-![React](https://img.shields.io/badge/React-18.2.0-blue)
-![Node.js](https://img.shields.io/badge/Node.js-ES6_Modules-green)
-![MongoDB](https://img.shields.io/badge/MongoDB-Database-green)
+## Features
 
-## ✨ Features
+- Up to six people per room over a WebRTC mesh (direct peer-to-peer connections)
+- Real-time text chat alongside the call
+- Per-participant camera and microphone toggles with connection-state indicators
+- Automatic reconnection and ICE recovery when a network blip drops a peer
+- Authentication and user accounts via Clerk
+- Human-readable room names, shareable by link
 
-- **6-Person Video Chat**: WebRTC mesh networking for direct peer-to-peer connections
-- **Real-time Messaging**: Integrated chat alongside video calls
-- **Modern Dark UI**: "Slate Studio" design system with Tailwind CSS
-- **Responsive Layout**: Dynamic video grid that adapts from 1-6 participants  
-- **Audio/Video Controls**: Toggle camera and microphone with visual feedback
-- **User Authentication**: Secure Clerk integration
-- **Human-Readable Room Names**: Auto-generated room names (e.g., "brave-blue-tiger")
-- **Mobile Responsive**: Works across desktop, tablet, and mobile devices
+## Tech stack
 
-## 🏗️ Architecture
+- Frontend: React 18, TypeScript, Tailwind CSS, Socket.IO client
+- Backend: Node.js, Express (ES modules), Socket.IO, Mongoose
+- Data: MongoDB
+- Auth: Clerk
+- Media: WebRTC for audio/video, Cloudflare TURN for NAT traversal
 
-### Tech Stack
-- **Frontend**: React 18 + TypeScript, Tailwind CSS, Clerk, Socket.IO Client
-- **Backend**: Node.js + Express (ES6 modules), MongoDB + Mongoose, Socket.IO
-- **Real-time**: WebRTC for video/audio, Socket.IO for signaling
-- **Database**: MongoDB with Mongoose ODM
-- **Deployment**: Render.com ready
+## Prerequisites
 
-### WebRTC Implementation
-- **Mesh Topology**: Each user connects directly to every other user (P2P)
-- **Signaling Server**: Socket.IO handles offer/answer/ICE candidate exchange
-- **Media Management**: Custom hooks for stream handling and peer connections
-- **Graceful Degradation**: Fallback UI when video is disabled
+- Node.js 20.9 or newer
+- A running MongoDB instance (local, or a MongoDB Atlas cluster)
+- A Clerk application (the free development instance is enough to run locally)
 
-## 🚀 Quick Start
+## Setup
 
-### Prerequisites
+1. Clone and install dependencies for both the server and the client:
 
-- **Node.js** (v16 or higher)
-- **MongoDB** (local or cloud instance)
-- **npm** or **yarn**
-
-### Environment Setup
-
-1. **Clone the repository**
    ```bash
    git clone <repository-url>
    cd yap
+   npm install
+   cd client && npm install && cd ..
    ```
 
-2. **Install dependencies**
-   ```bash
-   # Install backend dependencies
-   npm install
-   
-   # Install frontend dependencies
-   cd client
-   npm install
-   cd ..
-   ```
+2. Create the two environment files. The server reads the root `.env`; the
+   client reads `client/.env`. Templates are provided as `.env.example` in each
+   location.
 
-3. **Environment Variables**
-   
-   Create a `.env` file in the root directory (see `.env.example`):
+   Root `.env`:
+
    ```env
-   # MongoDB Connection
    MONGODB_URI=mongodb://127.0.0.1:27017/yap
+   CLERK_PUBLISHABLE_KEY=pk_test_...
+   CLERK_SECRET_KEY=sk_test_...
 
-   # Cloudflare TURN credentials (optional; STUN-only without them)
-   CLOUDFLARE_TURN_KEY_ID=your-turn-key-id
-   CLOUDFLARE_TURN_API_TOKEN=your-turn-api-token
+   # Optional. Without these, connections fall back to STUN only and will fail
+   # between some networks (mobile, strict NATs).
+   CLOUDFLARE_TURN_KEY_ID=...
+   CLOUDFLARE_TURN_API_TOKEN=...
    ```
 
-   And a `client/.env` (see `client/.env.example`):
+   `client/.env`:
+
    ```env
-   # Clerk publishable key (required for authentication)
-   REACT_APP_CLERK_PUBLISHABLE_KEY=pk_test_your-key
+   REACT_APP_CLERK_PUBLISHABLE_KEY=pk_test_...
+   REACT_APP_API_BASE_URL=http://localhost:3001
    ```
 
-4. **Database Setup**
-   
-   **Local MongoDB:**
+   The Clerk keys come from your Clerk application's API keys page. The
+   publishable key is public and appears in both files; the secret key stays in
+   the root `.env` only. `REACT_APP_API_BASE_URL` points the client at the local
+   server in development and should be left unset in production, where the server
+   serves the built client from the same origin.
+
+3. Start MongoDB if you are running it locally, then start the server and client
+   in separate terminals:
+
    ```bash
-   # Install MongoDB Community Edition
-   # macOS (with Homebrew)
-   brew install mongodb-community
-   brew services start mongodb-community
-   
-   # Linux (Ubuntu/Debian)
-   sudo apt-get install -y mongodb
-   sudo systemctl start mongod
-   
-   # Windows
-   # Download and install from: https://www.mongodb.com/try/download/community
+   npm start            # server on http://localhost:3001
    ```
-   
-   **Or use MongoDB Atlas (Cloud):**
-   - Create account at [MongoDB Atlas](https://www.mongodb.com/atlas)
-   - Create a cluster and get connection string
-   - Update `MONGODB_URI` in `.env` with your Atlas connection string
 
-### Running the Application
-
-1. **Start MongoDB** (if using local installation)
    ```bash
-   # macOS/Linux
-   mongod
-   
-   # Or if installed via Homebrew
-   brew services start mongodb-community
+   cd client && npm start   # client on http://localhost:3000
    ```
 
-2. **Start the backend server**
-   ```bash
-   npm start
-   ```
-   Server will run on `http://localhost:3001`
+Open `http://localhost:3000` and sign in to begin.
 
-3. **Start the frontend** (in a new terminal)
-   ```bash
-   cd client
-   npm start
-   ```
-   Client will run on `http://localhost:3000`
+## Usage
 
-4. **Access the application**
-   - Open `http://localhost:3000` in your browser
-   - Create or join a room to start video chatting!
+Creating a room: from the dashboard, choose "Start a room." You are taken
+straight into the call and given a room name such as `brave-blue-tiger`. Share
+that name, or the room's URL, with the people you want to invite.
 
-## 🛠️ Development
+Joining a room: choose "Join by code" and enter the room name, or open a room
+link directly. After signing in, you land in the call. A room holds up to six
+people; further joins are turned away.
 
-### Available Scripts
+During a call you can toggle your camera and microphone, open the chat panel to
+message everyone in the room, and leave to return to the dashboard. Each remote
+tile shows that participant's connection state, and dropped connections attempt
+to recover on their own.
 
-**Backend (root directory):**
+## How it works
+
+When you join a room, the server records your presence and tells the existing
+participants. Each of them opens a direct WebRTC connection to you, exchanging
+offers, answers, and ICE candidates through the Socket.IO signaling server.
+Once connected, audio and video travel directly between browsers. Chat messages
+and presence still go through the server.
+
+Because every pair of participants maintains its own connection, a six-person
+room is a mesh of connections and each browser encodes its video for every peer.
+This keeps the infrastructure simple and latency low, at the cost of client
+bandwidth and CPU, which is why rooms are capped at six.
+
+## Scripts
+
+Server (root directory):
+
 ```bash
-npm start          # Start the Node.js server
+npm start     # start the server
+npm test      # run server tests
 ```
 
-**Frontend (client directory):**
+Client (`client` directory):
+
 ```bash
-npm start          # Start development server
-npm run build      # Production build
-npm test           # Run tests in watch mode
+npm start     # start the development server
+npm run build # production build
+npm test      # run tests
 ```
 
-### Project Structure
+## Deployment
 
-```
-yap/
-├── server.js              # Main server entry point
-├── models/                # MongoDB schemas
-│   ├── User.js
-│   ├── Room.js
-│   └── Message.js
-├── routes/                # Express API routes
-│   ├── roomRoutes.js
-│   └── userRoutes.js
-├── sockets/               # Socket.IO event handlers
-│   └── socketEvents.js
-└── client/                # React frontend
-    ├── src/
-    │   ├── components/    # React components
-    │   │   ├── atoms/     # Base components
-    │   │   ├── molecules/ # Composite components
-    │   │   └── Room/      # Video chat components
-    │   ├── services/      # Socket.IO client
-    │   ├── types/         # TypeScript definitions
-    │   └── hooks/         # Custom React hooks
-    └── public/
-```
-
-### Key Components
-
-- **Room.tsx**: Main video chat interface with WebRTC implementation
-- **VideoGrid.tsx**: Dynamic layout system for 1-6 participants
-- **PeerConnectionManager.ts**: Manages multiple RTCPeerConnection instances
-- **socketEvents.js**: WebRTC signaling server and room management
-- **useMediaStream.ts**: Custom hook for camera/microphone control
-
-## 🔧 Configuration
-
-### Clerk Setup (Required for Authentication)
-
-Authentication is handled through [Clerk](https://clerk.com):
-
-1. Create a Clerk account and application (social sign-in works out of the box in development)
-2. Copy the application's **Publishable Key** into `client/.env` as `REACT_APP_CLERK_PUBLISHABLE_KEY`
-3. Keep the **Secret Key** in the root `.env` as `CLERK_SECRET_KEY` (used for server-side verification)
-
-### MongoDB Configuration
-
-The application expects MongoDB to be running on the default port (27017). You can customize this by updating the `MONGODB_URI` environment variable.
-
-## 🚢 Deployment
-
-This application can be deployed to any hosting platform that supports Node.js applications (Heroku, Railway, DigitalOcean, AWS, Render, etc.).
-
-**General deployment requirements:**
-- Node.js runtime environment
-- MongoDB database (local or cloud)
-- Environment variables configured
-- Static file serving for the React frontend
-
-**Build commands:**
-- Backend: `npm install` → `npm start`
-- Frontend: `cd client && npm install && npm run build`
-- Frontend build output: `client/build/`
-
-The frontend build uses `CI=false` flag to treat warnings as warnings rather than errors.
-
-## 🤝 Contributing
-
-1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add some amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
-
-## 📝 License
-
-This project is licensed under the MIT License - see the LICENSE file for details.
-
-## 🔗 Related Documentation
-
-- [WebRTC Documentation](https://developer.mozilla.org/en-US/docs/Web/API/WebRTC_API)
-- [Socket.IO Documentation](https://socket.io/docs/v4/)
-- [MongoDB Documentation](https://docs.mongodb.com/)
-- [React Documentation](https://react.dev/)
-
----
-
-**Built with ❤️ using WebRTC, React, and Node.js**
+The server serves the built client, so a deployment is a single Node service.
+Build the client with `cd client && npm run build`, then run `npm start` from the
+root. Set `MONGODB_URI`, the Clerk keys, and the Cloudflare TURN keys in the
+host's environment, and leave `REACT_APP_API_BASE_URL` unset so the client uses
+the same origin as the server.
