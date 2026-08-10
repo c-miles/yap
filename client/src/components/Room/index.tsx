@@ -100,11 +100,10 @@ const RoomContainer: React.FC = () => {
     if (!socket || !roomId) return;
     socket.emit("joinRoom", {
       roomId,
-      userId: localUserId,
       username: localUsername,
       profilePicture: localPicture,
     });
-  }, [socket, roomId, localUserId, localUsername, localPicture]);
+  }, [socket, roomId, localUsername, localPicture]);
 
   const hasJoinedRef = useRef(false);
 
@@ -132,11 +131,27 @@ const RoomContainer: React.FC = () => {
 
     // manager-level "reconnect" fires only on true RE-connections, never the
     // first connect — so the initial (buffered) join can't double-fire
+    let authRetries = 0;
+
     const handleReconnect = () => {
+      // a successful reconnect means auth (if it was retried) went through
+      authRetries = 0;
       if (hasJoinedRef.current) {
         // our old pcs are zombies (server forgot us) — reset so both sides build fresh
         resetAllPeers();
         emitJoinRoom();
+      }
+    };
+
+    // Socket.IO does NOT auto-reconnect after a middleware (auth) rejection —
+    // a token hiccup at reconnect time would otherwise freeze the room with
+    // no signal. Retry a bounded number of times before giving up.
+    const handleConnectError = (err: Error) => {
+      if (err.message === "unauthorized" && authRetries < 3) {
+        authRetries += 1;
+        setTimeout(() => socket.connect(), 1000 * authRetries);
+      } else if (err.message === "unauthorized") {
+        setRoomError("Lost your session. Please rejoin the room.");
       }
     };
 
@@ -190,6 +205,7 @@ const RoomContainer: React.FC = () => {
     };
 
     socket.io.on("reconnect", handleReconnect);
+    socket.on("connect_error", handleConnectError);
     socket.on("currentParticipants", handleCurrentParticipants);
     socket.on("userJoined", handleUserJoined);
     socket.on("userLeft", handleUserLeft);
@@ -200,6 +216,7 @@ const RoomContainer: React.FC = () => {
 
     return () => {
       socket.io.off("reconnect", handleReconnect);
+      socket.off("connect_error", handleConnectError);
       socket.off("currentParticipants", handleCurrentParticipants);
       socket.off("userJoined", handleUserJoined);
       socket.off("userLeft", handleUserLeft);

@@ -12,8 +12,10 @@ const MessageThreadContainer: React.FC<{
 
   useEffect(() => {
     if (socket && roomId) {
-      // Request existing room messages when component mounts
-      socket.emit("getRoomMessages", { roomId });
+      // Request existing room messages when component mounts.
+      // No payload needed: the server derives the room from its socket
+      // registry, not from anything we send.
+      socket.emit("getRoomMessages");
 
       const handleRoomMessages = (roomMessages: Message[]) => {
         setMessages(roomMessages);
@@ -35,14 +37,10 @@ const MessageThreadContainer: React.FC<{
 
   const handleSendMessage = (messageContent: string) => {
     if (messageContent.trim() && roomId && username) {
-      const newMessage = {
-        roomId,
-        username,
-        message: messageContent,
-        timestamp: new Date(),
-      };
       // no local append — the server echoes receiveMessage to everyone, us included
-      socket?.emit("sendMessage", newMessage);
+      // roomId/timestamp aren't sent: the server derives the room from its
+      // socket registry and stamps its own timestamp
+      socket?.emit("sendMessage", { message: messageContent, username });
     }
   };
 

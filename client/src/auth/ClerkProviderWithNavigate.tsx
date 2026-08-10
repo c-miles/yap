@@ -1,8 +1,22 @@
 import React from "react";
-import { ClerkProvider } from "@clerk/react";
+import { ClerkProvider, useAuth } from "@clerk/react";
 import { useNavigate } from "react-router-dom";
+import { setAuthTokenGetter } from "../services/authToken";
 
 const publishableKey = process.env.REACT_APP_CLERK_PUBLISHABLE_KEY;
+
+// Registers the Clerk token getter for authFetch/socket/iceServers, none of
+// which can use hooks. Must live inside ClerkProvider to have useAuth available.
+const AuthTokenBridge: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const { getToken } = useAuth();
+
+  React.useEffect(() => {
+    setAuthTokenGetter(() => getToken());
+    return () => setAuthTokenGetter(null);
+  }, [getToken]);
+
+  return <>{children}</>;
+};
 
 // Lives inside the Router so Clerk drives navigation through react-router
 // (CRA doesn't inline Clerk's VITE_* env convention, so the key is a prop).
@@ -59,7 +73,11 @@ const ClerkProviderWithNavigate: React.FC<{ children: React.ReactNode }> = ({ ch
     },
   };
 
-  return <ClerkProvider {...clerkProviderProps}>{children}</ClerkProvider>;
+  return (
+    <ClerkProvider {...clerkProviderProps}>
+      <AuthTokenBridge>{children}</AuthTokenBridge>
+    </ClerkProvider>
+  );
 };
 
 export default ClerkProviderWithNavigate;

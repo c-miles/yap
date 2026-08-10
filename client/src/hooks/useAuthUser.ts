@@ -2,7 +2,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 
 import { useUser } from "@clerk/react";
 import { User } from "../types/userTypes";
-import { API_BASE_URL } from "../config";
+import { authFetch } from "../services/authFetch";
 
 const useAuthUser = () => {
   const { user: clerkUser, isLoaded, isSignedIn } = useUser();
@@ -16,13 +16,12 @@ const useAuthUser = () => {
     if (!clerkUser) return "User not authenticated";
 
     try {
-      const response = await fetch(`${API_BASE_URL}/user/`, {
+      const response = await authFetch(`/user/`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           email: clerkUser.primaryEmailAddress?.emailAddress ?? null, // null for GitHub users without public email
           picture: clerkUser.imageUrl,
-          id: clerkUser.id,
           username,
         }),
       });
@@ -48,7 +47,7 @@ const useAuthUser = () => {
     setProfileError(false);
 
     try {
-      const response = await fetch(`${API_BASE_URL}/user/${clerkUser.id}`);
+      const response = await authFetch(`/user/${clerkUser.id}`);
       if (response.status === 404) {
         setUserExists(false);
       } else if (response.ok) {
@@ -91,8 +90,8 @@ const useAuthUser = () => {
 
   const checkUsernameAvailability = useCallback(async (username: string) => {
     try {
-      const response = await fetch(
-        `${API_BASE_URL}/user/check-username/${username}`
+      const response = await authFetch(
+        `/user/check-username/${username}`
       );
       if (!response.ok) {
         throw new Error("Failed to check username availability");
@@ -126,7 +125,7 @@ const useAuthUser = () => {
       if (!userInfo) return "User not found";
       
       try {
-        const response = await fetch(`${API_BASE_URL}/user/${userInfo.id}`, {
+        const response = await authFetch(`/user/${userInfo.id}`, {
           method: "PUT",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ username }),
