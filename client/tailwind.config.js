@@ -6,24 +6,43 @@ module.exports = {
   theme: {
     extend: {
       colors: {
-        // Slate Studio color palette
-        bg: '#0f172a',         // slate-900
-        surface: '#1e293b',    // slate-800
-        primary: '#475569',    // slate-600
-        'primary-hov': '#64748b', // slate-500
-        text: '#f8fafc',       // slate-50
-        'text-muted': '#cbd5e1',  // slate-300
+        bg: 'var(--bg)',
+        surface: 'var(--surface)',
+        'surface-raised': 'var(--surface-raised)',
+        border: 'var(--border)',
+        'border-subtle': 'var(--border-subtle)',
+        text: 'var(--text)',
+        'text-secondary': 'var(--text-secondary)',
+        'text-muted': 'var(--text-muted)',
+        primary: 'var(--primary)',
+        'primary-hov': 'var(--primary-hov)',
+        accent: 'var(--accent)',
+        'accent-hover': 'var(--accent-hover)',
+        'accent-fg': 'var(--accent-fg)',
+        danger: 'var(--danger)',
+        success: 'var(--success)',
+        warning: 'var(--warning)',
       },
       fontFamily: {
-        sans: ['Inter', 'system-ui', '-apple-system', 'sans-serif'],
+        sans: ['"Inter Variable"', 'Inter', 'system-ui', '-apple-system', 'sans-serif'],
+        display: ['"Bricolage Grotesque Variable"', '"Bricolage Grotesque"', 'system-ui', 'sans-serif'],
       },
-      fontSize: {
-        '2xl': '1.5rem',    // 24px
-        'xl': '1.25rem',    // 20px
-        'lg': '1.125rem',   // 18px
-        'base': '1rem',     // 16px
-        'sm': '0.875rem',   // 14px
-        'xs': '0.75rem',    // 12px
+      borderRadius: {
+        DEFAULT: '0.5rem',
+        lg: '0.75rem',
+        xl: '1rem',
+      },
+      transitionDuration: {
+        fast: '150ms',
+        base: '200ms',
+        slow: '300ms',
+      },
+      zIndex: {
+        dropdown: '1000',
+        sticky: '1100',
+        overlay: '1200',
+        modal: '1300',
+        toast: '1400',
       },
     },
   },

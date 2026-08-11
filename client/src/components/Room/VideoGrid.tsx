@@ -11,7 +11,6 @@ interface VideoGridProps {
   localAudioEnabled: boolean;
   participants: Map<string, Participant>;
   profilePicture?: string;
-  isMobile: boolean;
 }
 
 interface VideoElementProps {
@@ -121,8 +120,7 @@ const VideoGrid: React.FC<VideoGridProps> = ({
   localVideoEnabled,
   localAudioEnabled,
   participants,
-  profilePicture,
-  isMobile
+  profilePicture
 }) => {
   // Calculate total participants
   const totalParticipants = participants.size + 1;
@@ -160,7 +158,6 @@ const VideoGrid: React.FC<VideoGridProps> = ({
       <div
         className="video-grid"
         data-count={totalParticipants}
-        data-mobile={isMobile}
       >
         {allParticipants.map((participant) => (
           <VideoElement key={participant.userId} {...participant} />

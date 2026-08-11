@@ -159,7 +159,6 @@ const Room: React.FC<RoomProps> = ({
             localAudioEnabled={audioEnabled}
             participants={participants}
             profilePicture={profilePicture}
-            isMobile={isMobile}
           />
         </div>
 

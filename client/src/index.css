@@ -1,9 +1,37 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 @layer base {
+  :root {
+    /* neutrals (slate ramp) */
+    --bg: #0f172a;
+    --surface: #1e293b;
+    --surface-raised: #334155;
+    --border: #334155;
+    --border-subtle: #1e293b;
+    --text: #f8fafc;
+    --text-secondary: #cbd5e1;
+    --text-muted: #94a3b8;
+
+    /* legacy neutral — kept so un-migrated screen usages don't regress */
+    --primary: #475569;
+    --primary-hov: #64748b;
+
+    /* accent — teal "signal", used sparingly for CTAs/focus/live cues */
+    --accent: #2dd4bf;
+    --accent-hover: #14b8a6;
+    --accent-fg: #0f172a;
+
+    /* status */
+    --danger: #f87171;
+    --success: #34d399;
+    --warning: #fbbf24;
+
+    /* structure */
+    --navbar-h: 4rem;
+  }
+
   html, body {
     @apply h-full;
   }
@@ -25,5 +53,5 @@
 
 /* Focus ring styles for accessibility */
 .focus-ring {
-  @apply focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-slate-500;
+  @apply focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-accent;
 }
