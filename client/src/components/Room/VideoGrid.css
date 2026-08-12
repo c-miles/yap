@@ -1,222 +1,83 @@
-:root {
-  --grid-gap: 1rem;
-  --mobile-gap: 0.5rem;
-}
-
 .video-grid-container {
   width: 100%;
   height: 100%;
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 1rem;
+  padding: 16px;
+  padding-left: max(16px, env(safe-area-inset-left));
+  padding-right: max(16px, env(safe-area-inset-right));
+  padding-bottom: max(16px, env(safe-area-inset-bottom));
+  box-sizing: border-box;
 }
 
+/* Tile sizes and the row width come from JS (the gallery layout). Tiles wrap
+   into rows of `cols`; justify-content centers each row — including a short last
+   row — so odd counts don't leave a lopsided gap. */
 .video-grid {
-  display: grid;
-  gap: var(--grid-gap);
-  place-items: center;
-  place-content: center;
-  width: 100%;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-content: center;
   max-width: 100%;
   max-height: 100%;
 }
 
+/* Smoothly animate tile size as the layout changes — on join/leave and on
+   container resize alike. */
 .video-element {
   position: relative;
-  width: 100%;
-  height: 100%;
-  max-width: 350px;
-  max-height: 262px;
-  aspect-ratio: 4/3;
-  background-color: #1e293b;
-  border-radius: 8px;
+  min-width: 0;
+  min-height: 0;
+  background: var(--surface);
+  border-radius: 12px;
   overflow: hidden;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+  transition: width 150ms ease, height 150ms ease;
 }
 
-.video-grid[data-count="1"] {
-  grid-template-columns: 1fr;
-}
-
-.video-grid[data-count="2"] {
-  grid-template-columns: repeat(2, 1fr);
-}
-
-.video-grid[data-count="3"] {
-  grid-template-columns: repeat(3, 1fr);
-}
-
-.video-grid[data-count="4"] {
-  grid-template-columns: repeat(2, 1fr);
-  grid-template-rows: repeat(2, 1fr);
-}
-
-.video-grid[data-count="5"] {
-  grid-template-columns: repeat(3, 1fr);
-  grid-template-rows: repeat(2, 1fr);
-  grid-template-areas: 
-    "a b c"
-    "d e .";
-}
-
-.video-grid[data-count="6"] {
-  grid-template-columns: repeat(3, 1fr);
-  grid-template-rows: repeat(2, 1fr);
-}
-
-.video-grid[data-count="5"] .video-element:nth-child(1) { grid-area: a; }
-.video-grid[data-count="5"] .video-element:nth-child(2) { grid-area: b; }
-.video-grid[data-count="5"] .video-element:nth-child(3) { grid-area: c; }
-.video-grid[data-count="5"] .video-element:nth-child(4) { grid-area: d; }
-.video-grid[data-count="5"] .video-element:nth-child(5) { grid-area: e; }
-
-@media (max-width: 1024px) {
-  .video-element {
-    max-width: 280px;
-    max-height: 210px;
-  }
-}
-
-@media (max-width: 767px) {
-  .video-grid-container {
-    padding: var(--mobile-gap);
-  }
-  
-  .video-grid {
-    gap: var(--mobile-gap);
-    width: 100%;
-    place-content: start center;
-  }
-  
-  .video-element {
-    width: calc(50vw - 0.75rem);
-    max-width: calc(50vw - 0.75rem);
-    height: auto;
-  }
-  
-  .video-grid[data-count="2"],
-  .video-grid[data-count="3"],
-  .video-grid[data-count="4"],
-  .video-grid[data-count="5"],
-  .video-grid[data-count="6"] {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    grid-template-rows: auto;
-    grid-template-areas: none;
-  }
-  
-  .video-grid[data-count="5"] .video-element {
-    grid-area: auto;
-  }
-  
-  .video-grid[data-count="1"] {
-    grid-template-columns: 1fr;
-  }
-  
-  .video-grid[data-count="1"] .video-element {
-    width: 80vw;
-    max-width: 80vw;
-  }
-}
-
-@media (max-width: 480px) {
-  .video-element {
-    max-width: calc(50vw - 0.5rem);
-    max-height: calc((50vw - 0.5rem) * 0.75);
-  }
-}
-
-.video-stream {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
+.video-stream { width: 100%; height: 100%; object-fit: cover; }
 
 .video-placeholder {
-  width: 100%;
-  height: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background-color: #334155;
+  width: 100%; height: 100%;
+  display: flex; align-items: center; justify-content: center;
+  background-color: var(--surface-raised);
 }
 
-.profile-picture {
-  width: 80px;
-  height: 80px;
-  border-radius: 50%;
-  object-fit: cover;
-}
+.profile-picture { width: 80px; height: 80px; border-radius: 50%; object-fit: cover; }
 
 .avatar-placeholder {
-  width: 80px;
-  height: 80px;
-  border-radius: 50%;
-  background-color: #475569;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 2rem;
-  font-weight: bold;
-  color: #f8fafc;
+  width: 80px; height: 80px; border-radius: 50%;
+  background-color: var(--primary);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 2rem; font-weight: bold; color: var(--text);
 }
 
 .video-overlay {
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  right: 0;
+  position: absolute; bottom: 0; left: 0; right: 0;
   padding: 0.5rem;
-  background: linear-gradient(to top, rgba(0,0,0,0.8) 0%, transparent 100%);
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 0.5rem;
+  background: linear-gradient(to top, rgba(0, 0, 0, 0.8) 0%, transparent 100%);
+  display: flex; justify-content: space-between; align-items: center; gap: 0.5rem;
 }
 
 .username {
-  color: #f8fafc;
-  font-size: 0.875rem;
-  font-weight: 500;
-  text-shadow: 0 1px 2px rgba(0,0,0,0.5);
+  color: var(--text); font-size: 0.875rem; font-weight: 500;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
 }
 
-.media-indicators {
-  display: flex;
-  gap: 0.25rem;
-  align-items: center;
-}
+.media-indicators { display: flex; gap: 0.25rem; align-items: center; }
 
-.muted-indicator {
-  opacity: 0.9;
-  filter: drop-shadow(0 1px 2px rgba(0,0,0,0.5));
-}
+.muted-indicator { opacity: 0.9; filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.5)); }
 
 .connection-pill {
-  position: absolute;
-  top: 8px;
-  left: 8px;
-  padding: 2px 10px;
-  border-radius: 9999px;
+  position: absolute; top: 8px; left: 8px;
+  padding: 2px 10px; border-radius: 9999px;
   background: rgba(15, 23, 42, 0.85);
-  color: #cbd5e1;
-  font-size: 0.75rem;
-  z-index: 2;
+  color: var(--text-secondary); font-size: 0.75rem; z-index: 2;
 }
 
 @media (max-width: 480px) {
-  .username {
-    font-size: 0.7rem;
-  }
-
-  .profile-picture,
-  .avatar-placeholder {
-    width: 50px;
-    height: 50px;
-    font-size: 1.5rem;
-  }
-
-  .video-overlay {
-    padding: 0.25rem 0.5rem;
-  }
+  .username { font-size: 0.7rem; }
+  .profile-picture, .avatar-placeholder { width: 50px; height: 50px; font-size: 1.5rem; }
+  .video-overlay { padding: 0.25rem 0.5rem; }
 }

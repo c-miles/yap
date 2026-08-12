@@ -4,6 +4,14 @@ import "@testing-library/jest-dom";
 import VideoGrid from "./VideoGrid";
 import { Participant } from "./useRoomState";
 
+// Mock ResizeObserver since jsdom doesn't have it
+class ResizeObserverMock {
+  observe() {}
+  unobserve() {}
+  disconnect() {}
+}
+(global as any).ResizeObserver = ResizeObserverMock;
+
 // Minimal MediaStream stand-in; jsdom has no real MediaStream, and the
 // component only calls getVideoTracks() and identity-compares the object.
 function fakeStream(withVideo: boolean) {
@@ -39,7 +47,6 @@ const baseProps = {
   localVideoEnabled: false,
   localAudioEnabled: true,
   profilePicture: undefined,
-  isMobile: false,
 };
 
 test("attaches srcObject when the video element mounts with a video-bearing stream", () => {

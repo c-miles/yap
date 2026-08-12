@@ -1,7 +1,12 @@
 import React from "react";
 import { VolumeX } from "lucide-react";
 import { Participant } from "./useRoomState";
+import { useContainerSize } from "./useContainerSize";
+import { chooseAspectRatio, computeGridLayout } from "./gridLayout";
 import "./VideoGrid.css";
+
+const MAX_TILE_WIDTH = 960;
+const GRID_GAP = 12;
 
 interface VideoGridProps {
   localStream: MediaStream | null;
@@ -22,6 +27,7 @@ interface VideoElementProps {
   profilePicture?: string;
   isLocal: boolean;
   connectionState?: RTCPeerConnectionState;
+  style?: React.CSSProperties;
 }
 
 const CONNECTION_LABELS: Partial<Record<RTCPeerConnectionState, string>> = {
@@ -40,7 +46,8 @@ const VideoElement: React.FC<VideoElementProps> = ({
   audioEnabled,
   profilePicture,
   isLocal,
-  connectionState
+  connectionState,
+  style
 }) => {
   // callback ref on purpose: this <video> mounts late (only once a video track
   // exists), usually without the stream ref changing — an effect keyed on
@@ -63,9 +70,10 @@ const VideoElement: React.FC<VideoElementProps> = ({
   return (
     <div
       className="video-element"
+      style={style}
       data-user-id={userId}
-      role="img"
-      aria-label={`${username}${isLocal ? ' (you)' : ''} - ${videoEnabled ? 'Video on' : 'Video off'}, ${audioEnabled ? 'Audio on' : 'Audio off'}`}
+      role="group"
+      aria-label={`${username}${isLocal ? ' (you)' : ''} — ${videoEnabled ? 'video on' : 'video off'}, ${audioEnabled ? 'audio on' : 'audio off'}`}
     >
       {hasActiveVideo ? (
         <video
@@ -122,15 +130,9 @@ const VideoGrid: React.FC<VideoGridProps> = ({
   participants,
   profilePicture
 }) => {
-  // Calculate total participants
-  const totalParticipants = participants.size + 1;
+  const { ref: containerRef, size } = useContainerSize<HTMLDivElement>();
 
-  // Convert participants to array and sort
-  const participantArray = Array.from(participants.values()).sort((a, b) =>
-    a.userId.localeCompare(b.userId)
-  );
-
-  // Create unified participant list
+  // Create unified participant list with join order (Map insertion order is stable)
   const allParticipants = [
     {
       stream: localStream,
@@ -141,7 +143,7 @@ const VideoGrid: React.FC<VideoGridProps> = ({
       profilePicture: profilePicture,
       isLocal: true
     },
-    ...participantArray.map(p => ({
+    ...Array.from(participants.values()).map(p => ({
       stream: p.stream || null,
       userId: p.userId,
       username: p.username,
@@ -153,14 +155,21 @@ const VideoGrid: React.FC<VideoGridProps> = ({
     }))
   ];
 
+  const count = allParticipants.length;
+  const aspectRatio = chooseAspectRatio(size.width, size.height);
+  const layout = computeGridLayout(size.width, size.height, count, aspectRatio, GRID_GAP, MAX_TILE_WIDTH);
+
+  // Pin the flex container to exactly `cols` tiles wide. Full rows fill it flush;
+  // a short last row is centered by justify-content — the tiles stay a flat list
+  // (never change parent), so no tile remounts and re-attaches its video on reflow.
+  const rowWidth = layout.cols * layout.tileWidth + (layout.cols - 1) * GRID_GAP;
+  const tileStyle = { width: layout.tileWidth, height: layout.tileHeight };
+
   return (
-    <div className="video-grid-container">
-      <div
-        className="video-grid"
-        data-count={totalParticipants}
-      >
+    <div className="video-grid-container" ref={containerRef}>
+      <div className="video-grid" style={{ width: rowWidth, gap: `${GRID_GAP}px` }}>
         {allParticipants.map((participant) => (
-          <VideoElement key={participant.userId} {...participant} />
+          <VideoElement key={participant.userId} style={tileStyle} {...participant} />
         ))}
       </div>
     </div>
