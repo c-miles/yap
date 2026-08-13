@@ -5,6 +5,8 @@ import MessageThread from "../MessageThread";
 import ShareRoomModal from "../ShareRoomModal";
 import PermissionErrorModal from "../PermissionErrorModal";
 import VideoGrid from "./VideoGrid";
+import CallHeader from "./CallHeader";
+import { useChromeVisibility } from "./useChromeVisibility";
 import { Participant } from "./useRoomState";
 import "./Room.css";
 
@@ -70,6 +72,11 @@ const Room: React.FC<RoomProps> = ({
     window.addEventListener('resize', checkMobile);
     return () => window.removeEventListener('resize', checkMobile);
   }, []);
+
+  // Auto-hide only when chat is closed — an open drawer must not let the
+  // controls (Leave, mic) fade out from under the conversation.
+  const { visible, reveal, hide } = useChromeVisibility(isMobile && !isMessageThreadOpen);
+  const toggleChrome = () => (visible ? hide() : reveal());
 
   const toggleMessageThread = () => {
     setIsMessageThreadOpen(!isMessageThreadOpen);
@@ -149,8 +156,16 @@ const Room: React.FC<RoomProps> = ({
   // Main room layout
   return (
     <div className="app-layout">
+      <CallHeader
+        roomName={roomName}
+        participantCount={participants.size + 1}
+        roomId={roomId}
+        visible={visible}
+        onPointerDown={reveal}
+      />
+
       <div className={`room-container ${isMessageThreadOpen ? 'chat-open' : ''}`}>
-        <div className="video-area">
+        <div className="video-area" onPointerDown={toggleChrome}>
           <VideoGrid
             localStream={localStream}
             localUserId={localUserId}
@@ -163,36 +178,34 @@ const Room: React.FC<RoomProps> = ({
         </div>
 
         {isMobile && (
-          <div 
-            className={`chat-backdrop ${isMessageThreadOpen ? 'open' : ''}`} 
+          <div
+            className={`chat-backdrop ${isMessageThreadOpen ? 'open' : ''}`}
             onClick={toggleMessageThread}
             style={{ pointerEvents: isMessageThreadOpen ? 'auto' : 'none' }}
           />
         )}
-        
+
         <div className={`chat-drawer ${isMessageThreadOpen ? 'open' : ''}`}>
           {roomId && (
-            <MessageThread 
-              roomId={roomId} 
-              username={username || localUsername} 
-              socket={socket} 
+            <MessageThread
+              roomId={roomId}
+              username={username || localUsername}
+              socket={socket}
             />
           )}
         </div>
       </div>
 
-      <div className="app-footer">
+      <div className={`app-footer ${visible ? '' : 'app-footer--hidden'}`} onPointerDown={reveal}>
         <ControlBar
           audioEnabled={audioEnabled}
+          videoEnabled={localVideoEnabled}
           isMessageThreadOpen={isMessageThreadOpen}
           toggleAudio={toggleAudio}
-          toggleMessageThread={toggleMessageThread}
           toggleVideo={toggleVideo}
-          videoEnabled={localVideoEnabled}
-          onLeaveRoom={onLeaveRoom}
+          toggleMessageThread={toggleMessageThread}
           onShareRoom={handleShareRoom}
-          participantCount={participants.size + 1}
-          isMobile={isMobile}
+          onLeaveRoom={onLeaveRoom}
         />
       </div>
 
@@ -206,7 +219,7 @@ const Room: React.FC<RoomProps> = ({
           roomId={roomId}
         />
       )}
-      
+
       <PermissionErrorModal
         open={!!videoPermissionError}
         onClose={() => setVideoPermissionError(null)}

@@ -1,140 +1,104 @@
 import React from "react";
-import {
-  LogOut,
-  MessageSquare,
-  Mic,
-  MicOff,
-  Users,
-  Share2,
-  Video,
-  VideoOff,
-} from "lucide-react";
+import { LogOut, MessageSquare, Mic, MicOff, Share2, Video, VideoOff } from "lucide-react";
 import { ControlBarProps } from "../types/controlBarTypes";
-import { IconButton } from "./atoms";
+
+// A labeled anchor control (mic/camera). `off` drives the loud muted state:
+// aria-pressed + slashed icon + red fill = three redundant cues (never color alone).
+const AnchorButton: React.FC<{
+  label: string;
+  off: boolean;
+  onClick: () => void;
+  onIcon: React.ReactNode;
+  offIcon: React.ReactNode;
+}> = ({ label, off, onClick, onIcon, offIcon }) => (
+  <button
+    type="button"
+    onClick={onClick}
+    aria-pressed={off}
+    className={`focus-ring flex flex-col items-center justify-center gap-1 rounded-xl min-w-[64px] min-h-[48px] px-3 py-2 text-xs font-medium transition-colors
+      ${off ? "bg-danger text-white" : "bg-surface-raised text-text hover:brightness-125"}`}
+  >
+    <span aria-hidden="true">{off ? offIcon : onIcon}</span>
+    <span>{label}</span>
+  </button>
+);
+
+// An icon-only secondary control (share/chat) with a tooltip + accessible name.
+const IconControl: React.FC<{
+  label: string;
+  active?: boolean;
+  onClick: () => void;
+  children: React.ReactNode;
+}> = ({ label, active, onClick, children }) => (
+  <button
+    type="button"
+    onClick={onClick}
+    aria-label={label}
+    aria-pressed={active}
+    title={label}
+    className={`focus-ring flex items-center justify-center rounded-full min-w-[48px] min-h-[48px] transition-colors
+      ${active ? "bg-accent text-accent-fg" : "bg-surface-raised text-text hover:brightness-125"}`}
+  >
+    <span aria-hidden="true">{children}</span>
+  </button>
+);
 
 const ControlBar: React.FC<ControlBarProps> = ({
   audioEnabled,
-  isMessageThreadOpen,
-  onLeaveRoom,
-  onShareRoom,
-  participantCount,
-  toggleAudio,
-  toggleMessageThread,
-  toggleVideo,
   videoEnabled,
-  isMobile,
-}) => {
-  if (isMobile) {
-    return (
-      <div className="w-full bg-surface border-t border-slate-700 px-4 py-3">
-        <div className="flex items-center justify-between max-w-screen-sm mx-auto">
-          <div className="flex items-center gap-3">
-            <IconButton
-              onClick={toggleAudio}
-              variant={audioEnabled ? "default" : "danger"}
-              size="sm"
-            >
-              {audioEnabled ? <Mic size={18} /> : <MicOff size={18} />}
-            </IconButton>
-
-            <IconButton
-              onClick={toggleVideo}
-              variant={videoEnabled ? "default" : "danger"}
-              size="sm"
-            >
-              {videoEnabled ? <Video size={18} /> : <VideoOff size={18} />}
-            </IconButton>
-          </div>
-
-          {participantCount && (
-            <div className="flex items-center gap-2 px-2 py-1 bg-primary rounded-full">
-              <Users size={14} className="text-text" />
-              <span className="text-xs font-medium text-text">{participantCount}</span>
-            </div>
-          )}
-
-          <div className="flex items-center gap-3">
-            <IconButton
-              onClick={toggleMessageThread}
-              variant={isMessageThreadOpen ? "primary" : "default"}
-              size="sm"
-            >
-              <MessageSquare size={18} />
-            </IconButton>
-
-            {onLeaveRoom && (
-              <IconButton
-                onClick={onLeaveRoom}
-                variant="danger"
-                size="sm"
-              >
-                <LogOut size={18} />
-              </IconButton>
-            )}
-          </div>
-        </div>
+  isMessageThreadOpen,
+  toggleAudio,
+  toggleVideo,
+  toggleMessageThread,
+  onShareRoom,
+  onLeaveRoom,
+}) => (
+  <div className="w-full max-w-3xl mx-4 mb-4 rounded-2xl bg-surface border border-border shadow-lg px-4 py-3">
+    <div className="flex items-center justify-between gap-4">
+      {/* Anchor: mic + camera */}
+      <div className="flex items-center gap-3">
+        <AnchorButton
+          label="Mic"
+          off={!audioEnabled}
+          onClick={toggleAudio}
+          onIcon={<Mic size={20} />}
+          offIcon={<MicOff size={20} />}
+        />
+        <AnchorButton
+          label="Camera"
+          off={!videoEnabled}
+          onClick={toggleVideo}
+          onIcon={<Video size={20} />}
+          offIcon={<VideoOff size={20} />}
+        />
       </div>
-    );
-  }
 
-  // Desktop layout
-  return (
-    <div className="w-full bg-surface border-t border-slate-700 px-6 py-4">
-      <div className="flex items-center justify-between max-w-7xl mx-auto">
-          <div className="flex items-center min-w-[120px]">
-          {participantCount && (
-            <div className="flex items-center gap-2 px-3 py-1.5 bg-primary rounded-full">
-              <Users size={16} className="text-text" />
-              <span className="text-sm font-medium text-text">{participantCount}</span>
-            </div>
-          )}
-        </div>
-
-        <div className="flex items-center gap-3">
-          <IconButton
-            onClick={toggleAudio}
-            variant={audioEnabled ? "default" : "danger"}
-          >
-            {audioEnabled ? <Mic size={20} /> : <MicOff size={20} />}
-          </IconButton>
-
-          <IconButton
-            onClick={toggleVideo}
-            variant={videoEnabled ? "default" : "danger"}
-          >
-            {videoEnabled ? <Video size={20} /> : <VideoOff size={20} />}
-          </IconButton>
-
-          {onShareRoom && (
-            <IconButton
-              onClick={onShareRoom}
-              variant="primary"
-            >
-              <Share2 size={20} />
-            </IconButton>
-          )}
-
-          {onLeaveRoom && (
-            <IconButton
-              onClick={onLeaveRoom}
-              variant="danger"
-            >
-              <LogOut size={20} />
-            </IconButton>
-          )}
-        </div>
-
-        <div className="flex items-center justify-end min-w-[120px]">
-          <IconButton
-            onClick={toggleMessageThread}
-            variant={isMessageThreadOpen ? "primary" : "default"}
-          >
-            <MessageSquare size={20} />
-          </IconButton>
-        </div>
+      {/* Secondary: share + chat */}
+      <div className="flex items-center gap-3">
+        {onShareRoom && (
+          <IconControl label="Share" onClick={onShareRoom}>
+            <Share2 size={20} />
+          </IconControl>
+        )}
+        <IconControl label="Chat" active={isMessageThreadOpen} onClick={toggleMessageThread}>
+          <MessageSquare size={20} />
+        </IconControl>
       </div>
+
+      {/* Destructive: leave, isolated */}
+      {onLeaveRoom && (
+        <button
+          type="button"
+          onClick={onLeaveRoom}
+          className="focus-ring flex items-center gap-2 rounded-xl min-h-[48px] px-4 ml-2 text-sm font-semibold
+            bg-danger text-white hover:brightness-110 transition"
+        >
+          <LogOut size={18} aria-hidden="true" />
+          <span>Leave</span>
+        </button>
+      )}
     </div>
-  );
-};
+  </div>
+);
 
 export default ControlBar;

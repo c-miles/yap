@@ -1,12 +1,10 @@
 export type ControlBarProps = {
   audioEnabled: boolean;
+  videoEnabled: boolean;
   isMessageThreadOpen: boolean;
   toggleAudio: () => void;
-  toggleMessageThread: () => void;
   toggleVideo: () => void;
-  videoEnabled: boolean;
-  onLeaveRoom?: () => void;
-  participantCount?: number;
+  toggleMessageThread: () => void;
   onShareRoom?: () => void;
-  isMobile: boolean;
+  onLeaveRoom?: () => void;
 };

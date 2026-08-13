@@ -8,7 +8,7 @@ import Profile from "./components/Profile";
 
 const App = () => {
   const location = useLocation();
-  const showNavbar = location.pathname !== "/";
+  const showNavbar = location.pathname !== "/" && !location.pathname.startsWith("/room/");
 
   return (
     <>
