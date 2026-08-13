@@ -112,7 +112,7 @@ const VideoElement: React.FC<VideoElementProps> = ({
               title="Microphone muted"
               aria-label="Muted"
             >
-              <VolumeX size={18} className="text-red-400" />
+              <VolumeX size={18} className="text-white" />
             </span>
           )}
         </div>
