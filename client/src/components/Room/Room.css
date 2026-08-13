@@ -1,12 +1,14 @@
 .app-layout {
   position: fixed;
-  top: var(--navbar-h);
+  top: 0;
   left: 0;
   right: 0;
   bottom: 0;
+  height: 100vh;   /* fallback */
+  height: 100dvh;  /* tracks the mobile toolbar */
   display: flex;
   flex-direction: column;
-  background-color: #0f172a;
+  background-color: var(--bg);
   overflow: hidden;
 }
 
@@ -23,17 +25,39 @@
   align-items: center;
   justify-content: center;
   overflow: hidden;
+  /* header clearance on top, control-bar clearance on bottom */
+  padding-top: 4rem;
+  padding-bottom: 5.5rem;
+  box-sizing: border-box;
 }
 
 .app-footer {
-  flex-shrink: 0;
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
   z-index: 20;
+  display: flex;
+  justify-content: center;
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+  transition: opacity 300ms ease, right 300ms ease;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .app-footer {
+    transition: none;
+  }
+}
+
+.app-footer--hidden {
+  opacity: 0;
+  pointer-events: none;
 }
 
 @media (min-width: 768px) {
   .chat-drawer {
     position: absolute;
-    top: 5%;
+    top: 5rem; /* clear the immersive CallHeader overlay (~72px) so copy-invite doesn't overlap the drawer */
     right: 0;
     bottom: 0;
     width: 20rem;
@@ -62,6 +86,10 @@
   .room-container.chat-open .video-area {
     margin-right: 20rem;
   }
+
+  .room-container.chat-open ~ .app-footer {
+    right: 20rem;
+  }
 }
 
 @media (max-width: 767px) {
@@ -73,7 +101,7 @@
     top: auto;
     width: 100%;
     height: calc(38vh + 5rem);
-    max-height: calc(100vh - var(--navbar-h));
+    max-height: 100dvh;
     transform: translateY(100%);
     transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     border-left: none;

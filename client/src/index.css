@@ -27,9 +27,6 @@
     --danger: #f87171;
     --success: #34d399;
     --warning: #fbbf24;
-
-    /* structure */
-    --navbar-h: 4rem;
   }
 
   html, body {

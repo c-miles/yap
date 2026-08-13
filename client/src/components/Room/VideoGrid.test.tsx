@@ -92,3 +92,13 @@ test("shows no status pill for a healthy connection", () => {
   render(<VideoGrid {...baseProps} participants={parts} />);
   expect(screen.queryByText(/reconnecting|connection lost|connecting/i)).toBeNull();
 });
+
+test("a muted participant shows the muted indicator on their tile", () => {
+  const stream = fakeStream(true);
+  const parts = new Map([["remote-1", {
+    userId: "remote-1", username: "remote",
+    mediaState: { video: true, audio: false }, stream, connectionState: "connected",
+  } as Participant]]);
+  const { container } = render(<VideoGrid {...baseProps} participants={parts} />);
+  expect(container.querySelector('[data-user-id="remote-1"] .muted-indicator')).not.toBeNull();
+});
