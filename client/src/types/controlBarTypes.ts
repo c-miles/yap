@@ -7,4 +7,5 @@ export type ControlBarProps = {
   toggleMessageThread: () => void;
   onShareRoom?: () => void;
   onLeaveRoom?: () => void;
+  unreadCount?: number;
 };

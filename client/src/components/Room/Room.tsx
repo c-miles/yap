@@ -1,11 +1,13 @@
 import React, { useState, useEffect } from "react";
 import { AlertCircle } from "lucide-react";
 import ControlBar from "../ControlBar";
-import MessageThread from "../MessageThread";
+import MessageThread from "../MessageThread/MessageThread";
 import ShareRoomModal from "../ShareRoomModal";
 import PermissionErrorModal from "../PermissionErrorModal";
 import VideoGrid from "./VideoGrid";
 import CallHeader from "./CallHeader";
+import ChatToast from "./ChatToast";
+import { useChat } from "./useChat";
 import { useChromeVisibility } from "./useChromeVisibility";
 import { Participant } from "./useRoomState";
 import "./Room.css";
@@ -62,6 +64,9 @@ const Room: React.FC<RoomProps> = ({
   const [isMessageThreadOpen, setIsMessageThreadOpen] = useState(false);
   const [isShareModalOpen, setIsShareModalOpen] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
+
+  const { messages, sendMessage, unreadCount, latestUnread } =
+    useChat(socket, roomId, username || localUsername, isMessageThreadOpen);
 
   useEffect(() => {
     const checkMobile = () => {
@@ -175,6 +180,7 @@ const Room: React.FC<RoomProps> = ({
             participants={participants}
             profilePicture={profilePicture}
           />
+          <ChatToast message={latestUnread} />
         </div>
 
         {isMobile && (
@@ -186,13 +192,7 @@ const Room: React.FC<RoomProps> = ({
         )}
 
         <div className={`chat-drawer ${isMessageThreadOpen ? 'open' : ''}`}>
-          {roomId && (
-            <MessageThread
-              roomId={roomId}
-              username={username || localUsername}
-              socket={socket}
-            />
-          )}
+          <MessageThread messages={messages} onSendMessage={sendMessage} />
         </div>
       </div>
 
@@ -206,6 +206,7 @@ const Room: React.FC<RoomProps> = ({
           toggleMessageThread={toggleMessageThread}
           onShareRoom={handleShareRoom}
           onLeaveRoom={onLeaveRoom}
+          unreadCount={unreadCount}
         />
       </div>
 

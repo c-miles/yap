@@ -27,19 +27,29 @@ const AnchorButton: React.FC<{
 const IconControl: React.FC<{
   label: string;
   active?: boolean;
+  badge?: number;
   onClick: () => void;
   children: React.ReactNode;
-}> = ({ label, active, onClick, children }) => (
+}> = ({ label, active, badge = 0, onClick, children }) => (
   <button
     type="button"
     onClick={onClick}
-    aria-label={label}
+    aria-label={badge > 0 ? `${label}, ${badge} unread` : label}
     aria-pressed={active}
     title={label}
-    className={`focus-ring flex items-center justify-center rounded-full min-w-[48px] min-h-[48px] transition-colors
+    className={`relative focus-ring flex items-center justify-center rounded-full min-w-[48px] min-h-[48px] transition-colors
       ${active ? "bg-accent text-accent-fg" : "bg-surface-raised text-text hover:brightness-125"}`}
   >
     <span aria-hidden="true">{children}</span>
+    {badge > 0 && (
+      <span
+        aria-hidden="true"
+        className="absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1 rounded-full bg-accent text-accent-fg
+        text-[11px] font-semibold leading-[18px] text-center"
+      >
+        {badge > 9 ? "9+" : badge}
+      </span>
+    )}
   </button>
 );
 
@@ -52,6 +62,7 @@ const ControlBar: React.FC<ControlBarProps> = ({
   toggleMessageThread,
   onShareRoom,
   onLeaveRoom,
+  unreadCount,
 }) => (
   <div className="w-full max-w-3xl mx-4 mb-4 rounded-2xl bg-surface border border-border shadow-lg px-4 py-3">
     <div className="flex items-center justify-between gap-4">
@@ -80,7 +91,7 @@ const ControlBar: React.FC<ControlBarProps> = ({
             <Share2 size={20} />
           </IconControl>
         )}
-        <IconControl label="Chat" active={isMessageThreadOpen} onClick={toggleMessageThread}>
+        <IconControl label="Chat" active={isMessageThreadOpen} badge={unreadCount} onClick={toggleMessageThread}>
           <MessageSquare size={20} />
         </IconControl>
       </div>
