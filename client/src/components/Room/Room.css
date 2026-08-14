@@ -20,6 +20,7 @@
 }
 
 .video-area {
+  position: relative;
   flex: 1;
   display: flex;
   align-items: center;
@@ -29,6 +30,14 @@
   padding-top: 4rem;
   padding-bottom: 5.5rem;
   box-sizing: border-box;
+}
+
+.chat-toast {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  bottom: 6rem; /* above the control-bar clearance */
+  z-index: 15;  /* over the grid, under header/footer (z-20) */
 }
 
 .app-footer {
@@ -79,14 +88,6 @@
     visibility: visible;
   }
 
-  .video-area {
-    transition: margin-right 0.3s ease;
-  }
-  
-  .room-container.chat-open .video-area {
-    margin-right: 20rem;
-  }
-
   .room-container.chat-open ~ .app-footer {
     right: 20rem;
   }
@@ -120,11 +121,7 @@
     z-index: 30;
     visibility: visible;
   }
-  
-  .room-container.chat-open .video-area {
-    margin-right: 0;
-  }
-  
+
   .chat-backdrop {
     position: fixed;
     inset: 0;
