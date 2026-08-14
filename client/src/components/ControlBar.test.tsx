@@ -40,3 +40,15 @@ test("chat shows active state when the thread is open", () => {
   render(<ControlBar {...base} isMessageThreadOpen={true} />);
   expect(screen.getByRole("button", { name: /chat/i })).toHaveAttribute("aria-pressed", "true");
 });
+
+test("chat button shows the unread count when there are unreads", () => {
+  render(<ControlBar {...base} unreadCount={3} />);
+  const chat = screen.getByRole("button", { name: /chat/i });
+  expect(chat).toHaveTextContent("3");
+  expect(chat).toHaveAccessibleName(/3 unread/i);
+});
+
+test("no unread badge at zero", () => {
+  render(<ControlBar {...base} unreadCount={0} />);
+  expect(screen.getByRole("button", { name: /chat/i })).not.toHaveTextContent(/[0-9]/);
+});
