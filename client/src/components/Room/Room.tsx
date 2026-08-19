@@ -7,6 +7,7 @@ import PermissionErrorModal from "../PermissionErrorModal";
 import VideoGrid from "./VideoGrid";
 import CallHeader from "./CallHeader";
 import ChatToast from "./ChatToast";
+import WaitingForOthers from "./WaitingForOthers";
 import { useChat } from "./useChat";
 import { useChromeVisibility } from "./useChromeVisibility";
 import { Participant } from "./useRoomState";
@@ -20,9 +21,7 @@ interface RoomProps {
   localVideoEnabled: boolean;
   localVideoRef: React.RefObject<HTMLVideoElement>;
   participants: Map<string, Participant>;
-  permissionError: 'denied' | 'notfound' | 'other' | null;
   profilePicture?: string;
-  retryMediaAccess: () => void;
   retryVideoAccess: () => void;
   setVideoPermissionError: (error: 'denied' | 'notfound' | 'other' | null) => void;
   videoPermissionError: 'denied' | 'notfound' | 'other' | null;
@@ -33,6 +32,7 @@ interface RoomProps {
   toggleAudio: () => void;
   toggleVideo: () => void;
   onLeaveRoom: () => void;
+  onDashboard: () => void;
   username?: string;
   socket: any;
 }
@@ -45,9 +45,7 @@ const Room: React.FC<RoomProps> = ({
   localVideoEnabled,
   localVideoRef,
   participants,
-  permissionError,
   profilePicture,
-  retryMediaAccess,
   retryVideoAccess,
   setVideoPermissionError,
   videoPermissionError,
@@ -58,6 +56,7 @@ const Room: React.FC<RoomProps> = ({
   toggleAudio,
   toggleVideo,
   onLeaveRoom,
+  onDashboard,
   username,
   socket,
 }) => {
@@ -95,32 +94,6 @@ const Room: React.FC<RoomProps> = ({
     setIsShareModalOpen(false);
   };
 
-  // Show permission error modal
-  if (permissionError) {
-    return (
-      <div className="app-layout">
-        <div className="room-container">
-          <div className="video-area">
-            <div className="flex flex-col items-center justify-center gap-4">
-              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
-              <h3 className="text-lg font-medium text-text">
-                Preparing to join room...
-              </h3>
-            </div>
-          </div>
-        </div>
-        
-        <PermissionErrorModal
-          open={true}
-          onClose={onLeaveRoom}
-          onRetry={retryMediaAccess}
-          errorType={permissionError}
-          mediaType="audio"
-        />
-      </div>
-    );
-  }
-
   // Show error state
   if (roomError) {
     return (
@@ -133,6 +106,13 @@ const Room: React.FC<RoomProps> = ({
                 <h2 className="text-lg font-semibold text-red-400">Unable to join room</h2>
               </div>
               <p className="text-red-300">{roomError}</p>
+              <button
+                type="button"
+                onClick={onDashboard}
+                className="focus-ring mt-4 min-h-[44px] px-5 rounded-lg bg-surface-raised text-text hover:brightness-125 transition"
+              >
+                Back to dashboard
+              </button>
             </div>
           </div>
         </div>
@@ -164,7 +144,6 @@ const Room: React.FC<RoomProps> = ({
       <CallHeader
         roomName={roomName}
         participantCount={participants.size + 1}
-        roomId={roomId}
         visible={visible}
         onPointerDown={reveal}
       />
@@ -180,6 +159,13 @@ const Room: React.FC<RoomProps> = ({
             participants={participants}
             profilePicture={profilePicture}
           />
+          {participants.size === 0 && (
+            <div className="absolute inset-x-0 top-20 z-10 flex justify-center pointer-events-none px-4">
+              <div className="pointer-events-auto">
+                <WaitingForOthers roomName={roomName ?? roomId} />
+              </div>
+            </div>
+          )}
           <ChatToast message={latestUnread} />
         </div>
 
@@ -212,12 +198,11 @@ const Room: React.FC<RoomProps> = ({
 
       <video ref={localVideoRef} autoPlay muted playsInline style={{ display: "none" }} />
 
-      {roomName && roomId && (
+      {roomName && (
         <ShareRoomModal
           open={isShareModalOpen}
           onClose={handleCloseShareModal}
           roomName={roomName}
-          roomId={roomId}
         />
       )}
 

@@ -6,6 +6,7 @@ import {
   removeParticipant,
   setMediaState,
   listOtherParticipants,
+  resolveJoinMediaState,
 } from "../services/roomParticipants.js";
 
 const participant = {
@@ -148,4 +149,23 @@ test("listOtherParticipants excludes the requesting user and trims fields", asyn
 test("listOtherParticipants returns [] for a missing room", async () => {
   const model = fakeModel({ findById: [null] });
   assert.deepEqual(await listOtherParticipants(model, "r1", "u1"), []);
+});
+
+test("resolveJoinMediaState passes through well-formed input", () => {
+  assert.deepEqual(resolveJoinMediaState({ video: true, audio: false }), {
+    video: true,
+    audio: false,
+  });
+});
+
+test("resolveJoinMediaState defaults to video-off/audio-on when absent", () => {
+  assert.deepEqual(resolveJoinMediaState(undefined), { video: false, audio: true });
+  assert.deepEqual(resolveJoinMediaState(null), { video: false, audio: true });
+});
+
+test("resolveJoinMediaState normalizes malformed fields to booleans", () => {
+  assert.deepEqual(resolveJoinMediaState({ video: "yes" }), {
+    video: true,
+    audio: true,
+  });
 });

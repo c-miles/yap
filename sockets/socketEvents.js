@@ -7,6 +7,7 @@ import {
   removeParticipant,
   setMediaState,
   listOtherParticipants,
+  resolveJoinMediaState,
 } from "../services/roomParticipants.js";
 
 export const socketEvents = (io) => {
@@ -56,8 +57,10 @@ export const socketEvents = (io) => {
     socket.on("disconnect", () => handleLeave(socket));
     socket.on("leaveRoom", () => handleLeave(socket, { leaveChannel: true }));
 
-    socket.on("joinRoom", async ({ roomId, username, profilePicture }) => {
+    socket.on("joinRoom", async ({ roomId, username, profilePicture, mediaState }) => {
       const userId = socket.data.userId;
+      // pre-join mic/cam state from the green room; resolveJoinMediaState normalizes/guards absent or malformed input.
+      const joinedMediaState = resolveJoinMediaState(mediaState);
       try {
         const participant = {
           userId,
@@ -65,7 +68,7 @@ export const socketEvents = (io) => {
           joinedAt: new Date(),
           username,
           profilePicture,
-          mediaState: { video: false, audio: true }, // match client's initial state
+          mediaState: joinedMediaState,
         };
 
         const result = await upsertParticipant(Room, roomId, participant);
@@ -94,7 +97,7 @@ export const socketEvents = (io) => {
           userId,
           username,
           profilePicture,
-          mediaState: { video: false, audio: true },
+          mediaState: joinedMediaState,
         });
 
         const messages = await Message.find({ roomId }).sort({ timestamp: 1 });
