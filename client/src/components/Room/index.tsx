@@ -1,6 +1,7 @@
 import React, { useEffect, useCallback, useRef, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import Room from "./Room";
+import GreenRoom from "./GreenRoom";
 
 import useAuthUser from "../../hooks/useAuthUser";
 import useMediaStream from "./useMediaStream";
@@ -21,6 +22,7 @@ const RoomContainer: React.FC = () => {
   const state = location.state as LocationState;
 
   const [roomName] = useState<string | undefined>(state?.friendlyName);
+  const [phase, setPhase] = useState<"green-room" | "in-call">("green-room");
 
   // stable identity: the clerk user id. DirectRoomJoin guarantees we're
   // authenticated before this component renders.
@@ -78,10 +80,15 @@ const RoomContainer: React.FC = () => {
 
   const {
     audioEnabled,
+    devices,
     localVideoRef,
     permissionError,
     retryMediaAccess,
     retryVideoAccess,
+    selectCamera,
+    selectedCameraId,
+    selectedMicId,
+    selectMic,
     setVideoPermissionError,
     stream,
     streamReady,
@@ -89,12 +96,17 @@ const RoomContainer: React.FC = () => {
     toggleVideo,
     videoEnabled,
     videoPermissionError,
-  } = useMediaStream({ 
-    roomId, 
-    socket, 
+    deviceSwitchError,
+  } = useMediaStream({
+    roomId,
+    socket,
     userPicture: localPicture,
-    onStreamUpdated: updateLocalStream 
+    onStreamUpdated: updateLocalStream
   });
+
+  // A ref, not a closure: keeps emitJoinRoom's identity stable so toggling mic/cam doesn't re-register the socket effect's listeners. Refreshed every render.
+  const mediaStateRef = useRef({ video: videoEnabled, audio: audioEnabled });
+  mediaStateRef.current = { video: videoEnabled, audio: audioEnabled };
 
   const emitJoinRoom = useCallback(() => {
     if (!socket || !roomId) return;
@@ -102,6 +114,7 @@ const RoomContainer: React.FC = () => {
       roomId,
       username: localUsername,
       profilePicture: localPicture,
+      mediaState: mediaStateRef.current,
     });
   }, [socket, roomId, localUsername, localPicture]);
 
@@ -112,10 +125,9 @@ const RoomContainer: React.FC = () => {
     hasJoinedRef.current = false;
   }, [roomId]);
 
-  // Join room when socket and stream are ready (and no permission error)
+  // Join once past the green room, when socket + stream are ready and no permission error.
   useEffect(() => {
-    if (socket && roomId && localUserId && streamReady && stream && setLocalStream && !hasJoinedRef.current && !permissionError) {
-      // Set local stream in peer connection manager
+    if (phase === "in-call" && socket && roomId && localUserId && streamReady && stream && setLocalStream && !hasJoinedRef.current && !permissionError) {
       setLocalStream(stream);
 
       emitJoinRoom();
@@ -123,7 +135,7 @@ const RoomContainer: React.FC = () => {
       hasJoinedRef.current = true;
       setIsConnecting(true);
     }
-  }, [socket, roomId, localUserId, streamReady, stream, setLocalStream, setIsConnecting, permissionError, emitJoinRoom]);
+  }, [phase, socket, roomId, localUserId, streamReady, stream, setLocalStream, setIsConnecting, permissionError, emitJoinRoom]);
 
   // Handle socket events
   useEffect(() => {
@@ -254,18 +266,37 @@ const RoomContainer: React.FC = () => {
     }
   }, [toggleAudio, togglePeerAudio, audioEnabled, socket, roomId]);
 
-  // Handle leaving room
   const handleLeaveRoom = useCallback(() => {
     if (socket && roomId) {
       socket.emit("leaveRoom");
     }
-
-    // Reset join flag for next room
-    hasJoinedRef.current = false;
-
-    // Navigate back to dashboard
+    resetAllPeers();
+    // Navigating away unmounts RoomContainer, which stops the local tracks.
     navigate("/dashboard");
-  }, [socket, roomId, navigate]);
+  }, [socket, roomId, resetAllPeers, navigate]);
+
+  if (phase === "green-room") {
+    return (
+      <GreenRoom
+        stream={stream}
+        streamReady={streamReady}
+        permissionError={permissionError}
+        audioEnabled={audioEnabled}
+        videoEnabled={videoEnabled}
+        toggleAudio={toggleAudio}
+        toggleVideo={toggleVideo}
+        devices={devices}
+        selectedCameraId={selectedCameraId}
+        selectedMicId={selectedMicId}
+        selectCamera={selectCamera}
+        selectMic={selectMic}
+        deviceSwitchError={deviceSwitchError}
+        onRetry={retryMediaAccess}
+        roomName={roomName}
+        onJoin={() => setPhase("in-call")}
+      />
+    );
+  }
 
   return (
     <Room
@@ -276,9 +307,7 @@ const RoomContainer: React.FC = () => {
       localVideoEnabled={videoEnabled}
       localVideoRef={localVideoRef}
       participants={participants}
-      permissionError={permissionError}
       profilePicture={localPicture}
-      retryMediaAccess={retryMediaAccess}
       retryVideoAccess={retryVideoAccess}
       setVideoPermissionError={setVideoPermissionError}
       videoPermissionError={videoPermissionError}
@@ -289,6 +318,7 @@ const RoomContainer: React.FC = () => {
       toggleAudio={handleToggleAudio}
       toggleVideo={handleToggleVideo}
       onLeaveRoom={handleLeaveRoom}
+      onDashboard={() => navigate("/dashboard")}
       username={localUsername}
       socket={socket}
     />
