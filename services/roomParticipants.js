@@ -64,6 +64,14 @@ export async function setMediaState(RoomModel, roomId, userId, kind, enabled) {
   );
 }
 
+// Normalize client-supplied pre-join mic/cam state into { video, audio }. Guards absent/malformed/non-boolean input so a hostile client can't write arbitrary mediaState.
+export function resolveJoinMediaState(mediaState) {
+  if (!mediaState || typeof mediaState !== "object") {
+    return { video: false, audio: true };
+  }
+  return { video: !!mediaState.video, audio: mediaState.audio !== false };
+}
+
 export async function listOtherParticipants(RoomModel, roomId, userId) {
   const room = await RoomModel.findById(roomId);
   if (!room) {
