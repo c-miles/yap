@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { useUser } from "@clerk/react";
 import AuthenticationButton from "./AuthenticationButton";
 import WaveBackground from "./WaveBackground/WaveBackground";
+import { Heading, Text } from "./atoms";
 
 const LandingPage: React.FC = () => {
   const { isSignedIn } = useUser();
@@ -16,15 +17,15 @@ const LandingPage: React.FC = () => {
   }, [isAuthenticated, navigate]);
 
   return (
-    <div className="min-h-screen bg-slate-900 flex items-center justify-center px-4 relative overflow-hidden">
+    <div className="min-h-screen bg-bg flex items-center justify-center px-4 relative overflow-hidden">
       <WaveBackground />
-      <div className="text-center max-w-md mx-auto relative z-10 bg-slate-800/80 backdrop-blur-sm p-8 rounded-2xl shadow-2xl">
-        <h1 className="text-6xl font-bold tracking-tight text-text mb-4">yap</h1>
-        <p className="text-lg text-text-muted mb-6">
-          Connect and engage effortlessly with yap, your go-to video conferencing
-          solution.
-        </p>
-        
+      {/* --surface (#1e293b) at 80%. our color tokens are opaque var()s, so the /80 modifier can't apply here */}
+      <div className="text-center max-w-md mx-auto relative z-10 bg-[rgb(30_41_59_/_0.8)] backdrop-blur-sm p-8 rounded-2xl shadow-2xl">
+        <Heading level={1} size="2xl" className="tracking-tight mb-4">yap</Heading>
+        <Text variant="secondary" className="text-lg mb-6">
+          Drop-in video rooms for your group. Share a link and hop in, no install needed.
+        </Text>
+
         {!isAuthenticated && (
           <AuthenticationButton />
         )}
