@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { AlertCircle } from "lucide-react";
+import { Icon } from "../atoms";
 import ControlBar from "../ControlBar";
 import MessageThread from "../MessageThread/MessageThread";
 import ShareRoomModal from "../ShareRoomModal";
@@ -77,7 +78,7 @@ const Room: React.FC<RoomProps> = ({
     return () => window.removeEventListener('resize', checkMobile);
   }, []);
 
-  // Auto-hide only when chat is closed — an open drawer must not let the
+  // Auto-hide only when chat is closed, an open drawer must not let the
   // controls (Leave, mic) fade out from under the conversation.
   const { visible, reveal, hide } = useChromeVisibility(isMobile && !isMessageThreadOpen);
   const toggleChrome = () => (visible ? hide() : reveal());
@@ -100,12 +101,12 @@ const Room: React.FC<RoomProps> = ({
       <div className="app-layout">
         <div className="room-container">
           <div className="video-area">
-            <div className="max-w-md mx-auto p-6 rounded-lg border border-red-500/20 bg-red-500/10">
+            <div className="max-w-md mx-auto p-6 rounded-lg border border-danger bg-surface-raised">
               <div className="flex items-center gap-3 mb-3">
-                <AlertCircle className="text-red-500" size={24} />
-                <h2 className="text-lg font-semibold text-red-400">Unable to join room</h2>
+                <Icon icon={AlertCircle} className="text-danger" size="lg" />
+                <h2 className="text-lg font-semibold text-danger">Unable to join room</h2>
               </div>
-              <p className="text-red-300">{roomError}</p>
+              <p className="text-text-secondary">{roomError}</p>
               <button
                 type="button"
                 onClick={onDashboard}
@@ -145,6 +146,7 @@ const Room: React.FC<RoomProps> = ({
         roomName={roomName}
         participantCount={participants.size + 1}
         visible={visible}
+        chatOpen={isMessageThreadOpen}
         onPointerDown={reveal}
       />
 
@@ -178,7 +180,9 @@ const Room: React.FC<RoomProps> = ({
         )}
 
         <div className={`chat-drawer ${isMessageThreadOpen ? 'open' : ''}`}>
-          <MessageThread messages={messages} onSendMessage={sendMessage} />
+          <div className="chat-drawer-inner">
+            <MessageThread messages={messages} onSendMessage={sendMessage} />
+          </div>
         </div>
       </div>
 

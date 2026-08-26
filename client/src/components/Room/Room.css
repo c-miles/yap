@@ -1,4 +1,5 @@
 .app-layout {
+  --chat-drawer-width: 20rem;
   position: fixed;
   top: 0;
   left: 0;
@@ -22,6 +23,7 @@
 .video-area {
   position: relative;
   flex: 1;
+  min-width: 0; /* allow the column to shrink when the chat drawer pushes in */
   display: flex;
   align-items: center;
   justify-content: center;
@@ -52,44 +54,55 @@
   transition: opacity 300ms ease, right 300ms ease;
 }
 
-@media (prefers-reduced-motion: reduce) {
-  .app-footer {
-    transition: none;
-  }
-}
-
 .app-footer--hidden {
   opacity: 0;
   pointer-events: none;
 }
 
+/* base: fill the drawer (mobile bottom sheet) */
+.chat-drawer-inner {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
 @media (min-width: 768px) {
+  /* In-flow column: the drawer takes width from the video area, which
+     re-tiles into the space that is left. */
   .chat-drawer {
-    position: absolute;
-    top: 5rem; /* clear the immersive CallHeader overlay (~72px) so copy-invite doesn't overlap the drawer */
-    right: 0;
-    bottom: 0;
-    width: 20rem;
-    background-color: #1e293b;
-    border-left: 2px solid #475569;
-    border-top: 2px solid #475569;
-    border-radius: 1rem 0 0 0;
-    box-shadow: -4px 0 6px -1px rgba(0, 0, 0, 0.1), -2px 0 4px -1px rgba(0, 0, 0, 0.06);
-    transform: translateX(100%);
-    transition: transform 0.3s ease;
-    z-index: -1;
+    flex: none;
+    width: 0;
     overflow: hidden;
+    box-sizing: border-box;
+    transition: width 0.3s ease;
+    position: relative;
     visibility: hidden;
   }
 
   .chat-drawer.open {
-    transform: translateX(0);
-    z-index: 10;
+    width: var(--chat-drawer-width);
+    background-color: var(--surface);
+    border-left: 2px solid var(--primary);
+    border-radius: 1rem 0 0 1rem;
+    box-shadow: -4px 0 6px -1px rgba(0, 0, 0, 0.1), -2px 0 4px -1px rgba(0, 0, 0, 0.06);
     visibility: visible;
   }
 
+  /* fixed-width content: the animating drawer width clips/reveals this like a
+     curtain, so the chat never reflows mid-animation and the textarea always
+     measures at real width. */
+  .chat-drawer-inner {
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    width: var(--chat-drawer-width);
+  }
+
+  /* Keep the control bar centered under the video, not the whole viewport. */
   .room-container.chat-open ~ .app-footer {
-    right: 20rem;
+    right: var(--chat-drawer-width);
   }
 }
 
@@ -106,7 +119,7 @@
     transform: translateY(100%);
     transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     border-left: none;
-    border-top: 2px solid #475569;
+    border-top: 2px solid var(--primary);
     border-radius: 1rem 1rem 0 0;
     box-shadow: 0 -4px 6px -1px rgba(0, 0, 0, 0.1), 0 -2px 4px -1px rgba(0, 0, 0, 0.06);
     z-index: -1;
@@ -133,5 +146,12 @@
   
   .chat-backdrop.open {
     opacity: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .app-footer,
+  .chat-drawer {
+    transition: none;
   }
 }
