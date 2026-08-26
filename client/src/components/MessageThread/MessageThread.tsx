@@ -1,5 +1,6 @@
 import React, { useEffect, useRef } from "react";
 import { Send } from "lucide-react";
+import { Icon } from "../atoms";
 import { MessageThreadProps } from "../../types/messageTypes";
 
 const MessageThread: React.FC<MessageThreadProps> = ({ messages, onSendMessage }) => {
@@ -30,7 +31,9 @@ const MessageThread: React.FC<MessageThreadProps> = ({ messages, onSendMessage }
     const el = inputRef.current;
     if (el) {
       el.style.height = "auto";
-      el.style.height = `${Math.min(el.scrollHeight, 120)}px`;
+      const full = el.scrollHeight;
+      el.style.height = `${Math.min(full, 120)}px`;
+      el.style.overflowY = full > 120 ? "auto" : "hidden";
     }
   }, [newMessage]);
 
@@ -62,7 +65,7 @@ const MessageThread: React.FC<MessageThreadProps> = ({ messages, onSendMessage }
             className="p-2 bg-accent hover:bg-accent-hover text-accent-fg rounded-lg transition-colors flex-shrink-0"
             aria-label="Send message"
           >
-            <Send size={16} />
+            <Icon icon={Send} size="sm" />
           </button>
         </div>
       </div>

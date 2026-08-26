@@ -1,5 +1,5 @@
 import React from "react";
-import { render, screen } from "@testing-library/react";
+import { render, screen, fireEvent } from "@testing-library/react";
 import "@testing-library/jest-dom";
 import Dashboard from "./Dashboard";
 
@@ -32,4 +32,26 @@ test("shows a spinner only while auth state is still loading", () => {
 test("offers a retry instead of spinning forever when the profile fetch fails", () => {
   render(<Dashboard {...baseProps} isLoading={false} isAuthenticated={true} profileError={true} />);
   expect(screen.getByRole("button", { name: /try again/i })).toBeInTheDocument();
+});
+
+test("joining by code opens the modal and submits the typed room name", () => {
+  render(
+    <Dashboard
+      {...baseProps}
+      isLoading={false}
+      isAuthenticated={true}
+      userExists={true}
+      profileError={false}
+      userInfo={{ username: "ada" } as any}
+    />
+  );
+
+  fireEvent.click(screen.getByRole("button", { name: /join by code/i }));
+
+  const input = screen.getByPlaceholderText("Enter room name");
+  fireEvent.change(input, { target: { value: "my-room" } });
+
+  fireEvent.click(screen.getByRole("button", { name: /join room/i }));
+
+  expect(baseProps.handleJoinRoom).toHaveBeenCalledWith("my-room");
 });

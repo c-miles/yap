@@ -60,3 +60,26 @@ test("chooseAspectRatio: wide container is 16:9, narrow/portrait is square", () 
   expect(chooseAspectRatio(390, 800)).toBe(1); // portrait phone
   expect(chooseAspectRatio(500, 400)).toBe(1); // below the narrow breakpoint
 });
+
+test("two tiles never collapse to a single column on a landscape container", () => {
+  const l = computeGridLayout(1000, 400, 2, R, 12, Infinity);
+  expect(l.cols).toBe(2);
+  expect(l.rows).toBe(1);
+});
+
+test("two tiles stack into one column on a portrait container for bigger tiles", () => {
+  const l = computeGridLayout(400, 1000, 2, 1, 12, Infinity);
+  expect(l.cols).toBe(1);
+  expect(l.rows).toBe(2);
+});
+
+test("a square container (width == height) counts as landscape, so two tiles sit side by side", () => {
+  const l = computeGridLayout(700, 700, 2, R, 12, Infinity);
+  expect(l.cols).toBe(2);
+  expect(l.rows).toBe(1);
+});
+
+test("six tiles never form a single column", () => {
+  const l = computeGridLayout(400, 1200, 6, 1, 12, Infinity);
+  expect(l.cols).toBeGreaterThanOrEqual(2);
+});

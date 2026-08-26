@@ -21,7 +21,10 @@ export function chooseAspectRatio(containerWidth: number, containerHeight: numbe
 // Largest fixed-ratio tile that fits `count` tiles in the container. Tries each
 // column count and keeps the arrangement with the biggest tile area (the Jitsi
 // tile-view approach). Container-shape responsiveness falls out for free: a
-// wide container makes more columns win, a tall one makes more rows win.
+// wide container makes more columns win, a tall one makes more rows win. On a
+// landscape container 2+ tiles never use a single column (they sit side by
+// side). A portrait or narrow container may stack them for bigger tiles. A
+// square container counts as landscape.
 export function computeGridLayout(
   containerWidth: number,
   containerHeight: number,
@@ -30,10 +33,11 @@ export function computeGridLayout(
   gap: number,
   maxTileWidth: number
 ): GridLayout {
-  let best: GridLayout = { cols: 1, rows: count, tileWidth: 0, tileHeight: 0 };
+  const minCols = count > 1 && containerWidth >= containerHeight ? 2 : 1;
+  let best: GridLayout = { cols: minCols, rows: Math.ceil(count / minCols), tileWidth: 0, tileHeight: 0 };
   let bestArea = -1;
 
-  for (let cols = 1; cols <= count; cols++) {
+  for (let cols = minCols; cols <= count; cols++) {
     const rows = Math.ceil(count / cols);
     const availW = (containerWidth - gap * (cols - 1)) / cols;
     const availH = (containerHeight - gap * (rows - 1)) / rows;

@@ -1,5 +1,6 @@
 import React from "react";
 import { VolumeX } from "lucide-react";
+import { Icon } from "../atoms";
 import { Participant } from "./useRoomState";
 import { useContainerSize } from "./useContainerSize";
 import { chooseAspectRatio, computeGridLayout } from "./gridLayout";
@@ -50,7 +51,7 @@ const VideoElement: React.FC<VideoElementProps> = ({
   style
 }) => {
   // callback ref on purpose: this <video> mounts late (only once a video track
-  // exists), usually without the stream ref changing — an effect keyed on
+  // exists), usually without the stream ref changing, an effect keyed on
   // [stream] would miss the mount and leave the element unattached.
   const attachStream = React.useCallback(
     (el: HTMLVideoElement | null) => {
@@ -73,7 +74,7 @@ const VideoElement: React.FC<VideoElementProps> = ({
       style={style}
       data-user-id={userId}
       role="group"
-      aria-label={`${username}${isLocal ? ' (you)' : ''} — ${videoEnabled ? 'video on' : 'video off'}, ${audioEnabled ? 'audio on' : 'audio off'}`}
+      aria-label={`${username}${isLocal ? ' (you)' : ''}, ${videoEnabled ? 'video on' : 'video off'}, ${audioEnabled ? 'audio on' : 'audio off'}`}
     >
       {hasActiveVideo ? (
         <video
@@ -112,7 +113,7 @@ const VideoElement: React.FC<VideoElementProps> = ({
               title="Microphone muted"
               aria-label="Muted"
             >
-              <VolumeX size={18} className="text-white" />
+              <Icon icon={VolumeX} size="md" className="text-white" />
             </span>
           )}
         </div>
@@ -159,17 +160,35 @@ const VideoGrid: React.FC<VideoGridProps> = ({
   const aspectRatio = chooseAspectRatio(size.width, size.height);
   const layout = computeGridLayout(size.width, size.height, count, aspectRatio, GRID_GAP, MAX_TILE_WIDTH);
 
-  // Pin the flex container to exactly `cols` tiles wide. Full rows fill it flush;
-  // a short last row is centered by justify-content — the tiles stay a flat list
-  // (never change parent), so no tile remounts and re-attaches its video on reflow.
-  const rowWidth = layout.cols * layout.tileWidth + (layout.cols - 1) * GRID_GAP;
+  // Explicit grid columns (count and width from JS) keep the column count
+  // structural, so a container resize can never reflow tiles into a stacked
+  // column. Tiles stay a flat list (parent never changes), so no tile remounts
+  // and re-attaches its video.
+  const gridStyle = {
+    gridTemplateColumns: `repeat(${layout.cols}, ${layout.tileWidth}px)`,
+    gap: `${GRID_GAP}px`,
+  };
   const tileStyle = { width: layout.tileWidth, height: layout.tileHeight };
+
+  // Center a lone trailing tile (e.g. 3 people fill a 2x2 with one in the last
+  // row); the grid would otherwise pin it to the left. Multi-tile short rows
+  // stay left-aligned.
+  const lastRowStart = (layout.rows - 1) * layout.cols;
+  const lastRowCount = count - lastRowStart;
+  const loneTileOffset =
+    layout.rows > 1 && lastRowCount === 1
+      ? ((layout.cols - 1) * (layout.tileWidth + GRID_GAP)) / 2
+      : 0;
 
   return (
     <div className="video-grid-container" ref={containerRef}>
-      <div className="video-grid" style={{ width: rowWidth, gap: `${GRID_GAP}px` }}>
-        {allParticipants.map((participant) => (
-          <VideoElement key={participant.userId} style={tileStyle} {...participant} />
+      <div className="video-grid" style={gridStyle}>
+        {allParticipants.map((participant, i) => (
+          <VideoElement
+            key={participant.userId}
+            style={i === lastRowStart && loneTileOffset ? { ...tileStyle, marginLeft: loneTileOffset } : tileStyle}
+            {...participant}
+          />
         ))}
       </div>
     </div>

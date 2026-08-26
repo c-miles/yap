@@ -16,7 +16,7 @@ const DashboardCard: React.FC<DashboardCardProps> = ({
   return (
     <button
       onClick={onClick}
-      className="w-full p-8 bg-surface border border-slate-700 rounded-lg hover:scale-105 hover:border-slate-600 transition-all duration-150 text-left group"
+      className="w-full p-8 bg-surface border border-border rounded-lg hover:scale-105 hover:border-primary transition-all duration-150 text-left group"
     >
       <div className="flex flex-col items-center text-center gap-4">
         <div className="w-20 h-20 bg-primary rounded-full flex items-center justify-center group-hover:bg-primary-hov transition-colors">
