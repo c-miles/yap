@@ -20,7 +20,7 @@
   left: 0;
   width: 0.5rem;
   height: 0.5rem;
-  background: #1e293b; /* Slate-800 for the cursor dot */
+  background: var(--surface); /* cursor dot */
   border-radius: 50%;
   transform: translate3d(calc(var(--x) - 50%), calc(var(--y) - 50%), 0);
   will-change: transform;
@@ -44,7 +44,7 @@
 
 .wave-line {
   fill: none;
-  stroke: #1e293b; /* Slate-800 for the wave lines */
+  stroke: var(--surface);
   stroke-width: 1px;
   opacity: 0.6;
 }

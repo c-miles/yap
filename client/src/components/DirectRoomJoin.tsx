@@ -22,7 +22,7 @@ const DirectRoomJoin: React.FC = () => {
     if (!isLoaded) return;
 
     if (!isSignedIn) {
-      // used to point at /api/auth/login, a route this app never had —
+      // used to point at /api/auth/login, a route this app never had,
       // logged-out visitors just spun forever
       const returnTo = `/room/${roomId ?? ""}`;
       clerk.redirectToSignIn({
@@ -47,7 +47,7 @@ const DirectRoomJoin: React.FC = () => {
       return;
     }
 
-    // friendly name in the URL — resolve it to the real room id
+    // friendly name in the URL, resolve it to the real room id
     (async () => {
       try {
         const response = await authFetch(`/rooms/find-by-name/${roomId}`);
@@ -75,7 +75,7 @@ const DirectRoomJoin: React.FC = () => {
   if (error) {
     return (
       <div className="flex flex-col items-center justify-center h-screen gap-4">
-        <h2 className="text-2xl font-semibold text-red-500">
+        <h2 className="text-2xl font-semibold text-danger">
           {error}
         </h2>
         <p className="text-text-muted">
@@ -87,7 +87,7 @@ const DirectRoomJoin: React.FC = () => {
 
   return (
     <div className="flex flex-col items-center justify-center h-screen gap-4">
-      <BeatLoader color="#64748b" />
+      <BeatLoader color="var(--primary-hov)" />
       <h3 className="text-lg font-medium text-text">
         {!isLoaded ? "Checking authentication..." : "Joining room..."}
       </h3>

@@ -10,7 +10,7 @@ const Input: React.FC<InputProps> = ({
   ...props 
 }) => {
   const baseClasses = 'w-full px-4 py-2 bg-surface text-text border rounded-md transition-base focus:outline-none focus:ring-2 focus:ring-accent focus:ring-opacity-75 focus:border-transparent';
-  const errorClasses = error ? 'border-red-500' : 'border-border';
+  const errorClasses = error ? 'border-danger' : 'border-border';
   
   return (
     <div className="w-full">
@@ -19,7 +19,7 @@ const Input: React.FC<InputProps> = ({
         {...props}
       />
       {error && (
-        <p className="mt-1 text-sm text-red-500">{error}</p>
+        <p className="mt-1 text-sm text-danger">{error}</p>
       )}
     </div>
   );
