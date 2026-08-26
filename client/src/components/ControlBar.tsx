@@ -1,5 +1,6 @@
 import React from "react";
 import { LogOut, MessageSquare, Mic, MicOff, Share2, Video, VideoOff } from "lucide-react";
+import { Icon, Badge } from "./atoms";
 import { ControlBarProps } from "../types/controlBarTypes";
 
 // A labeled anchor control (mic/camera). `off` drives the loud muted state:
@@ -42,13 +43,14 @@ const IconControl: React.FC<{
   >
     <span aria-hidden="true">{children}</span>
     {badge > 0 && (
-      <span
+      <Badge
+        variant="accent"
+        size="sm"
         aria-hidden="true"
-        className="absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1 rounded-full bg-accent text-accent-fg
-        text-[11px] font-semibold leading-[18px] text-center"
+        className="absolute -top-1 -right-1 min-w-[18px] h-[18px]"
       >
         {badge > 9 ? "9+" : badge}
-      </span>
+      </Badge>
     )}
   </button>
 );
@@ -72,15 +74,15 @@ const ControlBar: React.FC<ControlBarProps> = ({
           label="Mic"
           off={!audioEnabled}
           onClick={toggleAudio}
-          onIcon={<Mic size={20} />}
-          offIcon={<MicOff size={20} />}
+          onIcon={<Icon icon={Mic} size="md" />}
+          offIcon={<Icon icon={MicOff} size="md" />}
         />
         <AnchorButton
           label="Camera"
           off={!videoEnabled}
           onClick={toggleVideo}
-          onIcon={<Video size={20} />}
-          offIcon={<VideoOff size={20} />}
+          onIcon={<Icon icon={Video} size="md" />}
+          offIcon={<Icon icon={VideoOff} size="md" />}
         />
       </div>
 
@@ -88,11 +90,11 @@ const ControlBar: React.FC<ControlBarProps> = ({
       <div className="flex items-center gap-3">
         {onShareRoom && (
           <IconControl label="Share" onClick={onShareRoom}>
-            <Share2 size={20} />
+            <Icon icon={Share2} size="md" />
           </IconControl>
         )}
         <IconControl label="Chat" active={isMessageThreadOpen} badge={unreadCount} onClick={toggleMessageThread}>
-          <MessageSquare size={20} />
+          <Icon icon={MessageSquare} size="md" />
         </IconControl>
       </div>
 
@@ -104,7 +106,7 @@ const ControlBar: React.FC<ControlBarProps> = ({
           className="focus-ring flex items-center gap-2 rounded-xl min-h-[48px] px-4 ml-2 text-sm font-semibold
             bg-danger text-white hover:brightness-110 transition"
         >
-          <LogOut size={18} aria-hidden="true" />
+          <Icon icon={LogOut} size="md" aria-hidden="true" />
           <span>Leave</span>
         </button>
       )}

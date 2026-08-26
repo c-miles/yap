@@ -52,3 +52,10 @@ test("no unread badge at zero", () => {
   render(<ControlBar {...base} unreadCount={0} />);
   expect(screen.getByRole("button", { name: /chat/i })).not.toHaveTextContent(/[0-9]/);
 });
+
+test("chat button click fires toggleMessageThread", () => {
+  const toggleMessageThread = jest.fn();
+  render(<ControlBar {...base} toggleMessageThread={toggleMessageThread} />);
+  fireEvent.click(screen.getByRole("button", { name: /chat/i }));
+  expect(toggleMessageThread).toHaveBeenCalled();
+});

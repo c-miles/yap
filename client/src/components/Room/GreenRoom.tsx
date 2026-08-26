@@ -1,5 +1,6 @@
 import React, { useCallback } from "react";
 import { ChevronDown, Mic, MicOff, ShieldAlert, Video, VideoOff } from "lucide-react";
+import { Icon } from "../atoms";
 import { useMicLevel } from "./useMicLevel";
 
 interface GreenRoomProps {
@@ -68,8 +69,9 @@ const DeviceSelect: React.FC<{
           </option>
         ))}
       </select>
-      <ChevronDown
-        size={18}
+      <Icon
+        icon={ChevronDown}
+        size="sm"
         aria-hidden="true"
         className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-text-secondary"
       />
@@ -124,14 +126,14 @@ const GreenRoom: React.FC<GreenRoomProps> = ({
           />
         ) : (
           <div className="w-full h-full flex flex-col items-center justify-center gap-2 text-text-secondary">
-            <VideoOff size={32} aria-hidden="true" />
+            <Icon icon={VideoOff} size="xl" aria-hidden="true" />
             <span className="text-sm">Camera off</span>
           </div>
         )}
       </div>
 
       <div className="w-full max-w-md flex items-center gap-3">
-        <Mic size={18} className="text-text-secondary shrink-0" aria-hidden="true" />
+        <Icon icon={Mic} size="sm" className="text-text-secondary shrink-0" aria-hidden="true" />
         <div
           role="meter"
           aria-label="Microphone level"
@@ -157,7 +159,7 @@ const GreenRoom: React.FC<GreenRoomProps> = ({
 
           {deviceSwitchError && (
             <p className="flex items-center gap-2 text-danger text-sm max-w-md">
-              <ShieldAlert size={18} aria-hidden="true" />
+              <Icon icon={ShieldAlert} size="sm" aria-hidden="true" />
               {deviceSwitchError}
             </p>
           )}
@@ -167,15 +169,15 @@ const GreenRoom: React.FC<GreenRoomProps> = ({
               label="Mic"
               off={!audioEnabled}
               onClick={toggleAudio}
-              onIcon={<Mic size={20} />}
-              offIcon={<MicOff size={20} />}
+              onIcon={<Icon icon={Mic} size="md" />}
+              offIcon={<Icon icon={MicOff} size="md" />}
             />
             <ToggleButton
               label="Camera"
               off={!videoEnabled}
               onClick={toggleVideo}
-              onIcon={<Video size={20} />}
-              offIcon={<VideoOff size={20} />}
+              onIcon={<Icon icon={Video} size="md" />}
+              offIcon={<Icon icon={VideoOff} size="md" />}
             />
           </div>
         </>
@@ -184,7 +186,7 @@ const GreenRoom: React.FC<GreenRoomProps> = ({
       {permissionError ? (
         <div className="flex flex-col items-center gap-3 max-w-md">
           <p className="flex items-center gap-2 text-danger text-sm">
-            <ShieldAlert size={18} aria-hidden="true" />
+            <Icon icon={ShieldAlert} size="sm" aria-hidden="true" />
             {PERMISSION_MESSAGES[permissionError]}
           </p>
           <button
