@@ -11,19 +11,17 @@
   box-sizing: border-box;
 }
 
-/* Tile sizes and the row width come from JS (the gallery layout). Tiles wrap
-   into rows of `cols`; justify-content centers each row — including a short last
-   row — so odd counts don't leave a lopsided gap. */
+/* Tile sizes and the column count come from JS (the gallery layout) and drive
+   an explicit CSS grid, so the column layout is structural and never reflows on
+   resize. The video area clips any brief overflow. */
 .video-grid {
-  display: flex;
-  flex-wrap: wrap;
+  display: grid;
   justify-content: center;
   align-content: center;
-  max-width: 100%;
-  max-height: 100%;
+  flex-shrink: 0; /* It is a flex child of the container, so hold width and do not squeeze */
 }
 
-/* Smoothly animate tile size as the layout changes — on join/leave and on
+/* Smoothly animate tile size as the layout changes, on join/leave and on
    container resize alike. */
 .video-element {
   position: relative;
@@ -74,6 +72,7 @@
   padding: 4px;
   border-radius: 9999px;
   background: var(--danger);
+  /* literal white: sits on live video, not a themed surface */
   color: #fff;
   filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.5));
 }
