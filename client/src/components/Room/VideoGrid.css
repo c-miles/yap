@@ -63,7 +63,8 @@
   text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
 }
 
-.media-indicators { display: flex; gap: 0.25rem; align-items: center; }
+/* 28px = the muted pill's height, so the band doesn't jump when it shows */
+.media-indicators { display: flex; gap: 0.25rem; align-items: center; min-height: 28px; }
 
 .muted-indicator {
   display: inline-flex;
