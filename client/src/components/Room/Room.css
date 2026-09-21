@@ -75,18 +75,23 @@
     width: 0;
     overflow: hidden;
     box-sizing: border-box;
-    transition: width 0.3s ease;
     position: relative;
+    background-color: var(--surface);
+    border-left: 0 solid var(--primary);
+    border-radius: 1rem 0 0 1rem;
     visibility: hidden;
+    /* visibility waits out the width transition so closing doesn't pop */
+    transition: width 0.3s ease, border-left-width 0.3s ease, box-shadow 0.3s ease,
+      visibility 0s linear 0.3s;
   }
 
   .chat-drawer.open {
     width: var(--chat-drawer-width);
-    background-color: var(--surface);
-    border-left: 2px solid var(--primary);
-    border-radius: 1rem 0 0 1rem;
+    border-left-width: 2px;
     box-shadow: -4px 0 6px -1px rgba(0, 0, 0, 0.1), -2px 0 4px -1px rgba(0, 0, 0, 0.06);
     visibility: visible;
+    transition: width 0.3s ease, border-left-width 0.3s ease, box-shadow 0.3s ease,
+      visibility 0s;
   }
 
   /* fixed-width content: the animating drawer width clips/reveals this like a
@@ -117,7 +122,9 @@
     height: calc(38vh + 5rem);
     max-height: 100dvh;
     transform: translateY(100%);
-    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    /* closing: stay visible and on top until the sheet has slid away */
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+      visibility 0s linear 0.3s, z-index 0s linear 0.3s;
     border-left: none;
     border-top: 2px solid var(--primary);
     border-radius: 1rem 1rem 0 0;
@@ -133,6 +140,7 @@
     transform: translateY(5rem);
     z-index: 30;
     visibility: visible;
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), visibility 0s, z-index 0s;
   }
 
   .chat-backdrop {
@@ -151,7 +159,8 @@
 
 @media (prefers-reduced-motion: reduce) {
   .app-footer,
-  .chat-drawer {
+  .chat-drawer,
+  .chat-drawer.open {
     transition: none;
   }
 }
