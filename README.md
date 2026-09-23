@@ -134,4 +134,6 @@ The server serves the built client, so a deployment is a single Node service.
 Build the client with `cd client && npm run build`, then run `npm start` from the
 root. Set `MONGODB_URI`, the Clerk keys, and the Cloudflare TURN keys in the
 host's environment, and leave `REACT_APP_API_BASE_URL` unset so the client uses
-the same origin as the server.
+the same origin as the server. When serving from a custom domain, set `APP_URL`
+to it (e.g. `https://yap.anomaly-labs.com`) so the server accepts requests from
+that origin.
