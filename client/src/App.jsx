@@ -4,6 +4,7 @@ import Dashboard from "./components/Dashboard";
 import DirectRoomJoin from "./components/DirectRoomJoin";
 import LandingPage from "./components/LandingPage";
 import Navbar from "./components/Navbar";
+import PrivacyPolicy from "./components/PrivacyPolicy";
 import Profile from "./components/Profile";
 
 const App = () => {
@@ -17,6 +18,7 @@ const App = () => {
         <Route path="/" element={<LandingPage />} />
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/profile" element={<Profile />} />
+        <Route path="/privacy" element={<PrivacyPolicy />} />
         <Route path="/room/:roomId" element={<DirectRoomJoin />} />
       </Routes>
     </>
