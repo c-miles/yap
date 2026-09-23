@@ -14,3 +14,8 @@ test("shows the plainer tagline and no marketing filler", () => {
   expect(screen.getByText(/share a link and hop in/i)).toBeInTheDocument();
   expect(screen.queryByText(/go-to video conferencing solution/i)).toBeNull();
 });
+
+test("links to the privacy policy", () => {
+  render(<MemoryRouter><LandingPage /></MemoryRouter>);
+  expect(screen.getByRole("link", { name: /privacy/i })).toHaveAttribute("href", "/privacy");
+});
