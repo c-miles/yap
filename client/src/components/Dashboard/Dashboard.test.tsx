@@ -1,6 +1,7 @@
 import React from "react";
 import { render, screen, fireEvent, act } from "@testing-library/react";
 import "@testing-library/jest-dom";
+import { MemoryRouter } from "react-router-dom";
 import Dashboard from "./Dashboard";
 
 const baseProps = {
@@ -32,25 +33,25 @@ const signedInProps = {
 };
 
 const renderSignedIn = (overrides: Partial<typeof signedInProps> = {}) =>
-  render(<Dashboard {...signedInProps} {...overrides} />);
+  render(<Dashboard {...signedInProps} {...overrides} />, { wrapper: MemoryRouter });
 
 afterEach(() => {
   jest.useRealTimers();
 });
 
 test("prompts logged-out visitors to log in instead of spinning forever", () => {
-  render(<Dashboard {...baseProps} isLoading={false} isAuthenticated={false} />);
+  render(<Dashboard {...baseProps} isLoading={false} isAuthenticated={false} />, { wrapper: MemoryRouter });
   expect(screen.getByRole("button", { name: /log in/i })).toBeInTheDocument();
 });
 
 test("shows a spinner only while auth state is still loading", () => {
-  const { container } = render(<Dashboard {...baseProps} isLoading={true} isAuthenticated={false} />);
+  const { container } = render(<Dashboard {...baseProps} isLoading={true} isAuthenticated={false} />, { wrapper: MemoryRouter });
   expect(container.querySelector("span")).not.toBeNull(); // BeatLoader renders spans
   expect(screen.queryByRole("button", { name: /log in/i })).toBeNull();
 });
 
 test("offers a retry instead of spinning forever when the profile fetch fails", () => {
-  render(<Dashboard {...baseProps} isLoading={false} isAuthenticated={true} profileError={true} />);
+  render(<Dashboard {...baseProps} isLoading={false} isAuthenticated={true} profileError={true} />, { wrapper: MemoryRouter });
   expect(screen.getByRole("button", { name: /try again/i })).toBeInTheDocument();
 });
 
@@ -119,4 +120,10 @@ test("a failed create is announced on the dashboard", () => {
   renderSignedIn({ createError: "Couldn't start a room. Try again." });
 
   expect(screen.getByRole("alert")).toHaveTextContent("Couldn't start a room. Try again.");
+});
+
+test("links to the privacy policy and terms, even when logged out", () => {
+  render(<Dashboard {...baseProps} isLoading={false} isAuthenticated={false} />, { wrapper: MemoryRouter });
+  expect(screen.getByRole("link", { name: "Privacy" })).toHaveAttribute("href", "/privacy");
+  expect(screen.getByRole("link", { name: "Terms" })).toHaveAttribute("href", "/terms");
 });

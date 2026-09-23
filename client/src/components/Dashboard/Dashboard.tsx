@@ -5,6 +5,7 @@ import { Video, Users } from "lucide-react";
 import { Button, Input, Card, Heading, Text, Icon } from "../atoms";
 import { Modal } from "../molecules";
 import DashboardCard from "../molecules/DashboardCard";
+import Footer from "../Footer";
 
 const Dashboard: React.FC<DashboardProps> = ({
   createRoom,
@@ -42,7 +43,7 @@ const Dashboard: React.FC<DashboardProps> = ({
   };
 
   return (
-    <div className="flex items-center justify-center min-h-[calc(100vh-64px)] p-8">
+    <div className="relative flex items-center justify-center min-h-[calc(100vh-64px)] p-8 pb-24">
       {isLoading || (isAuthenticated && userExists === null && !profileError) ? (
         <BeatLoader color="var(--primary-hov)" />
       ) : !isAuthenticated ? (
@@ -139,6 +140,7 @@ const Dashboard: React.FC<DashboardProps> = ({
           </Modal>
         </>
       )}
+      <Footer className="absolute inset-x-0 bottom-0" />
     </div>
   );
 };
