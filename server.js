@@ -14,6 +14,7 @@ import { createSocketAuth } from "./sockets/socketAuth.js";
 import roomRoutes from "./routes/roomRoutes.js";
 import userRoutes from "./routes/userRoutes.js";
 import turnRoutes from "./routes/turnRoutes.js";
+import { buildAllowedOrigins } from "./services/allowedOrigins.js";
 
 dotenv.config();
 connect(process.env.MONGODB_URI);
@@ -23,10 +24,7 @@ const __dirname = path.dirname(__filename);
 
 const app = express();
 
-export const allowedOrigins = ["http://localhost:3000"];
-if (process.env.RENDER_EXTERNAL_URL) {
-  allowedOrigins.push(process.env.RENDER_EXTERNAL_URL);
-}
+const allowedOrigins = buildAllowedOrigins(process.env);
 
 app.use(express.json());
 app.use(cors({ origin: allowedOrigins }));
