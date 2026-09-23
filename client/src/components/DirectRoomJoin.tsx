@@ -4,7 +4,7 @@ import { useClerk, useUser } from "@clerk/react";
 import { BeatLoader } from "react-spinners";
 import { isValidRoomNameFormat } from "../utils/roomNameGenerator";
 import RoomContainer from "./Room";
-import { authFetch } from "../services/authFetch";
+import { findRoom } from "../services/rooms";
 
 const DirectRoomJoin: React.FC = () => {
   const { roomId } = useParams<{ roomId: string }>();
@@ -15,15 +15,13 @@ const DirectRoomJoin: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [shouldRenderRoom, setShouldRenderRoom] = useState(false);
 
-  // Check if this is a direct room navigation from Dashboard (has state)
+  // only dashboard navigations carry state, direct links don't
   const hasState = location.state && (location.state as any).isHost !== undefined;
 
   useEffect(() => {
     if (!isLoaded) return;
 
     if (!isSignedIn) {
-      // used to point at /api/auth/login, a route this app never had,
-      // logged-out visitors just spun forever
       const returnTo = `/room/${roomId ?? ""}`;
       clerk.redirectToSignIn({
         signInForceRedirectUrl: returnTo,
@@ -50,14 +48,13 @@ const DirectRoomJoin: React.FC = () => {
     // friendly name in the URL, resolve it to the real room id
     (async () => {
       try {
-        const response = await authFetch(`/rooms/find-by-name/${roomId}`);
-        if (!response.ok) {
+        const room = await findRoom(roomId);
+        if (!room) {
           setError("Room not found or has expired");
           return;
         }
-        const data = await response.json();
-        navigate(`/room/${data.roomId}`, {
-          state: { isHost: false, fromDirectLink: true, friendlyName: data.friendlyName },
+        navigate(`/room/${room.roomId}`, {
+          state: { isHost: false, fromDirectLink: true, friendlyName: room.friendlyName },
           replace: true,
         });
       } catch (err) {
@@ -67,7 +64,6 @@ const DirectRoomJoin: React.FC = () => {
     })();
   }, [roomId, isLoaded, isSignedIn, clerk, navigate, hasState]);
 
-  // Render the actual room if we should
   if (shouldRenderRoom) {
     return <RoomContainer />;
   }

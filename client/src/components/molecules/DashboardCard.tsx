@@ -5,18 +5,22 @@ interface DashboardCardProps {
   title: string;
   description: string;
   onClick: () => void;
+  busy?: boolean;
 }
 
 const DashboardCard: React.FC<DashboardCardProps> = ({
   icon,
   title,
   description,
-  onClick
+  onClick,
+  busy
 }) => {
   return (
     <button
       onClick={onClick}
-      className="w-full p-8 bg-surface border border-border rounded-lg hover:scale-105 hover:border-primary transition-all duration-150 text-left group"
+      disabled={busy}
+      aria-busy={busy}
+      className="w-full p-8 bg-surface border border-border rounded-lg enabled:hover:scale-105 enabled:hover:border-primary transition-all duration-150 text-left group disabled:opacity-60 disabled:cursor-wait"
     >
       <div className="flex flex-col items-center text-center gap-4">
         <div className="w-20 h-20 bg-primary rounded-full flex items-center justify-center group-hover:bg-primary-hov transition-colors">

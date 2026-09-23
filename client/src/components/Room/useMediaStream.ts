@@ -131,7 +131,6 @@ export default function useMediaStream({ onStreamUpdated }: UseMediaStreamProps)
     }
   }, [streamReady, stream]);
 
-  // TODO: Validate functionality by testing on two machines when able/deployed
   const toggleAudio = () => {
     if (stream) {
       const audioTracks = stream.getAudioTracks();
@@ -139,12 +138,6 @@ export default function useMediaStream({ onStreamUpdated }: UseMediaStreamProps)
         track.enabled = !track.enabled;
       });
       setAudioEnabled(audioTracks.some((track) => track.enabled));
-
-      // TODO: Implement this in socketEvents server side, reflect in peer's UI
-      // socket?.emit("audioToggled", {
-      //   roomId,
-      //   audioEnabled: audioTracks.some(track => track.enabled),
-      // });
     }
   };
 

@@ -9,7 +9,7 @@ import Dashboard from "./Dashboard";
 const DashboardContainer: React.FC = () => {
   const { userInfo, userExists, handleUsernameSubmit, isAuthenticated, isLoading, profileError, retryProfileLoad } = useAuthUser();
   const clerk = useClerk();
-  const { createRoom, joinRoom } = useRoomActions();
+  const roomActions = useRoomActions();
 
   const onLogin = () => clerk.openSignIn({ forceRedirectUrl: "/dashboard" });
 
@@ -33,8 +33,7 @@ const DashboardContainer: React.FC = () => {
 
   return (
     <Dashboard
-      createRoom={createRoom}
-      handleJoinRoom={joinRoom}
+      {...roomActions}
       handleUsernameSubmit={onUsernameFormSubmit}
       isSubmitting={isSubmitting}
       newUsername={newUsername}

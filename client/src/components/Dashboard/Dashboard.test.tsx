@@ -1,11 +1,11 @@
 import React from "react";
-import { render, screen, fireEvent } from "@testing-library/react";
+import { render, screen, fireEvent, act } from "@testing-library/react";
 import "@testing-library/jest-dom";
 import Dashboard from "./Dashboard";
 
 const baseProps = {
   createRoom: jest.fn(),
-  handleJoinRoom: jest.fn(),
+  joinRoom: jest.fn(),
   handleUsernameSubmit: jest.fn(),
   isSubmitting: false,
   newUsername: "",
@@ -16,7 +16,27 @@ const baseProps = {
   onLogin: jest.fn(),
   profileError: false,
   onRetryProfile: jest.fn(),
+  isCreating: false,
+  isJoining: false,
+  createError: "",
+  joinError: "",
+  clearJoinError: jest.fn(),
 };
+
+const signedInProps = {
+  ...baseProps,
+  isLoading: false,
+  isAuthenticated: true,
+  userExists: true,
+  userInfo: { username: "ada" } as any,
+};
+
+const renderSignedIn = (overrides: Partial<typeof signedInProps> = {}) =>
+  render(<Dashboard {...signedInProps} {...overrides} />);
+
+afterEach(() => {
+  jest.useRealTimers();
+});
 
 test("prompts logged-out visitors to log in instead of spinning forever", () => {
   render(<Dashboard {...baseProps} isLoading={false} isAuthenticated={false} />);
@@ -35,16 +55,7 @@ test("offers a retry instead of spinning forever when the profile fetch fails", 
 });
 
 test("joining by code opens the modal and submits the typed room name", () => {
-  render(
-    <Dashboard
-      {...baseProps}
-      isLoading={false}
-      isAuthenticated={true}
-      userExists={true}
-      profileError={false}
-      userInfo={{ username: "ada" } as any}
-    />
-  );
+  renderSignedIn();
 
   fireEvent.click(screen.getByRole("button", { name: /join by code/i }));
 
@@ -53,5 +64,59 @@ test("joining by code opens the modal and submits the typed room name", () => {
 
   fireEvent.click(screen.getByRole("button", { name: /join room/i }));
 
-  expect(baseProps.handleJoinRoom).toHaveBeenCalledWith("my-room");
+  expect(baseProps.joinRoom).toHaveBeenCalledWith("my-room");
+});
+
+test("a failed join keeps the modal open and shows why", () => {
+  // headless ui only unmounts a closed modal after its leave transition runs
+  jest.useFakeTimers();
+  const { rerender } = renderSignedIn();
+  fireEvent.click(screen.getByRole("button", { name: /join by code/i }));
+  fireEvent.change(screen.getByPlaceholderText("Enter room name"), { target: { value: "jolly-red-fox" } });
+  fireEvent.click(screen.getByRole("button", { name: /join room/i }));
+
+  rerender(<Dashboard {...signedInProps} joinError="Room not found. Check the name and try again." />);
+  act(() => {
+    jest.runAllTimers();
+  });
+
+  expect(screen.getByPlaceholderText("Enter room name")).toHaveValue("jolly-red-fox");
+  expect(screen.getByRole("alert")).toHaveTextContent("Room not found. Check the name and try again.");
+});
+
+test("editing the room name clears a stale join error", () => {
+  renderSignedIn({ joinError: "Room not found. Check the name and try again." });
+  fireEvent.click(screen.getByRole("button", { name: /join by code/i }));
+
+  fireEvent.change(screen.getByPlaceholderText("Enter room name"), { target: { value: "jolly-red-fox" } });
+
+  expect(baseProps.clearJoinError).toHaveBeenCalled();
+});
+
+test("closing the join modal clears a stale join error", () => {
+  renderSignedIn({ joinError: "Room not found. Check the name and try again." });
+  fireEvent.click(screen.getByRole("button", { name: /join by code/i }));
+
+  fireEvent.click(screen.getByRole("button", { name: /close/i }));
+
+  expect(baseProps.clearJoinError).toHaveBeenCalled();
+});
+
+test("the join button is disabled and says so while the lookup runs", () => {
+  renderSignedIn({ isJoining: true });
+  fireEvent.click(screen.getByRole("button", { name: /join by code/i }));
+
+  expect(screen.getByRole("button", { name: /joining/i })).toBeDisabled();
+});
+
+test("starting a room is disabled while one is being created", () => {
+  renderSignedIn({ isCreating: true });
+
+  expect(screen.getByRole("button", { name: /start a room/i })).toBeDisabled();
+});
+
+test("a failed create is announced on the dashboard", () => {
+  renderSignedIn({ createError: "Couldn't start a room. Try again." });
+
+  expect(screen.getByRole("alert")).toHaveTextContent("Couldn't start a room. Try again.");
 });

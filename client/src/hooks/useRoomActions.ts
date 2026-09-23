@@ -1,49 +1,66 @@
-import { useCallback } from "react";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { authFetch } from "../services/authFetch";
+import { findRoom, FoundRoom } from "../services/rooms";
+import { normalizeRoomName } from "../utils/roomNameGenerator";
 
 const useRoomActions = () => {
   const navigate = useNavigate();
+  const [isCreating, setIsCreating] = useState(false);
+  const [isJoining, setIsJoining] = useState(false);
+  const [createError, setCreateError] = useState("");
+  const [joinError, setJoinError] = useState("");
 
-  const createRoom = () => {
-    authFetch(`/rooms/create`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-    })
-      .then((response) => response.json())
-      .then((data: { roomId: string; friendlyName: string }) => {
-        navigate(`/room/${data.roomId}`, {
-          state: { isHost: true, friendlyName: data.friendlyName },
-        });
-      })
-      .catch((error) => {
-        console.error("Error creating room:", error);
+  const createRoom = async () => {
+    setIsCreating(true);
+    setCreateError("");
+    try {
+      const response = await authFetch("/rooms/create", { method: "POST" });
+      if (!response.ok) {
+        throw new Error(`create failed with ${response.status}`);
+      }
+      const room: FoundRoom = await response.json();
+      navigate(`/room/${room.roomId}`, {
+        state: { isHost: true, friendlyName: room.friendlyName },
       });
+    } catch (error) {
+      console.error("Error creating room:", error);
+      setCreateError("Couldn't start a room. Try again.");
+    } finally {
+      setIsCreating(false);
+    }
   };
 
-  const joinRoom = useCallback(
-    (roomName: string) => {
-      authFetch(`/rooms/find-by-name/${roomName}`)
-        .then((response) => response.json())
-        .then((data) => {
-          if (data.roomId) {
-            navigate(`/room/${data.roomId}`, {
-              state: { isHost: false, friendlyName: data.friendlyName }
-            });
-          } else {
-            // TODO: Handle case where no room is found
-          }
-        })
-        .catch((error) => {
-          console.error("Error joining room:", error);
-        });
-    },
-    [navigate]
-  );
+  const joinRoom = async (input: string) => {
+    const nameOrId = normalizeRoomName(input);
+    if (!nameOrId) {
+      setJoinError("Enter a room name.");
+      return;
+    }
+    setIsJoining(true);
+    setJoinError("");
+    try {
+      const room = await findRoom(nameOrId);
+      if (!room) {
+        setJoinError("Room not found. Check the name and try again.");
+        return;
+      }
+      navigate(`/room/${room.roomId}`, {
+        state: { isHost: false, friendlyName: room.friendlyName },
+      });
+    } catch (error) {
+      console.error("Error joining room:", error);
+      setJoinError("Couldn't join right now. Try again.");
+    } finally {
+      setIsJoining(false);
+    }
+  };
 
-  return { createRoom, joinRoom };
+  const clearJoinError = () => setJoinError("");
+
+  return { createRoom, joinRoom, isCreating, isJoining, createError, joinError, clearJoinError };
 };
+
+export type RoomActions = ReturnType<typeof useRoomActions>;
 
 export default useRoomActions;
