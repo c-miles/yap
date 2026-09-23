@@ -1,5 +1,5 @@
 import React, { useEffect } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { useUser } from "@clerk/react";
 import AuthenticationButton from "./AuthenticationButton";
 import WaveBackground from "./WaveBackground/WaveBackground";
@@ -30,12 +30,6 @@ const LandingPage: React.FC = () => {
           <AuthenticationButton />
         )}
       </div>
-      <Link
-        to="/privacy"
-        className="focus-ring absolute bottom-4 left-1/2 -translate-x-1/2 z-10 text-sm text-text-muted hover:text-text transition-colors"
-      >
-        Privacy
-      </Link>
     </div>
   );
 };

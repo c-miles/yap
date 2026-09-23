@@ -6,6 +6,7 @@ import LandingPage from "./components/LandingPage";
 import Navbar from "./components/Navbar";
 import PrivacyPolicy from "./components/PrivacyPolicy";
 import Profile from "./components/Profile";
+import TermsOfService from "./components/TermsOfService";
 
 const App = () => {
   const location = useLocation();
@@ -19,6 +20,7 @@ const App = () => {
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/profile" element={<Profile />} />
         <Route path="/privacy" element={<PrivacyPolicy />} />
+        <Route path="/terms" element={<TermsOfService />} />
         <Route path="/room/:roomId" element={<DirectRoomJoin />} />
       </Routes>
     </>

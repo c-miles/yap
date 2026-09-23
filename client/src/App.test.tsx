@@ -22,3 +22,12 @@ test("the privacy policy is reachable at /privacy without logging in", () => {
   );
   expect(screen.getByRole("heading", { level: 1, name: /privacy policy/i })).toBeInTheDocument();
 });
+
+test("the terms of service are reachable at /terms without logging in", () => {
+  render(
+    <MemoryRouter initialEntries={["/terms"]}>
+      <App />
+    </MemoryRouter>
+  );
+  expect(screen.getByRole("heading", { level: 1, name: /terms of service/i })).toBeInTheDocument();
+});
