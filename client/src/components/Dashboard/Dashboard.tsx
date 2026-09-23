@@ -8,7 +8,7 @@ import DashboardCard from "../molecules/DashboardCard";
 
 const Dashboard: React.FC<DashboardProps> = ({
   createRoom,
-  handleJoinRoom,
+  joinRoom,
   handleUsernameSubmit,
   isSubmitting,
   newUsername,
@@ -21,6 +21,11 @@ const Dashboard: React.FC<DashboardProps> = ({
   onLogin,
   profileError,
   onRetryProfile,
+  isCreating,
+  isJoining,
+  createError,
+  joinError,
+  clearJoinError,
 }) => {
   const showUsernameForm = userExists === false || !userInfo?.username;
   const [roomName, setRoomName] = useState("");
@@ -28,7 +33,12 @@ const Dashboard: React.FC<DashboardProps> = ({
 
   const onJoinRoomSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    handleJoinRoom(roomName);
+    joinRoom(roomName);
+  };
+
+  const closeJoinRoomForm = () => {
+    setShowJoinRoomForm(false);
+    clearJoinError();
   };
 
   return (
@@ -91,6 +101,7 @@ const Dashboard: React.FC<DashboardProps> = ({
               title="Start a room"
               description="Create a new video room and invite others to join"
               onClick={createRoom}
+              busy={isCreating}
             />
 
             <DashboardCard
@@ -99,20 +110,30 @@ const Dashboard: React.FC<DashboardProps> = ({
               description="Enter a room code to join an existing conversation"
               onClick={() => setShowJoinRoomForm(true)}
             />
+
+            {createError && (
+              <p role="alert" className="md:col-span-2 text-center text-sm text-danger">
+                {createError}
+              </p>
+            )}
           </div>
 
-          <Modal open={showJoinRoomForm} onClose={() => setShowJoinRoomForm(false)} title="Join Room">
+          <Modal open={showJoinRoomForm} onClose={closeJoinRoomForm} title="Join Room">
             <form onSubmit={onJoinRoomSubmit}>
               <Input
                 type="text"
                 value={roomName}
-                onChange={(e) => setRoomName(e.target.value)}
+                onChange={(e) => {
+                  setRoomName(e.target.value);
+                  clearJoinError();
+                }}
                 placeholder="Enter room name"
                 required
+                error={joinError}
               />
 
-              <Button type="submit" variant="primary" className="w-full mt-4">
-                Join Room
+              <Button type="submit" variant="primary" className="w-full mt-4" disabled={isJoining}>
+                {isJoining ? "Joining..." : "Join Room"}
               </Button>
             </form>
           </Modal>
