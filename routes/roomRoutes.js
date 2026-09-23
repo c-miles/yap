@@ -3,13 +3,13 @@ import { uniqueNamesGenerator, adjectives, colors, animals } from "unique-names-
 
 import { Room } from "../models/Room.js";
 import { requireAuthApi } from "../middleware/requireAuthApi.js";
+import { findRoom } from "../services/roomLookup.js";
 
 const router = express.Router();
 
-router.get("/find-by-name/:friendlyName", requireAuthApi, async (req, res) => {
+router.get("/find-by-name/:nameOrId", requireAuthApi, async (req, res) => {
   try {
-    const friendlyName = req.params.friendlyName;
-    const room = await Room.findOne({ friendlyName: friendlyName });
+    const room = await findRoom(Room, req.params.nameOrId);
     if (!room) {
       return res.status(404).json({ message: "Room not found" });
     }
@@ -37,7 +37,6 @@ router.post("/create", requireAuthApi, async (req, res) => {
     let attempts = 0;
     const maxAttempts = 10;
 
-    // Ensure friendly name is unique
     do {
       friendlyName = generateFriendlyName();
       attempts++;
