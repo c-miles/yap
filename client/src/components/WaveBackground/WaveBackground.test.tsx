@@ -58,24 +58,3 @@ test("stops animating when it unmounts", () => {
   unmount();
   expect(window.cancelAnimationFrame).toHaveBeenCalledWith(7);
 });
-
-test("the subtle variant doesn't track the cursor", () => {
-  const listen = jest.spyOn(window, "addEventListener");
-  render(<WaveBackground variant="subtle" />);
-  const events = listen.mock.calls.map(([type]) => type);
-  expect(events).not.toContain("mousemove");
-  expect(events).not.toContain("touchmove");
-});
-
-test("the subtle variant redraws at most 30 times a second", () => {
-  const frames: FrameRequestCallback[] = [];
-  (window.requestAnimationFrame as jest.Mock).mockImplementation((cb: FrameRequestCallback) => {
-    frames.push(cb);
-    return frames.length;
-  });
-  render(<WaveBackground variant="subtle" />);
-
-  [16, 32, 48, 64, 80, 96].forEach((time) => frames[frames.length - 1](time));
-
-  expect(ctx.stroke).toHaveBeenCalledTimes(3);
-});

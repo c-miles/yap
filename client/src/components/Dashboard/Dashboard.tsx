@@ -45,7 +45,7 @@ const Dashboard: React.FC<DashboardProps> = ({
 
   return (
     <div className="relative isolate flex items-center justify-center min-h-[calc(100vh-64px)] p-8 pb-24">
-      <WaveBackground variant="subtle" className="-z-10" />
+      <WaveBackground className="-z-10" />
       {isLoading || (isAuthenticated && userExists === null && !profileError) ? (
         <BeatLoader color="var(--primary-hov)" />
       ) : !isAuthenticated ? (

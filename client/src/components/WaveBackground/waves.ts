@@ -91,20 +91,15 @@ function pushByCursor(p: WavePoint, cursor: Cursor) {
   p.cursorY = Math.min(100, Math.max(-100, p.cursorY + p.velocityY * 2));
 }
 
-export function stepField(field: WaveField, time: number, noise: Noise, cursor: Cursor | null) {
-  if (cursor) {
-    updateCursor(cursor);
-  }
+export function stepField(field: WaveField, time: number, noise: Noise, cursor: Cursor) {
+  updateCursor(cursor);
 
   for (const line of field) {
     for (const p of line) {
       const angle = noise.perlin2((p.x + time * 0.0125) * 0.002, (p.y + time * 0.005) * 0.0015) * 12;
       p.waveX = Math.cos(angle) * 32;
       p.waveY = Math.sin(angle) * 16;
-
-      if (cursor) {
-        pushByCursor(p, cursor);
-      }
+      pushByCursor(p, cursor);
     }
   }
 }

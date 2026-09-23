@@ -3,16 +3,7 @@ import Noise from "../../utils/perlin";
 import { createCursor, createField, drawField, moveCursor, stepField } from "./waves";
 import "./WaveBackground.css";
 
-// just under 1000/30, so 60hz screens draw every other frame
-const SUBTLE_FRAME_GAP_MS = 30;
-
-interface WaveBackgroundProps {
-  // subtle is fainter and ignores the cursor, for pages with content on top
-  variant?: "hero" | "subtle";
-  className?: string;
-}
-
-const WaveBackground: React.FC<WaveBackgroundProps> = ({ variant = "hero", className = "" }) => {
+const WaveBackground: React.FC<{ className?: string }> = ({ className = "" }) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
@@ -23,14 +14,13 @@ const WaveBackground: React.FC<WaveBackgroundProps> = ({ variant = "hero", class
     if (!ctx) return;
 
     const noise = new Noise(Math.random());
-    const cursor = variant === "hero" ? createCursor() : null;
-    const showCursorDot = cursor && !window.matchMedia("(hover: none) and (pointer: coarse)").matches;
+    const cursor = createCursor();
+    const showCursorDot = !window.matchMedia("(hover: none) and (pointer: coarse)").matches;
     const still = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     let field = createField(0, 0);
     let width = 0;
     let height = 0;
     let frame = 0;
-    let lastDrawn = -Infinity;
 
     const draw = (time: number) => {
       stepField(field, time, noise, cursor);
@@ -53,8 +43,6 @@ const WaveBackground: React.FC<WaveBackgroundProps> = ({ variant = "hero", class
 
     const tick = (time: number) => {
       frame = requestAnimationFrame(tick);
-      if (variant === "subtle" && time - lastDrawn < SUBTLE_FRAME_GAP_MS) return;
-      lastDrawn = time;
       draw(time);
       if (showCursorDot) {
         container.style.setProperty("--x", `${cursor.smoothX}px`);
@@ -64,7 +52,7 @@ const WaveBackground: React.FC<WaveBackgroundProps> = ({ variant = "hero", class
 
     const followPointer = (clientX: number, clientY: number) => {
       const rect = container.getBoundingClientRect();
-      moveCursor(cursor!, clientX - rect.left, clientY - rect.top);
+      moveCursor(cursor, clientX - rect.left, clientY - rect.top);
     };
     const onMouseMove = (e: MouseEvent) => followPointer(e.clientX, e.clientY);
     const onTouchMove = (e: TouchEvent) => followPointer(e.touches[0].clientX, e.touches[0].clientY);
@@ -75,10 +63,8 @@ const WaveBackground: React.FC<WaveBackgroundProps> = ({ variant = "hero", class
 
     if (!still) {
       frame = requestAnimationFrame(tick);
-      if (cursor) {
-        window.addEventListener("mousemove", onMouseMove);
-        window.addEventListener("touchmove", onTouchMove, { passive: true });
-      }
+      window.addEventListener("mousemove", onMouseMove);
+      window.addEventListener("touchmove", onTouchMove, { passive: true });
     }
 
     return () => {
@@ -87,12 +73,12 @@ const WaveBackground: React.FC<WaveBackgroundProps> = ({ variant = "hero", class
       window.removeEventListener("mousemove", onMouseMove);
       window.removeEventListener("touchmove", onTouchMove);
     };
-  }, [variant]);
+  }, []);
 
   return (
     <div
       ref={containerRef}
-      className={`wave-background ${variant === "subtle" ? "wave-background--subtle" : ""} ${className}`}
+      className={`wave-background ${className}`}
       aria-hidden="true"
     >
       <canvas ref={canvasRef} className="wave-canvas" />

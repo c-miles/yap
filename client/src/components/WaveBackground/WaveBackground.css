@@ -23,10 +23,6 @@
   z-index: 2;
 }
 
-.wave-background--subtle:before {
-  display: none;
-}
-
 @media (hover: none) and (pointer: coarse) {
   .wave-background:before {
     display: none;
@@ -40,8 +36,4 @@
   height: 100%;
   color: var(--surface);
   opacity: 0.6;
-}
-
-.wave-background--subtle .wave-canvas {
-  opacity: 0.35;
 }

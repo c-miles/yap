@@ -3,12 +3,6 @@ import { createCursor, createField, moveCursor, stepField } from "./waves";
 
 const noise = new Noise(0.42);
 
-function runFrames(field: ReturnType<typeof createField>, frames: number, cursor: ReturnType<typeof createCursor> | null) {
-  for (let t = 0; t < frames; t++) {
-    stepField(field, t * 16, noise, cursor);
-  }
-}
-
 test("the field overscans the area so no edge ever shows a gap", () => {
   const field = createField(1000, 600);
   const xs = field.flat().map((p) => p.x);
@@ -46,11 +40,4 @@ test("cursor displacement never goes past 100px", () => {
 
   const offsets = field.flat().flatMap((p) => [Math.abs(p.cursorX), Math.abs(p.cursorY)]);
   expect(Math.max(...offsets)).toBeLessThanOrEqual(100);
-});
-
-test("without a cursor, points only follow the wave", () => {
-  const field = createField(1000, 600);
-  runFrames(field, 30, null);
-  expect(field.flat().every((p) => p.cursorX === 0 && p.cursorY === 0)).toBe(true);
-  expect(field.flat().some((p) => p.waveX !== 0 || p.waveY !== 0)).toBe(true);
 });
