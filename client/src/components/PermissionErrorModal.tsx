@@ -31,19 +31,19 @@ const PermissionErrorModal: React.FC<PermissionErrorModalProps> = ({
       case 'denied':
         return {
           icon: <Icon icon={isAudio ? MicOff : VideoOff} size="2xl" className="text-danger" />,
-          title: `${deviceName} Access ${isAudio ? 'Required' : 'Needed'}`,
+          title: `${deviceName} access ${isAudio ? 'required' : 'needed'}`,
           message: `${getInstructions()}${isAudio ? ', then refresh this page' : ', then try again'}.`,
         };
       case 'notfound':
         return {
           icon: <Icon icon={isAudio ? Mic : Video} size="2xl" className="text-warning" />,
-          title: `No ${deviceName} Found`,
+          title: `No ${deviceName.toLowerCase()} found`,
           message: `Please connect a ${deviceName.toLowerCase()} to your device and try again.`,
         };
       default:
         return {
           icon: <Icon icon={isAudio ? MicOff : VideoOff} size="2xl" className="text-danger" />,
-          title: `Unable to Access ${deviceName}`,
+          title: `Can't access your ${deviceName.toLowerCase()}`,
           message: `There was an error accessing your ${deviceName.toLowerCase()}. Please check your device settings.`,
         };
     }
@@ -64,10 +64,10 @@ const PermissionErrorModal: React.FC<PermissionErrorModalProps> = ({
             className="flex items-center justify-center gap-2"
           >
             <Icon icon={RefreshCw} size="sm" />
-            {isAudio ? 'Refresh Page' : 'Try Again'}
+            {isAudio ? 'Refresh page' : 'Try again'}
           </Button>
           <Button onClick={onClose} variant="ghost">
-            Go Back
+            Go back
           </Button>
         </div>
       </div>

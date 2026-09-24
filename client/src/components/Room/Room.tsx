@@ -115,7 +115,7 @@ const Room: React.FC<RoomProps> = ({
                 onClick={onDashboard}
                 className="focus-ring mt-4 min-h-[44px] px-5 rounded-lg bg-surface-raised text-text hover:brightness-125 transition"
               >
-                Back to dashboard
+                Back to lounge
               </button>
             </div>
           </div>

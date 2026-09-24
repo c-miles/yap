@@ -1,5 +1,6 @@
 import React from "react";
 import { Heading, Text } from "./atoms";
+import useDocumentTitle from "../hooks/useDocumentTitle";
 
 const CONTACT_EMAIL = "contact@anomaly-labs.com";
 
@@ -24,14 +25,17 @@ const LegalPage: React.FC<{ title: string; updated: string; children: React.Reac
   title,
   updated,
   children,
-}) => (
-  <main className="max-w-2xl mx-auto px-4 py-12 space-y-8">
-    <header className="space-y-2">
-      <Heading level={1}>{title}</Heading>
-      <Text variant="muted">Last updated {updated}</Text>
-    </header>
-    {children}
-  </main>
-);
+}) => {
+  useDocumentTitle(title);
+  return (
+    <main className="max-w-2xl mx-auto px-4 py-12 space-y-8">
+      <header className="space-y-2">
+        <Heading level={1}>{title}</Heading>
+        <Text variant="muted">Last updated {updated}</Text>
+      </header>
+      {children}
+    </main>
+  );
+};
 
 export default LegalPage;

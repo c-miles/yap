@@ -2,6 +2,7 @@ import React, { useEffect, useRef } from "react";
 import { Edit } from "lucide-react";
 import { ProfileProps } from "../../types/profileTypes";
 import { Button, Input, Card, Avatar, Heading, Text, Icon } from "../atoms";
+import useDocumentTitle from "../../hooks/useDocumentTitle";
 
 const Profile: React.FC<ProfileProps> = ({
   username,
@@ -12,6 +13,7 @@ const Profile: React.FC<ProfileProps> = ({
   isEditing,
   setIsEditing,
 }) => {
+  useDocumentTitle("Profile");
   const formRef = useRef<HTMLFormElement>(null);
 
   useEffect(() => {
@@ -49,7 +51,7 @@ const Profile: React.FC<ProfileProps> = ({
           </Heading>
 
           <Text variant="muted" className="mb-6">
-            Joined yap: {joinedDate}
+            Joined Yap: {joinedDate}
           </Text>
 
           {!isEditing && (
@@ -59,7 +61,7 @@ const Profile: React.FC<ProfileProps> = ({
               className="flex items-center gap-2"
             >
               <Icon icon={Edit} size="sm" />
-              Edit Profile
+              Edit profile
             </Button>
           )}
         </div>

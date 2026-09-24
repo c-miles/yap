@@ -5,8 +5,10 @@ import WaveBackground from "./WaveBackground/WaveBackground";
 import Footer from "./Footer";
 import { Button, Text, Wordmark } from "./atoms";
 import { isValidRoomNameFormat } from "../utils/roomNameGenerator";
+import useDocumentTitle from "../hooks/useDocumentTitle";
 
 const LandingPage: React.FC = () => {
+  useDocumentTitle();
   const { isLoaded, isSignedIn } = useUser();
   const isAuthenticated = isSignedIn === true;
   const clerk = useClerk();

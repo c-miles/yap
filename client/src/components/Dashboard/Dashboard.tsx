@@ -7,6 +7,7 @@ import { Modal, UsernameForm } from "../molecules";
 import DashboardCard from "../molecules/DashboardCard";
 import Footer from "../Footer";
 import WaveBackground from "../WaveBackground/WaveBackground";
+import useDocumentTitle from "../../hooks/useDocumentTitle";
 
 const Dashboard: React.FC<DashboardProps> = ({
   createRoom,
@@ -25,6 +26,7 @@ const Dashboard: React.FC<DashboardProps> = ({
   joinError,
   clearJoinError,
 }) => {
+  useDocumentTitle("Lounge");
   const showUsernameForm = userExists === false || !userInfo?.username;
   const [roomName, setRoomName] = useState("");
   const [showJoinRoomForm, setShowJoinRoomForm] = useState(false);
@@ -85,8 +87,8 @@ const Dashboard: React.FC<DashboardProps> = ({
 
             <DashboardCard
               icon={<Icon icon={Users} size="xl" className="text-accent" />}
-              title="Join by code"
-              description="Enter a room code to join an existing conversation"
+              title="Join by name"
+              description="Enter a room name to join an existing call"
               onClick={() => setShowJoinRoomForm(true)}
             />
 
@@ -97,7 +99,7 @@ const Dashboard: React.FC<DashboardProps> = ({
             )}
           </div>
 
-          <Modal open={showJoinRoomForm} onClose={closeJoinRoomForm} title="Join Room">
+          <Modal open={showJoinRoomForm} onClose={closeJoinRoomForm} title="Join a room">
             <form onSubmit={onJoinRoomSubmit}>
               <Input
                 type="text"
@@ -112,7 +114,7 @@ const Dashboard: React.FC<DashboardProps> = ({
               />
 
               <Button type="submit" variant="primary" className="w-full mt-4" disabled={isJoining}>
-                {isJoining ? "Joining..." : "Join Room"}
+                {isJoining ? "Joining…" : "Join room"}
               </Button>
             </form>
           </Modal>

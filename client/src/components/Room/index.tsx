@@ -5,6 +5,7 @@ import GreenRoom from "./GreenRoom";
 
 import useAuthUser from "../../hooks/useAuthUser";
 import useUsernameForm from "../../hooks/useUsernameForm";
+import useDocumentTitle from "../../hooks/useDocumentTitle";
 import useMediaStream from "./useMediaStream";
 import usePeerConnection from "./usePeerConnection";
 import VideoStatsOverlay from "./VideoStatsOverlay";
@@ -27,6 +28,7 @@ const RoomContainer: React.FC = () => {
   const state = location.state as LocationState;
 
   const [roomName] = useState<string | undefined>(state?.friendlyName);
+  useDocumentTitle(roomName ?? "Video room");
   const [phase, setPhase] = useState<"green-room" | "in-call">("green-room");
   const showStats = new URLSearchParams(location.search).has("stats");
   const [videoStats, setVideoStats] = useState<VideoStatsSnapshot | null>(null);

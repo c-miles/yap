@@ -56,7 +56,7 @@ test("offers a retry instead of spinning forever when the profile fetch fails", 
 test("joining by code opens the modal and submits the typed room name", () => {
   renderSignedIn();
 
-  fireEvent.click(screen.getByRole("button", { name: /join by code/i }));
+  fireEvent.click(screen.getByRole("button", { name: /join by name/i }));
 
   const input = screen.getByPlaceholderText("Enter room name");
   fireEvent.change(input, { target: { value: "my-room" } });
@@ -70,7 +70,7 @@ test("a failed join keeps the modal open and shows why", () => {
   // headless ui only unmounts a closed modal after its leave transition runs
   jest.useFakeTimers();
   const { rerender } = renderSignedIn();
-  fireEvent.click(screen.getByRole("button", { name: /join by code/i }));
+  fireEvent.click(screen.getByRole("button", { name: /join by name/i }));
   fireEvent.change(screen.getByPlaceholderText("Enter room name"), { target: { value: "jolly-red-fox" } });
   fireEvent.click(screen.getByRole("button", { name: /join room/i }));
 
@@ -85,7 +85,7 @@ test("a failed join keeps the modal open and shows why", () => {
 
 test("editing the room name clears a stale join error", () => {
   renderSignedIn({ joinError: "Room not found. Check the name and try again." });
-  fireEvent.click(screen.getByRole("button", { name: /join by code/i }));
+  fireEvent.click(screen.getByRole("button", { name: /join by name/i }));
 
   fireEvent.change(screen.getByPlaceholderText("Enter room name"), { target: { value: "jolly-red-fox" } });
 
@@ -94,7 +94,7 @@ test("editing the room name clears a stale join error", () => {
 
 test("closing the join modal clears a stale join error", () => {
   renderSignedIn({ joinError: "Room not found. Check the name and try again." });
-  fireEvent.click(screen.getByRole("button", { name: /join by code/i }));
+  fireEvent.click(screen.getByRole("button", { name: /join by name/i }));
 
   fireEvent.click(screen.getByRole("button", { name: /close/i }));
 
@@ -103,7 +103,7 @@ test("closing the join modal clears a stale join error", () => {
 
 test("the join button is disabled and says so while the lookup runs", () => {
   renderSignedIn({ isJoining: true });
-  fireEvent.click(screen.getByRole("button", { name: /join by code/i }));
+  fireEvent.click(screen.getByRole("button", { name: /join by name/i }));
 
   expect(screen.getByRole("button", { name: /joining/i })).toBeDisabled();
 });
