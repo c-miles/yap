@@ -1,6 +1,6 @@
 import React, { useEffect, useRef } from "react";
 import { Send } from "lucide-react";
-import { Icon } from "../atoms";
+import { Icon, IconButton, fieldClassName } from "../atoms";
 import { MessageThreadProps } from "../../types/messageTypes";
 
 const MessageThread: React.FC<MessageThreadProps> = ({ messages, onSendMessage }) => {
@@ -38,17 +38,17 @@ const MessageThread: React.FC<MessageThreadProps> = ({ messages, onSendMessage }
   }, [newMessage]);
 
   return (
-    <div className="h-full flex flex-col bg-surface overflow-hidden">
+    <div className="h-full flex flex-col overflow-hidden">
       <div ref={listRef} className="flex-1 overflow-y-auto p-4 space-y-3">
         {messages.map((msg, index) => (
           <div key={msg._id ?? index} className="text-sm break-words">
-            <span className="font-medium text-accent">{msg.username}:</span>{" "}
-            <span className="text-text break-words">{msg.message}</span>
+            <span className="font-semibold text-text">{msg.username}</span>{" "}
+            <span className="text-text-secondary">{msg.message}</span>
           </div>
         ))}
       </div>
 
-      <div className="p-4 border-t border-border bg-surface">
+      <div className="p-4 border-t border-border">
         <div className="flex gap-2 items-end">
           <textarea
             ref={inputRef}
@@ -56,17 +56,13 @@ const MessageThread: React.FC<MessageThreadProps> = ({ messages, onSendMessage }
             value={newMessage}
             onChange={(e) => setNewMessage(e.target.value)}
             onKeyDown={handleKeyDown}
-            placeholder="Type a message..."
-            className="flex-1 resize-none px-3 py-2 bg-bg text-text border border-border rounded-lg
-              focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent"
+            aria-label="Message"
+            placeholder="Type a message…"
+            className={`${fieldClassName} border-glass-border flex-1 resize-none py-2.5`}
           />
-          <button
-            onClick={handleSendMessage}
-            className="p-2 bg-accent hover:bg-accent-hover text-accent-fg rounded-lg transition-colors flex-shrink-0"
-            aria-label="Send message"
-          >
-            <Icon icon={Send} size="sm" />
-          </button>
+          <IconButton variant="primary" onClick={handleSendMessage} aria-label="Send message" className="shrink-0">
+            <Icon icon={Send} size="md" aria-hidden="true" />
+          </IconButton>
         </div>
       </div>
     </div>

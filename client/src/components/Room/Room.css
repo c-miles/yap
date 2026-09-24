@@ -1,5 +1,6 @@
 .app-layout {
   --chat-drawer-width: 20rem;
+  --controls-height: calc(5rem + env(safe-area-inset-bottom, 0px));
   position: fixed;
   top: 0;
   left: 0;
@@ -59,6 +60,10 @@
   pointer-events: none;
 }
 
+.chat-drawer {
+  background-color: var(--surface);
+}
+
 /* base: fill the drawer (mobile bottom sheet) */
 .chat-drawer-inner {
   width: 100%;
@@ -76,22 +81,18 @@
     overflow: hidden;
     box-sizing: border-box;
     position: relative;
-    background-color: var(--surface);
-    border-left: 0 solid var(--surface-raised);
+    border-left: 0 solid var(--border);
     border-radius: 1rem 0 0 1rem;
     visibility: hidden;
     /* visibility waits out the width transition so closing doesn't pop */
-    transition: width 0.3s ease, border-left-width 0.3s ease, box-shadow 0.3s ease,
-      visibility 0s linear 0.3s;
+    transition: width 0.3s ease, border-left-width 0.3s ease, visibility 0s linear 0.3s;
   }
 
   .chat-drawer.open {
     width: var(--chat-drawer-width);
-    border-left-width: 2px;
-    box-shadow: -4px 0 6px -1px rgba(0, 0, 0, 0.1), -2px 0 4px -1px rgba(0, 0, 0, 0.06);
+    border-left-width: 1px;
     visibility: visible;
-    transition: width 0.3s ease, border-left-width 0.3s ease, box-shadow 0.3s ease,
-      visibility 0s;
+    transition: width 0.3s ease, border-left-width 0.3s ease, visibility 0s;
   }
 
   /* fixed-width content: the animating drawer width clips/reveals this like a
@@ -119,34 +120,37 @@
     bottom: 0;
     top: auto;
     width: 100%;
-    height: calc(38vh + 5rem);
+    /* the bottom band is where the controls sit, above the sheet */
+    height: calc(38vh + var(--controls-height));
     max-height: 100dvh;
+    padding-bottom: var(--controls-height);
     transform: translateY(100%);
     /* closing: stay visible and on top until the sheet has slid away */
     transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1),
       visibility 0s linear 0.3s, z-index 0s linear 0.3s;
-    border-left: none;
-    border-top: 2px solid var(--surface-raised);
+    border-top: 1px solid var(--border);
     border-radius: 1rem 1rem 0 0;
-    box-shadow: 0 -4px 6px -1px rgba(0, 0, 0, 0.1), 0 -2px 4px -1px rgba(0, 0, 0, 0.06);
     z-index: -1;
     overflow: hidden;
-    padding-bottom: 5rem;
     box-sizing: border-box;
     visibility: hidden;
   }
-  
+
   .chat-drawer.open {
-    transform: translateY(5rem);
+    transform: translateY(0);
     z-index: 30;
     visibility: visible;
     transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), visibility 0s, z-index 0s;
   }
 
+  .room-container.chat-open ~ .app-footer {
+    z-index: 35;
+  }
+
   .chat-backdrop {
     position: fixed;
     inset: 0;
-    background-color: rgba(0, 0, 0, 0.5);
+    background-color: var(--scrim);
     z-index: 25;
     opacity: 0;
     transition: opacity 0.3s ease;

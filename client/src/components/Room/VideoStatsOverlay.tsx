@@ -21,7 +21,7 @@ function describe(peer: PeerVideoStats): string {
 }
 
 const VideoStatsOverlay: React.FC<VideoStatsOverlayProps> = ({ snapshot, names }) => (
-  <div className="fixed left-3 top-16 z-toast max-w-[calc(100vw-1.5rem)] rounded-lg bg-[rgb(15_23_42_/_0.85)] px-3 py-2 font-mono text-xs text-text-secondary pointer-events-none">
+  <div className="fixed left-3 top-16 z-toast max-w-[calc(100vw-1.5rem)] rounded-lg glass-strong px-3 py-2 font-mono text-xs text-text-secondary pointer-events-none">
     {snapshot ? (
       <>
         <div className="text-text">

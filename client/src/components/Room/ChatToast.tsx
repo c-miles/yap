@@ -3,8 +3,7 @@ import { Message } from "../../types/messageTypes";
 
 const VISIBLE_MS = 5000;
 
-// Briefly surfaces the latest message over the video while chat is closed. Shows
-// on each new message (Room passes null once chat opens), auto-hides after ~5s.
+// Room passes null once chat opens
 const ChatToast: React.FC<{ message: Message | null }> = ({ message }) => {
   const [shown, setShown] = useState(false);
   const timer = useRef<ReturnType<typeof setTimeout>>();
@@ -26,13 +25,13 @@ const ChatToast: React.FC<{ message: Message | null }> = ({ message }) => {
 
   return (
     <div
-      className={`chat-toast max-w-sm rounded-xl bg-surface-raised px-4 py-2 text-sm shadow-lg
+      className={`chat-toast max-w-sm rounded-xl glass-strong px-4 py-2 text-sm
         transition-opacity duration-300 motion-reduce:transition-none ${shown ? "opacity-100" : "opacity-0 pointer-events-none"}`}
       role="status"
       aria-live="polite"
     >
-      <span className="font-medium text-accent">{message.username}</span>{" "}
-      <span className="text-text break-words">{message.message}</span>
+      <span className="font-semibold text-text">{message.username}</span>{" "}
+      <span className="text-text-secondary break-words">{message.message}</span>
     </div>
   );
 };

@@ -1,14 +1,15 @@
 import React from 'react';
 
 interface IconButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
-  variant?: 'default' | 'primary';
+  variant?: 'default' | 'primary' | 'active';
   size?: 'sm' | 'md';
   children: React.ReactNode;
 }
 
 const variantClasses = {
   default: 'glass text-text',
-  primary: 'bg-glass-action border border-glass-action-border text-text hover:bg-glass-action-hover hover:border-glass-border-hover'
+  primary: 'bg-glass-action border border-glass-action-border text-text hover:bg-glass-action-hover hover:border-glass-border-hover',
+  active: 'bg-accent-subtle border border-accent-border text-accent'
 };
 
 const sizeClasses = {

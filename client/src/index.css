@@ -15,7 +15,6 @@
 
     /* accent — teal signal for focus, links, icons and live cues, never a button fill */
     --accent: #2dd4bf;
-    --accent-hover: #14b8a6;
     --accent-fg: #0f172a;
     --accent-subtle: rgb(45 212 191 / 0.12);
     --accent-border: rgb(45 212 191 / 0.4);

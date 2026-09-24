@@ -1,5 +1,5 @@
 import React, { useEffect } from "react";
-import { VolumeX } from "lucide-react";
+import { MicOff } from "lucide-react";
 import { Icon } from "../atoms";
 import { Participant } from "./useRoomState";
 import { useContainerSize } from "./useContainerSize";
@@ -109,12 +109,8 @@ const VideoElement: React.FC<VideoElementProps> = ({
         </span>
         <div className="media-indicators">
           {!audioEnabled && (
-            <span
-              className="muted-indicator"
-              title="Microphone muted"
-              aria-label="Muted"
-            >
-              <Icon icon={VolumeX} size="md" className="text-white" />
+            <span className="muted-indicator" title="Microphone muted">
+              <Icon icon={MicOff} size="sm" />
             </span>
           )}
         </div>

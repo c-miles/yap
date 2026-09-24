@@ -28,3 +28,8 @@ test("Shift+Enter does not send", () => {
   fireEvent.keyDown(box, { key: "Enter", shiftKey: true });
   expect(onSend).not.toHaveBeenCalled();
 });
+
+test("the message box has a label", () => {
+  render(<MessageThread messages={[]} onSendMessage={jest.fn()} />);
+  expect(screen.getByRole("textbox", { name: "Message" })).toBeInTheDocument();
+});

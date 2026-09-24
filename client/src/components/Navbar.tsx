@@ -41,7 +41,7 @@ const Navbar: React.FC = () => {
               aria-label="Account menu"
               aria-haspopup="menu"
               aria-expanded={isOpen}
-              className="focus-ring flex items-center gap-2 p-2 rounded-lg hover:bg-glass-hover transition-colors"
+              className="focus-ring flex items-center gap-2 p-2 rounded-lg hover:bg-glass-hover transition-base"
             >
               <Avatar src={user.imageUrl} name={user.fullName || "User"} size="sm" />
               <Icon
@@ -57,14 +57,14 @@ const Navbar: React.FC = () => {
               <div className="absolute right-0 mt-2 w-48 glass-strong rounded-xl overflow-hidden">
                 <button
                   onClick={() => { navigate('/profile'); setIsOpen(false); }}
-                  className="focus-ring w-full px-4 py-3 text-left text-text hover:bg-glass-hover transition-colors"
+                  className="focus-ring w-full px-4 py-3 text-left text-text hover:bg-glass-hover transition-base"
                 >
                   Profile
                 </button>
                 <div className="border-t border-glass-border" />
                 <button
                   onClick={handleSignOut}
-                  className="focus-ring w-full px-4 py-3 text-left text-text hover:bg-glass-hover transition-colors"
+                  className="focus-ring w-full px-4 py-3 text-left text-text hover:bg-glass-hover transition-base"
                 >
                   Sign out
                 </button>

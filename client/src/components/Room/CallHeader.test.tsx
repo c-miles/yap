@@ -23,3 +23,8 @@ test("spans full width when chat is closed", () => {
   const { container } = render(<CallHeader participantCount={2} visible />);
   expect(container.querySelector("header")).not.toHaveClass("md:right-80");
 });
+
+test("the room name is the call's page heading", () => {
+  render(<CallHeader roomName="brave-blue-tiger" participantCount={2} visible />);
+  expect(screen.getByRole("heading", { level: 1, name: "brave-blue-tiger" })).toBeInTheDocument();
+});

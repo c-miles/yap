@@ -75,3 +75,19 @@ test("a profile that fails to load offers a retry instead of Join", () => {
   fireEvent.click(screen.getByRole("button", { name: /try again/i }));
   expect(base.onRetryProfile).toHaveBeenCalled();
 });
+
+test("the username prompt is a heading under the page title", () => {
+  const usernameForm = { username: "", setUsername: jest.fn(), error: "", isSubmitting: false, submit: jest.fn() };
+  render(<GreenRoom {...base} usernameForm={usernameForm} />);
+  expect(screen.getByRole("heading", { level: 2, name: "Pick a username" })).toBeInTheDocument();
+});
+
+test("blocked devices are announced", () => {
+  render(<GreenRoom {...base} streamReady={false} permissionError="denied" />);
+  expect(screen.getByRole("alert")).toHaveTextContent(/access was blocked/i);
+});
+
+test("a failed device switch is announced", () => {
+  render(<GreenRoom {...base} deviceSwitchError="Couldn't switch camera." />);
+  expect(screen.getByRole("alert")).toHaveTextContent("Couldn't switch camera.");
+});

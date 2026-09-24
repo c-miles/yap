@@ -42,7 +42,7 @@ const Modal: React.FC<ModalProps> = ({ open, onClose, title, children }) => (
                 <button
                   onClick={onClose}
                   aria-label="Close"
-                  className="focus-ring absolute right-0 top-0 text-text-muted hover:text-text transition-colors"
+                  className="focus-ring absolute right-0 top-0 text-text-muted hover:text-text transition-base"
                 >
                   <Icon icon={X} size="md" />
                 </button>

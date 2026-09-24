@@ -14,7 +14,6 @@ module.exports = {
         'text-secondary': 'var(--text-secondary)',
         'text-muted': 'var(--text-muted)',
         accent: 'var(--accent)',
-        'accent-hover': 'var(--accent-hover)',
         'accent-fg': 'var(--accent-fg)',
         'accent-subtle': 'var(--accent-subtle)',
         'accent-border': 'var(--accent-border)',

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
-import { AlertCircle } from "lucide-react";
-import { Icon } from "../atoms";
+import { Button, Spinner } from "../atoms";
+import { StatePanel } from "../molecules";
+import PageShell from "../PageShell";
 import ControlBar from "../ControlBar";
 import MessageThread from "../MessageThread/MessageThread";
 import ShareRoomModal from "../ShareRoomModal";
@@ -97,51 +98,24 @@ const Room: React.FC<RoomProps> = ({
     setIsShareModalOpen(false);
   };
 
-  // Show error state
   if (roomError) {
     return (
-      <div className="app-layout">
-        <div className="room-container">
-          <div className="video-area">
-            <div className="max-w-md mx-auto p-6 rounded-lg border border-danger bg-surface-raised">
-              <div className="flex items-center gap-3 mb-3">
-                <Icon icon={AlertCircle} className="text-danger" size="lg" />
-                <h2 className="text-lg font-semibold text-danger">Unable to join room</h2>
-              </div>
-              <p className="text-text-secondary">{roomError}</p>
-              <button
-                type="button"
-                onClick={onDashboard}
-                className="focus-ring mt-4 min-h-[44px] px-5 rounded-lg bg-surface-raised text-text hover:brightness-125 transition"
-              >
-                Back to lounge
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
+      <PageShell chrome={false}>
+        <StatePanel className="m-auto" title="Unable to join room" description={roomError}>
+          <Button onClick={onDashboard}>Back to lounge</Button>
+        </StatePanel>
+      </PageShell>
     );
   }
 
-  // Show loading state
   if (isConnecting) {
     return (
-      <div className="app-layout">
-        <div className="room-container">
-          <div className="video-area">
-            <div className="flex flex-col items-center justify-center gap-4">
-              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-accent"></div>
-              <h3 className="text-lg font-medium text-text">
-                Connecting to room...
-              </h3>
-            </div>
-          </div>
-        </div>
+      <div className="app-layout items-center justify-center">
+        <Spinner label="Connecting to room…" />
       </div>
     );
   }
 
-  // Main room layout
   return (
     <div className="app-layout">
       <CallHeader

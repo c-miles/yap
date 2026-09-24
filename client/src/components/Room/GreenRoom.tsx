@@ -1,12 +1,10 @@
 import React, { useCallback, useState } from "react";
 import { ArrowLeft, ChevronDown, Mic, MicOff, ShieldAlert, Video, VideoOff } from "lucide-react";
-import { Icon } from "../atoms";
-import { UsernameForm } from "../molecules";
+import { Button, Heading, Icon, fieldClassName } from "../atoms";
+import { MediaToggle, UsernameForm } from "../molecules";
 import { UsernameFormState } from "../../hooks/useUsernameForm";
 import WaveBackground from "../WaveBackground/WaveBackground";
 import { useMicLevel } from "./useMicLevel";
-
-const RETRY_BUTTON = "focus-ring min-h-[48px] px-6 rounded-xl bg-surface-raised text-text hover:brightness-125 transition";
 
 interface GreenRoomProps {
   stream: MediaStream | null;
@@ -37,26 +35,6 @@ const PERMISSION_MESSAGES: Record<NonNullable<GreenRoomProps["permissionError"]>
   other: "We couldn't access your camera or microphone. Check your device and try again.",
 };
 
-// a11y: signal off-state with aria-pressed + slashed icon + red fill, never color alone.
-const ToggleButton: React.FC<{
-  label: string;
-  off: boolean;
-  onClick: () => void;
-  onIcon: React.ReactNode;
-  offIcon: React.ReactNode;
-}> = ({ label, off, onClick, onIcon, offIcon }) => (
-  <button
-    type="button"
-    onClick={onClick}
-    aria-pressed={off}
-    className={`focus-ring flex items-center justify-center gap-2 rounded-xl min-w-[48px] min-h-[48px] px-4 text-sm font-medium transition-colors
-      ${off ? "bg-danger text-accent-fg" : "bg-surface-raised text-text hover:brightness-125"}`}
-  >
-    <span aria-hidden="true">{off ? offIcon : onIcon}</span>
-    <span>{label}</span>
-  </button>
-);
-
 const DeviceSelect: React.FC<{
   label: string;
   value?: string;
@@ -70,7 +48,7 @@ const DeviceSelect: React.FC<{
         aria-label={label}
         value={value ?? ""}
         onChange={(e) => onChange(e.target.value)}
-        className="focus-ring w-full appearance-none min-h-[48px] rounded-lg bg-surface-raised text-text border border-border pl-3 pr-10"
+        className={`${fieldClassName} border-glass-border appearance-none pr-10`}
       >
         {options.map((d) => (
           <option key={d.deviceId} value={d.deviceId}>
@@ -130,18 +108,13 @@ const GreenRoom: React.FC<GreenRoomProps> = ({
       <WaveBackground className="-z-10" still={touchDevice} />
       <div className="h-full overflow-y-auto">
         <div className="relative min-h-full flex flex-col items-center justify-center gap-6 px-6 py-16 text-center">
-          <button
-            type="button"
-            onClick={onCancel}
-            aria-label="Back to lounge"
-            className="focus-ring absolute top-4 left-4 flex items-center gap-1.5 min-h-[44px] px-3 rounded-lg text-text-secondary hover:text-text hover:bg-surface transition-colors"
-          >
+          <Button variant="ghost" size="sm" onClick={onCancel} aria-label="Back to lounge" className="absolute top-4 left-4">
             <Icon icon={ArrowLeft} size="sm" aria-hidden="true" />
             Lounge
-          </button>
-          <h1 className="font-display text-2xl font-semibold">{roomName ? `Joining ${roomName}` : "Joining the call"}</h1>
+          </Button>
+          <Heading>{roomName ? `Joining ${roomName}` : "Joining the call"}</Heading>
 
-          <div className="relative w-full max-w-md aspect-video rounded-xl overflow-hidden bg-surface border border-border">
+          <div className="relative w-full max-w-md aspect-video rounded-xl overflow-hidden bg-surface border border-glass-border">
             {showPreviewVideo ? (
               <video
                 ref={attachStream}
@@ -184,21 +157,23 @@ const GreenRoom: React.FC<GreenRoomProps> = ({
               </div>
 
               {deviceSwitchError && (
-                <p className="flex items-center gap-2 text-danger text-sm max-w-md">
+                <p role="alert" className="flex items-center gap-2 text-danger text-sm max-w-md">
                   <Icon icon={ShieldAlert} size="sm" aria-hidden="true" />
                   {deviceSwitchError}
                 </p>
               )}
 
               <div className="flex items-center gap-3">
-                <ToggleButton
+                <MediaToggle
+                  layout="inline"
                   label="Mic"
                   off={!audioEnabled}
                   onClick={toggleAudio}
                   onIcon={<Icon icon={Mic} size="md" />}
                   offIcon={<Icon icon={MicOff} size="md" />}
                 />
-                <ToggleButton
+                <MediaToggle
+                  layout="inline"
                   label="Camera"
                   off={!videoEnabled}
                   onClick={toggleVideo}
@@ -211,29 +186,25 @@ const GreenRoom: React.FC<GreenRoomProps> = ({
 
           {permissionError ? (
             <div className="flex flex-col items-center gap-3 max-w-md">
-              <p className="flex items-center gap-2 text-danger text-sm">
+              <p role="alert" className="flex items-center gap-2 text-danger text-sm">
                 <Icon icon={ShieldAlert} size="sm" aria-hidden="true" />
                 {PERMISSION_MESSAGES[permissionError]}
               </p>
-              <button
-                type="button"
-                onClick={onRetry}
-                className={RETRY_BUTTON}
-              >
+              <Button variant="secondary" onClick={onRetry}>
                 Try again
-              </button>
+              </Button>
             </div>
           ) : profileStatus === "error" ? (
             <div className="flex flex-col items-center gap-3 max-w-md">
               <p className="text-sm text-text-secondary">Couldn't load your profile.</p>
-              <button type="button" onClick={onRetryProfile} className={RETRY_BUTTON}>
+              <Button variant="secondary" onClick={onRetryProfile}>
                 Try again
-              </button>
+              </Button>
             </div>
           ) : usernameForm ? (
             <div className="w-full max-w-sm">
-              <p className="font-medium">Pick a username</p>
-              <p className="mb-4 text-sm text-text-secondary">This is how you'll show up in the call.</p>
+              <Heading level={2}>Pick a username</Heading>
+              <p className="mt-1 mb-4 text-sm text-text-secondary">This is how you'll show up in the call.</p>
               <UsernameForm form={usernameForm} />
             </div>
           ) : (
@@ -243,15 +214,9 @@ const GreenRoom: React.FC<GreenRoomProps> = ({
                   Allow camera &amp; mic to join.
                 </p>
               )}
-              <button
-                type="button"
-                onClick={onJoin}
-                disabled={!streamReady || profileStatus === "loading"}
-                className="focus-ring min-h-[48px] px-8 rounded-xl bg-accent text-accent-fg font-semibold hover:bg-accent-hover transition-colors
-                  disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-accent"
-              >
+              <Button size="lg" onClick={onJoin} disabled={!streamReady || profileStatus === "loading"} className="min-w-[10rem]">
                 Join
-              </button>
+              </Button>
             </>
           )}
         </div>
