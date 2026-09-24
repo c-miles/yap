@@ -2,6 +2,7 @@ import cors from "cors";
 import dotenv from "dotenv";
 import express from "express";
 import path from "path";
+import { readFile } from "fs/promises";
 import { fileURLToPath } from "url";
 
 import { clerkMiddleware } from "@clerk/express";
@@ -15,6 +16,7 @@ import roomRoutes from "./routes/roomRoutes.js";
 import userRoutes from "./routes/userRoutes.js";
 import turnRoutes from "./routes/turnRoutes.js";
 import { buildAllowedOrigins } from "./services/allowedOrigins.js";
+import { withRoomPreview } from "./services/roomPreview.js";
 
 dotenv.config();
 connect(process.env.MONGODB_URI);
@@ -34,10 +36,26 @@ app.use("/rooms", roomRoutes);
 app.use("/user", userRoutes);
 app.use("/turn-credentials", turnRoutes);
 
+const indexHtmlPath = path.join(__dirname, "client/build", "index.html");
+let indexHtml;
+
 app.use(express.static(path.join(__dirname, "client/build")));
 
+// a missing file is a real 404, not the app's html (link previews choke on that)
+app.get(/\.[a-z0-9]+$/i, (req, res) => res.sendStatus(404));
+
+// chat apps don't run JS, so room links get their preview tags from the server
+app.get("/room/:room", async (req, res, next) => {
+  try {
+    indexHtml ??= await readFile(indexHtmlPath, "utf8");
+    res.send(withRoomPreview(indexHtml, req.params.room));
+  } catch (error) {
+    next(error);
+  }
+});
+
 app.get("*", (req, res) => {
-  res.sendFile(path.join(__dirname, "client/build", "index.html"));
+  res.sendFile(indexHtmlPath);
 });
 
 const httpServer = createServer(app);
