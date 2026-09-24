@@ -3,6 +3,7 @@ import { Routes, Route, useLocation } from "react-router-dom";
 import Dashboard from "./components/Dashboard";
 import DirectRoomJoin from "./components/DirectRoomJoin";
 import LandingPage from "./components/LandingPage";
+import NotFound from "./components/NotFound";
 import Navbar from "./components/Navbar";
 import PrivacyPolicy from "./components/PrivacyPolicy";
 import Profile from "./components/Profile";
@@ -23,6 +24,7 @@ const App = () => {
         <Route path="/privacy" element={<PrivacyPolicy />} />
         <Route path="/terms" element={<TermsOfService />} />
         <Route path="/room/:roomId" element={<DirectRoomJoin />} />
+        <Route path="*" element={<NotFound />} />
       </Routes>
     </>
   );

@@ -53,17 +53,19 @@ test("authenticated users arriving from the dashboard render the room immediatel
   expect(await screen.findByTestId("room")).toBeInTheDocument();
 });
 
-test("a room name link that doesn't resolve says the room is gone", async () => {
+test("a room name that doesn't resolve says so, with a way back", async () => {
   mockedUseUser.mockReturnValue({ isLoaded: true, isSignedIn: true });
   mockedAuthFetch.mockResolvedValue({ ok: false, status: 404, json: async () => ({ message: "Room not found" }) });
   renderAt("/room/jolly-red-fox");
-  expect(await screen.findByText(/room not found or has expired/i)).toBeInTheDocument();
+  expect(await screen.findByRole("heading", { name: "We couldn't find jolly-red-fox" })).toBeInTheDocument();
+  expect(screen.getByRole("link", { name: "Back to lounge" })).toHaveAttribute("href", "/dashboard");
 });
 
-test("a failed lookup asks to try again instead of calling the room gone", async () => {
+test("a failed lookup says it couldn't join, with a way back", async () => {
   mockedUseUser.mockReturnValue({ isLoaded: true, isSignedIn: true });
   mockedAuthFetch.mockResolvedValue({ ok: false, status: 500, json: async () => ({ message: "boom" }) });
   jest.spyOn(console, "error").mockImplementation(() => {});
   renderAt("/room/jolly-red-fox");
-  expect(await screen.findByText(/unable to join room/i)).toBeInTheDocument();
+  expect(await screen.findByRole("heading", { name: "Couldn't join the room" })).toBeInTheDocument();
+  expect(screen.getByRole("link", { name: "Back to lounge" })).toHaveAttribute("href", "/dashboard");
 });

@@ -66,3 +66,9 @@ test("the terms of service are reachable at /terms without logging in", () => {
   );
   expect(screen.getByRole("heading", { level: 1, name: /terms of service/i })).toBeInTheDocument();
 });
+
+test("an unknown address shows a not-found page with a way home", () => {
+  renderAt("/no-such-page");
+  expect(screen.getByRole("heading", { name: "Nothing here" })).toBeInTheDocument();
+  expect(screen.getByRole("link", { name: "Go home" })).toHaveAttribute("href", "/");
+});
