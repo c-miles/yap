@@ -56,7 +56,7 @@ export const clerkAppearance: Appearance = {
       borderRadius: "1rem",
     },
     card: { backgroundColor: "transparent", boxShadow: "none" },
-    headerTitle: { fontFamily: '"Bricolage Grotesque Variable", system-ui, sans-serif' },
+    headerTitle: { fontWeight: 650, fontStretch: "104%", letterSpacing: "-0.01em" },
     formButtonPrimary: {
       backgroundColor: colors.action,
       color: colors.text,

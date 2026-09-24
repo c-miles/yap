@@ -5,7 +5,7 @@ import Heading from "./Heading";
 
 test("level drives the tag and size", () => {
   render(<Heading level={1}>hi</Heading>);
-  expect(screen.getByRole("heading", { level: 1 })).toHaveClass("font-display", "text-3xl");
+  expect(screen.getByRole("heading", { level: 1 })).toHaveClass("text-3xl");
 });
 
 test("defaults to a level 2 section heading", () => {
