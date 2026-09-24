@@ -51,7 +51,7 @@ const Navbar: React.FC = () => {
               aria-label="Account menu"
               aria-haspopup="menu"
               aria-expanded={isOpen}
-              className="flex items-center gap-2 p-2 rounded-lg hover:bg-primary transition-colors"
+              className="flex items-center gap-2 p-2 rounded-lg hover:bg-surface-raised transition-colors"
             >
               <Avatar src={user.imageUrl} name={user.fullName || "User"} size="sm" />
               <Icon
@@ -67,7 +67,7 @@ const Navbar: React.FC = () => {
               <div className="absolute right-0 mt-2 w-48 bg-surface border border-border rounded-lg shadow-lg overflow-hidden">
                 <button
                   onClick={() => { navigate('/profile'); setIsOpen(false); }}
-                  className="w-full px-4 py-3 text-left text-text hover:bg-primary transition-colors"
+                  className="w-full px-4 py-3 text-left text-text hover:bg-surface-raised transition-colors"
                 >
                   Profile
                 </button>

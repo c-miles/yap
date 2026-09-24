@@ -22,7 +22,7 @@ const Avatar: React.FC<AvatarProps> = ({ src, name = "User", size = "md", classN
   }
 
   return (
-    <div className={`${box} bg-primary flex items-center justify-center`} role="img" aria-label={name}>
+    <div className={`${box} bg-surface-raised flex items-center justify-center`} role="img" aria-label={name}>
       <Icon icon={User} size={GLYPH[size]} className="text-text" />
     </div>
   );

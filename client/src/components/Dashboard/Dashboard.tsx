@@ -47,7 +47,7 @@ const Dashboard: React.FC<DashboardProps> = ({
     <div className="relative isolate flex items-center justify-center min-h-[calc(100vh-64px)] p-8 pb-24">
       <WaveBackground className="-z-10" />
       {isLoading || (isAuthenticated && userExists === null && !profileError) ? (
-        <BeatLoader color="var(--primary-hov)" />
+        <BeatLoader color="var(--accent)" />
       ) : !isAuthenticated ? (
         <div className="w-full max-w-md">
           <Card padding="lg" className="text-center">
@@ -100,7 +100,7 @@ const Dashboard: React.FC<DashboardProps> = ({
         <>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8 w-full max-w-4xl">
             <DashboardCard
-              icon={<Icon icon={Video} size="xl" className="text-text" />}
+              icon={<Icon icon={Video} size="xl" className="text-accent" />}
               title="Start a room"
               description="Create a new video room and invite others to join"
               onClick={createRoom}
@@ -108,7 +108,7 @@ const Dashboard: React.FC<DashboardProps> = ({
             />
 
             <DashboardCard
-              icon={<Icon icon={Users} size="xl" className="text-text" />}
+              icon={<Icon icon={Users} size="xl" className="text-accent" />}
               title="Join by code"
               description="Enter a room code to join an existing conversation"
               onClick={() => setShowJoinRoomForm(true)}

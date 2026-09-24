@@ -131,7 +131,7 @@ const Room: React.FC<RoomProps> = ({
         <div className="room-container">
           <div className="video-area">
             <div className="flex flex-col items-center justify-center gap-4">
-              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-accent"></div>
               <h3 className="text-lg font-medium text-text">
                 Connecting to room...
               </h3>

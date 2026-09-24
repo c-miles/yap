@@ -14,18 +14,14 @@
     --text-secondary: #cbd5e1;
     --text-muted: #94a3b8;
 
-    /* legacy neutral — kept so un-migrated screen usages don't regress */
-    --primary: #475569;
-    --primary-hov: #64748b;
-
     /* accent — teal "signal", used sparingly for CTAs/focus/live cues */
     --accent: #2dd4bf;
     --accent-hover: #14b8a6;
     --accent-fg: #0f172a;
+    --accent-subtle: rgb(45 212 191 / 0.12);
 
     /* status */
     --danger: #f87171;
-    --success: #34d399;
     --warning: #fbbf24;
   }
 

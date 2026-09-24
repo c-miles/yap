@@ -78,7 +78,7 @@ const DirectRoomJoin: React.FC = () => {
 
   return (
     <div className="flex flex-col items-center justify-center h-screen gap-4">
-      <BeatLoader color="var(--primary-hov)" />
+      <BeatLoader color="var(--accent)" />
       <h3 className="text-lg font-medium text-text">
         {!isLoaded ? "Checking authentication..." : "Joining room..."}
       </h3>
