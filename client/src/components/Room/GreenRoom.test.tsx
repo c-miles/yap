@@ -34,7 +34,7 @@ test("denied permission shows a retry affordance and no Join", () => {
 
 test("device dropdowns list options and fire selection", () => {
   render(<GreenRoom {...base} />);
-  fireEvent.change(screen.getByLabelText(/camera/i), { target: { value: "cam1" } });
+  fireEvent.change(screen.getByRole("combobox", { name: "Camera" }), { target: { value: "cam1" } });
   expect(base.selectCamera).toHaveBeenCalledWith("cam1");
 });
 
@@ -74,6 +74,16 @@ test("a profile that fails to load offers a retry instead of Join", () => {
   expect(screen.queryByRole("button", { name: /^join$/i })).toBeNull();
   fireEvent.click(screen.getByRole("button", { name: /try again/i }));
   expect(base.onRetryProfile).toHaveBeenCalled();
+});
+
+test("the room name is the page heading", () => {
+  render(<GreenRoom {...base} roomName="brave-blue-fox" />);
+  expect(screen.getByRole("heading", { level: 1, name: "Joining brave-blue-fox" })).toBeInTheDocument();
+});
+
+test("while the camera starts, the preview says to allow access", () => {
+  render(<GreenRoom {...base} streamReady={false} />);
+  expect(screen.getByText("Allow camera and mic to join")).toBeInTheDocument();
 });
 
 test("the username prompt is a heading under the page title", () => {

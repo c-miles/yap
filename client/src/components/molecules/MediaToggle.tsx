@@ -1,29 +1,21 @@
 import React from "react";
+import { Mic, MicOff, Video, VideoOff } from "lucide-react";
+import { Icon, IconButton } from "../atoms";
 
-const LAYOUT = {
-  stacked: "flex-col gap-1 min-w-[64px] px-3 py-2 text-xs",
-  inline: "gap-2 min-w-12 px-4 text-sm",
-} as const;
+const KINDS = {
+  mic: { on: Mic, off: MicOff, turnOff: "Mute", turnOn: "Unmute" },
+  camera: { on: Video, off: VideoOff, turnOff: "Turn off camera", turnOn: "Turn on camera" },
+};
 
-// off shows three ways, never colour alone: aria-pressed, a slashed icon and the red fill
-const MediaToggle: React.FC<{
-  label: string;
-  off: boolean;
-  onClick: () => void;
-  onIcon: React.ReactNode;
-  offIcon: React.ReactNode;
-  layout: keyof typeof LAYOUT;
-}> = ({ label, off, onClick, onIcon, offIcon, layout }) => (
-  <button
-    type="button"
-    onClick={onClick}
-    aria-pressed={off}
-    className={`focus-ring flex items-center justify-center min-h-12 rounded-lg font-medium transition-base ${LAYOUT[layout]}
-      ${off ? "bg-danger border border-danger text-danger-fg hover:brightness-110" : "glass text-text"}`}
-  >
-    <span aria-hidden="true">{off ? offIcon : onIcon}</span>
-    <span>{label}</span>
-  </button>
-);
+// off shows as a red fill, a slashed icon and the label, never color alone
+const MediaToggle: React.FC<{ kind: keyof typeof KINDS; off: boolean; onClick: () => void }> = ({ kind, off, onClick }) => {
+  const { on, off: offIcon, turnOff, turnOn } = KINDS[kind];
+  const label = off ? turnOn : turnOff;
+  return (
+    <IconButton variant={off ? "off" : "default"} onClick={onClick} aria-label={label} title={label}>
+      <Icon icon={off ? offIcon : on} size="md" aria-hidden="true" />
+    </IconButton>
+  );
+};
 
 export default MediaToggle;

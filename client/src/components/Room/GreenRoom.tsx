@@ -1,5 +1,5 @@
 import React, { useCallback, useState } from "react";
-import { ArrowLeft, ChevronDown, Mic, MicOff, ShieldAlert, Video, VideoOff } from "lucide-react";
+import { ArrowLeft, ChevronDown, Mic, ShieldAlert, Video, VideoOff } from "lucide-react";
 import { Button, Heading, Icon, fieldClassName } from "../atoms";
 import { MediaToggle, UsernameForm } from "../molecules";
 import { UsernameFormState } from "../../hooks/useUsernameForm";
@@ -90,7 +90,7 @@ const GreenRoom: React.FC<GreenRoomProps> = ({
 }) => {
   const micLevel = useMicLevel(stream);
 
-  // callback ref, not a [stream] effect: the video and the stream can show up in either order
+  // callback ref: the <video> remounts on every camera toggle with the same stream, so a [stream] effect would miss it
   const attachStream = useCallback(
     (el: HTMLVideoElement | null) => {
       if (el && stream && el.srcObject !== stream) {
@@ -101,6 +101,7 @@ const GreenRoom: React.FC<GreenRoomProps> = ({
   );
 
   const showPreviewVideo = !!(stream && videoEnabled);
+  const waitingForDevices = !streamReady && !permissionError;
   const [touchDevice] = useState(() => window.matchMedia("(pointer: coarse)").matches);
 
   return (
@@ -112,7 +113,7 @@ const GreenRoom: React.FC<GreenRoomProps> = ({
             <Icon icon={ArrowLeft} size="sm" aria-hidden="true" />
             Lounge
           </Button>
-          <Heading>{roomName ? `Joining ${roomName}` : "Joining the call"}</Heading>
+          <Heading level={1}>{roomName ? `Joining ${roomName}` : "Joining the call"}</Heading>
 
           <div className="relative w-full max-w-md aspect-video rounded-xl overflow-hidden bg-surface border border-glass-border">
             {showPreviewVideo ? (
@@ -125,8 +126,8 @@ const GreenRoom: React.FC<GreenRoomProps> = ({
               />
             ) : (
               <div className="w-full h-full flex flex-col items-center justify-center gap-2 text-text-secondary">
-                <Icon icon={VideoOff} size="xl" aria-hidden="true" />
-                <span className="text-sm">Camera off</span>
+                <Icon icon={waitingForDevices ? Video : VideoOff} size="xl" aria-hidden="true" />
+                <span className="text-sm">{waitingForDevices ? "Allow camera and mic to join" : "Camera off"}</span>
               </div>
             )}
           </div>
@@ -164,22 +165,8 @@ const GreenRoom: React.FC<GreenRoomProps> = ({
               )}
 
               <div className="flex items-center gap-3">
-                <MediaToggle
-                  layout="inline"
-                  label="Mic"
-                  off={!audioEnabled}
-                  onClick={toggleAudio}
-                  onIcon={<Icon icon={Mic} size="md" />}
-                  offIcon={<Icon icon={MicOff} size="md" />}
-                />
-                <MediaToggle
-                  layout="inline"
-                  label="Camera"
-                  off={!videoEnabled}
-                  onClick={toggleVideo}
-                  onIcon={<Icon icon={Video} size="md" />}
-                  offIcon={<Icon icon={VideoOff} size="md" />}
-                />
+                <MediaToggle kind="mic" off={!audioEnabled} onClick={toggleAudio} />
+                <MediaToggle kind="camera" off={!videoEnabled} onClick={toggleVideo} />
               </div>
             </>
           )}
@@ -208,16 +195,9 @@ const GreenRoom: React.FC<GreenRoomProps> = ({
               <UsernameForm form={usernameForm} />
             </div>
           ) : (
-            <>
-              {!streamReady && (
-                <p className="text-text-secondary text-sm max-w-md">
-                  Allow camera &amp; mic to join.
-                </p>
-              )}
-              <Button size="lg" onClick={onJoin} disabled={!streamReady || profileStatus === "loading"} className="min-w-[10rem]">
-                Join
-              </Button>
-            </>
+            <Button size="lg" onClick={onJoin} disabled={!streamReady || profileStatus === "loading"} className="min-w-[10rem]">
+              Join
+            </Button>
           )}
         </div>
       </div>

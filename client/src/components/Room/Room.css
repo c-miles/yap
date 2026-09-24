@@ -119,7 +119,7 @@
     bottom: 0;
     top: auto;
     width: 100%;
-    /* the bottom band is where the controls sit, above the sheet */
+    /* the controls sit over this bottom band */
     height: calc(38vh + var(--controls-height));
     max-height: 100dvh;
     padding-bottom: var(--controls-height);
@@ -142,7 +142,8 @@
     transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), visibility 0s, z-index 0s;
   }
 
-  .room-container.chat-open ~ .app-footer {
+  /* always above the sheet, which stays up for its closing slide */
+  .app-footer {
     z-index: 35;
   }
 

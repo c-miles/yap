@@ -3,12 +3,23 @@ import { fireEvent, render, screen } from "@testing-library/react";
 import "@testing-library/jest-dom";
 import MediaToggle from "./MediaToggle";
 
-test("reports its off state and toggles on click", () => {
+test("the mic button names what it will do", () => {
+  const { rerender } = render(<MediaToggle kind="mic" off={false} onClick={jest.fn()} />);
+  expect(screen.getByRole("button", { name: "Mute" })).toBeInTheDocument();
+  rerender(<MediaToggle kind="mic" off onClick={jest.fn()} />);
+  expect(screen.getByRole("button", { name: "Unmute" })).toBeInTheDocument();
+});
+
+test("the camera button names what it will do", () => {
+  const { rerender } = render(<MediaToggle kind="camera" off={false} onClick={jest.fn()} />);
+  expect(screen.getByRole("button", { name: "Turn off camera" })).toBeInTheDocument();
+  rerender(<MediaToggle kind="camera" off onClick={jest.fn()} />);
+  expect(screen.getByRole("button", { name: "Turn on camera" })).toBeInTheDocument();
+});
+
+test("clicking toggles", () => {
   const onClick = jest.fn();
-  render(<MediaToggle label="Mic" off onClick={onClick} onIcon={<i>on</i>} offIcon={<i>off</i>} layout="inline" />);
-  const button = screen.getByRole("button", { name: /mic/i });
-  expect(button).toHaveAttribute("aria-pressed", "true");
-  expect(button).toHaveTextContent("off");
-  fireEvent.click(button);
+  render(<MediaToggle kind="mic" off={false} onClick={onClick} />);
+  fireEvent.click(screen.getByRole("button", { name: "Mute" }));
   expect(onClick).toHaveBeenCalled();
 });
