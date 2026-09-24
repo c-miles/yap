@@ -1,6 +1,8 @@
 import React, { useCallback } from "react";
 import { ChevronDown, Mic, MicOff, ShieldAlert, Video, VideoOff } from "lucide-react";
 import { Icon } from "../atoms";
+import { UsernameForm } from "../molecules";
+import { UsernameFormState } from "../../hooks/useUsernameForm";
 import { useMicLevel } from "./useMicLevel";
 
 interface GreenRoomProps {
@@ -18,6 +20,7 @@ interface GreenRoomProps {
   selectMic: (id: string) => void;
   deviceSwitchError?: string | null;
   onRetry: () => void;
+  usernameForm?: UsernameFormState;
   roomName?: string;
   onJoin: () => void;
 }
@@ -96,6 +99,7 @@ const GreenRoom: React.FC<GreenRoomProps> = ({
   onRetry,
   roomName,
   onJoin,
+  usernameForm,
 }) => {
   const micLevel = useMicLevel(stream);
 
@@ -196,6 +200,12 @@ const GreenRoom: React.FC<GreenRoomProps> = ({
           >
             Try again
           </button>
+        </div>
+      ) : usernameForm ? (
+        <div className="w-full max-w-sm">
+          <p className="font-medium">Pick a username</p>
+          <p className="mb-4 text-sm text-text-secondary">This is how you'll show up in the call.</p>
+          <UsernameForm form={usernameForm} />
         </div>
       ) : (
         <>

@@ -3,7 +3,7 @@ import { BeatLoader } from "react-spinners";
 import { DashboardProps } from "../../types/dashboardTypes";
 import { Video, Users } from "lucide-react";
 import { Button, Input, Card, Heading, Text, Icon } from "../atoms";
-import { Modal } from "../molecules";
+import { Modal, UsernameForm } from "../molecules";
 import DashboardCard from "../molecules/DashboardCard";
 import Footer from "../Footer";
 import WaveBackground from "../WaveBackground/WaveBackground";
@@ -11,13 +11,9 @@ import WaveBackground from "../WaveBackground/WaveBackground";
 const Dashboard: React.FC<DashboardProps> = ({
   createRoom,
   joinRoom,
-  handleUsernameSubmit,
-  isSubmitting,
-  newUsername,
-  setNewUsername,
+  usernameForm,
   userInfo,
   userExists,
-  usernameError,
   isAuthenticated,
   isLoading,
   onLogin,
@@ -70,31 +66,11 @@ const Dashboard: React.FC<DashboardProps> = ({
         </div>
       ) : showUsernameForm ? (
         <div className="w-full max-w-md">
-          <form
-            onSubmit={handleUsernameSubmit}
-            className="bg-surface border border-border rounded-lg p-8 text-center"
-          >
-            <Heading level={2} className="mb-4">Welcome to yap</Heading>
+          <Card padding="lg" className="text-center">
+            <Heading level={2} className="mb-4">Welcome to Yap</Heading>
             <Text variant="muted" className="mb-6">Choose a username to get started</Text>
-
-            <Input
-              type="text"
-              value={newUsername}
-              onChange={(e) => setNewUsername(e.target.value)}
-              placeholder="Choose a username"
-              required
-              error={usernameError}
-            />
-            
-            <Button 
-              type="submit" 
-              variant="primary" 
-              className="w-full mt-4"
-              disabled={isSubmitting}
-            >
-              {isSubmitting ? "Creating Account..." : "Set Username"}
-            </Button>
-          </form>
+            <UsernameForm form={usernameForm} />
+          </Card>
         </div>
       ) : (
         <>

@@ -1,8 +1,9 @@
-import React, { useState } from "react";
+import React from "react";
 import { useClerk } from "@clerk/react";
 
 import useAuthUser from "../../hooks/useAuthUser";
 import useRoomActions from "../../hooks/useRoomActions";
+import useUsernameForm from "../../hooks/useUsernameForm";
 
 import Dashboard from "./Dashboard";
 
@@ -13,32 +14,12 @@ const DashboardContainer: React.FC = () => {
 
   const onLogin = () => clerk.openSignIn({ forceRedirectUrl: "/dashboard" });
 
-  const [newUsername, setNewUsername] = useState<string>("");
-  const [usernameError, setUsernameError] = useState<string>("");
-  const [isSubmitting, setIsSubmitting] = useState(false);
-
-  const onUsernameFormSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    setIsSubmitting(true);
-    setUsernameError("");
-    
-    const error = await handleUsernameSubmit(newUsername);
-    setUsernameError(error);
-    setIsSubmitting(false);
-    
-    if (!error) {
-      setNewUsername("");
-    }
-  };
+  const usernameForm = useUsernameForm(handleUsernameSubmit);
 
   return (
     <Dashboard
       {...roomActions}
-      handleUsernameSubmit={onUsernameFormSubmit}
-      isSubmitting={isSubmitting}
-      newUsername={newUsername}
-      setNewUsername={setNewUsername}
-      usernameError={usernameError}
+      usernameForm={usernameForm}
       userInfo={userInfo}
       userExists={userExists}
       isAuthenticated={isAuthenticated}

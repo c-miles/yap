@@ -9,11 +9,7 @@ jest.mock("../WaveBackground/WaveBackground", () => () => null);
 const baseProps = {
   createRoom: jest.fn(),
   joinRoom: jest.fn(),
-  handleUsernameSubmit: jest.fn(),
-  isSubmitting: false,
-  newUsername: "",
-  setNewUsername: jest.fn(),
-  usernameError: "",
+  usernameForm: { username: "", setUsername: jest.fn(), error: "", isSubmitting: false, submit: jest.fn() },
   userInfo: null,
   userExists: null,
   onLogin: jest.fn(),

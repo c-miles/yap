@@ -4,6 +4,7 @@ import Room from "./Room";
 import GreenRoom from "./GreenRoom";
 
 import useAuthUser from "../../hooks/useAuthUser";
+import useUsernameForm from "../../hooks/useUsernameForm";
 import useMediaStream from "./useMediaStream";
 import usePeerConnection from "./usePeerConnection";
 import VideoStatsOverlay from "./VideoStatsOverlay";
@@ -17,7 +18,9 @@ interface LocationState {
 }
 
 const RoomContainer: React.FC = () => {
-  const { userInfo, clerkUser } = useAuthUser();
+  const { userInfo, userExists, clerkUser, handleUsernameSubmit } = useAuthUser();
+  const usernameForm = useUsernameForm(handleUsernameSubmit);
+  const needsUsername = userExists === false || (userExists === true && !userInfo?.username);
   const socket = useSocket();
   const location = useLocation();
   const navigate = useNavigate();
@@ -299,6 +302,7 @@ const RoomContainer: React.FC = () => {
         onRetry={retryMediaAccess}
         roomName={roomName}
         onJoin={() => setPhase("in-call")}
+        usernameForm={needsUsername ? usernameForm : undefined}
       />
     );
   }

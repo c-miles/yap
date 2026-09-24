@@ -1,14 +1,11 @@
 import { User } from "./userTypes";
 import type { RoomActions } from "../hooks/useRoomActions";
+import type { UsernameFormState } from "../hooks/useUsernameForm";
 
 export interface DashboardProps extends RoomActions {
-  handleUsernameSubmit: (e: React.FormEvent<HTMLFormElement>) => Promise<void>;
-  isSubmitting: boolean;
-  newUsername: string;
-  setNewUsername: React.Dispatch<React.SetStateAction<string>>;
+  usernameForm: UsernameFormState;
   userInfo: User | null;
   userExists: boolean | null;
-  usernameError: string;
   isAuthenticated: boolean;
   isLoading: boolean;
   onLogin: () => void;

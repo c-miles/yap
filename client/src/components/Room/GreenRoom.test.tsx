@@ -37,3 +37,10 @@ test("video disabled shows 'Camera off' and renders no video preview", () => {
   expect(screen.getByText(/camera off/i)).toBeInTheDocument();
   expect(document.querySelector("video")).toBeNull();
 });
+
+test("asks for a username before joining when there isn't one", () => {
+  const usernameForm = { username: "", setUsername: jest.fn(), error: "", isSubmitting: false, submit: jest.fn() };
+  render(<GreenRoom {...base} usernameForm={usernameForm} />);
+  expect(screen.getByPlaceholderText(/choose a username/i)).toBeInTheDocument();
+  expect(screen.queryByRole("button", { name: /^join$/i })).toBeNull();
+});
