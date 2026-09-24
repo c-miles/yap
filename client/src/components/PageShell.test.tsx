@@ -31,10 +31,10 @@ test("pages get the header and footer", () => {
   expect(screen.getByRole("contentinfo")).toBeInTheDocument();
 });
 
-test("the landing page keeps just the waves", () => {
+test("the landing page skips the header but keeps the privacy and terms footer", () => {
   renderAt("/");
   expect(screen.queryByRole("navigation")).toBeNull();
-  expect(screen.queryByRole("contentinfo")).toBeNull();
+  expect(screen.getByRole("contentinfo")).toBeInTheDocument();
 });
 
 test("chrome can be turned off for standalone screens", () => {
@@ -47,4 +47,5 @@ test("chrome can be turned off for standalone screens", () => {
   );
   expect(screen.getByRole("main")).toHaveTextContent("joining");
   expect(screen.queryByRole("navigation")).toBeNull();
+  expect(screen.queryByRole("contentinfo")).toBeNull();
 });
