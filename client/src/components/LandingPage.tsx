@@ -2,7 +2,9 @@ import React, { useCallback, useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useClerk, useUser } from "@clerk/react";
 import WaveBackground from "./WaveBackground/WaveBackground";
-import { Button, Heading, Text } from "./atoms";
+import Footer from "./Footer";
+import { Button, Text, Wordmark } from "./atoms";
+import { isValidRoomNameFormat } from "../utils/roomNameGenerator";
 
 const LandingPage: React.FC = () => {
   const { isLoaded, isSignedIn } = useUser();
@@ -22,7 +24,11 @@ const LandingPage: React.FC = () => {
 
   // explicit, since first-time social sign-ups finish on clerk's callback page and lose ?room
   const openSignIn = useCallback(
-    () => clerk.openSignIn(roomPath ? { forceRedirectUrl: roomPath, signUpForceRedirectUrl: roomPath } : {}),
+    () =>
+      clerk.openSignIn({
+        withSignUp: true,
+        ...(roomPath && { forceRedirectUrl: roomPath, signUpForceRedirectUrl: roomPath }),
+      }),
     [clerk, roomPath]
   );
 
@@ -33,21 +39,39 @@ const LandingPage: React.FC = () => {
   }, [isLoaded, isSignedIn, roomPath, openSignIn]);
 
   return (
-    <div className="min-h-screen bg-bg flex items-center justify-center px-4 relative overflow-hidden">
-      <WaveBackground />
-      {/* --surface (#1e293b) at 80%. our color tokens are opaque var()s, so the /80 modifier can't apply here */}
-      <div className="text-center max-w-md mx-auto relative z-10 bg-[rgb(30_41_59_/_0.8)] backdrop-blur-sm p-8 rounded-2xl shadow-2xl">
-        <Heading level={1} size="2xl" className="tracking-tight mb-4">yap</Heading>
-        <Text variant="secondary" className="text-lg mb-6">
+    <div className="relative isolate min-h-screen flex flex-col bg-bg overflow-hidden">
+      <WaveBackground className="-z-10" />
+      <main className="flex-1 flex flex-col items-center justify-center px-6 py-16 text-center">
+        {room && isValidRoomNameFormat(room) && (
+          <Text variant="secondary" className="mb-6">
+            You're invited to <span className="font-medium text-text">{room}</span>
+          </Text>
+        )}
+        <h1>
+          <Wordmark size="lg" />
+        </h1>
+        <Text variant="secondary" className="mt-6 max-w-[34ch] text-lg sm:text-xl text-balance">
           Drop-in video rooms for your group. Share a link and hop in, no install needed.
+        </Text>
+        <Text variant="small" className="mt-3">
+          Free · Up to 6 people · Never recorded
         </Text>
 
         {!isAuthenticated && (
-          <Button variant="primary" size="lg" onClick={openSignIn}>
-            Sign In
-          </Button>
+          <>
+            <Button size="lg" className="mt-8 min-w-[12rem]" onClick={openSignIn}>
+              {roomPath ? "Join room" : "Start a room"}
+            </Button>
+            <Text variant="small" className="mt-4">
+              Have an account?{" "}
+              <button type="button" onClick={openSignIn} className="focus-ring rounded text-accent hover:underline">
+                Sign in
+              </button>
+            </Text>
+          </>
         )}
-      </div>
+      </main>
+      <Footer />
     </div>
   );
 };
