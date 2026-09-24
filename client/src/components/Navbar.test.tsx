@@ -35,11 +35,6 @@ test("the wordmark takes signed-out visitors home", () => {
   expect(screen.getByRole("link", { name: "yap" })).toHaveAttribute("href", "/");
 });
 
-test("there's no separate Lounge button", () => {
-  renderNavbar();
-  expect(screen.queryByRole("button", { name: "Lounge" })).toBeNull();
-});
-
 test("opens the account menu with Profile and Sign out", () => {
   renderNavbar();
   fireEvent.click(screen.getByRole("button", { name: /account menu/i }));

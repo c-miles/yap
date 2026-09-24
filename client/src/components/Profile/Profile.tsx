@@ -46,7 +46,7 @@ const Profile: React.FC<ProfileProps> = ({
         <div className="flex flex-col items-center">
           <Avatar src={userInfo?.picture} name={userInfo?.username || "User"} size="xl" className="mb-6" />
 
-          <Heading level={2} size="lg" className="mb-2">
+          <Heading level={1} size="lg" className="mb-2">
             {userInfo?.username}
           </Heading>
 

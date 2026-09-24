@@ -6,7 +6,6 @@ export interface DashboardProps extends RoomActions {
   usernameForm: UsernameFormState;
   userInfo: User | null;
   userExists: boolean | null;
-  isLoading: boolean;
   profileError: boolean;
   onRetryProfile: () => void;
 }

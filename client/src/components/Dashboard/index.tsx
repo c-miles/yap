@@ -7,7 +7,7 @@ import useUsernameForm from "../../hooks/useUsernameForm";
 import Dashboard from "./Dashboard";
 
 const DashboardContainer: React.FC = () => {
-  const { userInfo, userExists, handleUsernameSubmit, isLoading, profileError, retryProfileLoad } = useAuthUser();
+  const { userInfo, userExists, handleUsernameSubmit, profileError, retryProfileLoad } = useAuthUser();
   const roomActions = useRoomActions();
 
 
@@ -19,7 +19,6 @@ const DashboardContainer: React.FC = () => {
       usernameForm={usernameForm}
       userInfo={userInfo}
       userExists={userExists}
-      isLoading={isLoading}
       profileError={profileError}
       onRetryProfile={retryProfileLoad}
     />

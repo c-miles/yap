@@ -15,7 +15,6 @@ const Dashboard: React.FC<DashboardProps> = ({
   usernameForm,
   userInfo,
   userExists,
-  isLoading,
   profileError,
   onRetryProfile,
   isCreating,
@@ -42,7 +41,8 @@ const Dashboard: React.FC<DashboardProps> = ({
   return (
     <div className="relative isolate flex items-center justify-center min-h-[calc(100vh-64px)] p-8 pb-24">
       <WaveBackground className="-z-10" />
-      {isLoading || (userExists === null && !profileError) ? (
+      <h1 className="sr-only">Lounge</h1>
+      {userExists === null && !profileError ? (
         <BeatLoader color="var(--accent)" aria-label="Loading" />
       ) : profileError ? (
         <div className="w-full max-w-md">

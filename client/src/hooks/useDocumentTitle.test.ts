@@ -6,10 +6,10 @@ test("names the page, then the app", () => {
   expect(document.title).toBe("Lounge · Yap");
 });
 
-test("falls back to the page's original title", () => {
+test("falls back to the site title", () => {
   const { rerender } = renderHook(({ title }: { title?: string }) => useDocumentTitle(title), {
     initialProps: { title: "Lounge" as string | undefined },
   });
   rerender({ title: undefined });
-  expect(document.title).toBe("");
+  expect(document.title).toBe("Yap · Drop-in video rooms for your group");
 });

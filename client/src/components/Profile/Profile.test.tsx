@@ -15,7 +15,7 @@ const base = {
 
 test("shows username and an edit affordance when not editing", () => {
   render(<Profile {...base} />);
-  expect(screen.getByRole("heading", { name: "ada" })).toBeInTheDocument();
+  expect(screen.getByRole("heading", { level: 1, name: "ada" })).toBeInTheDocument();
   expect(screen.getByRole("button", { name: /edit profile/i })).toBeInTheDocument();
 });
 

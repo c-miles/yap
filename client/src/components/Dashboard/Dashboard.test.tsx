@@ -23,7 +23,6 @@ const baseProps = {
 
 const signedInProps = {
   ...baseProps,
-  isLoading: false,
   userExists: true,
   userInfo: { username: "ada" } as any,
 };
@@ -36,16 +35,16 @@ afterEach(() => {
 });
 
 test("shows a spinner while the profile loads", () => {
-  render(<Dashboard {...baseProps} isLoading={true} />, { wrapper: MemoryRouter });
+  render(<Dashboard {...baseProps} />, { wrapper: MemoryRouter });
   expect(screen.getByLabelText("Loading")).toBeInTheDocument();
 });
 
 test("offers a retry instead of spinning forever when the profile fetch fails", () => {
-  render(<Dashboard {...baseProps} isLoading={false} profileError={true} />, { wrapper: MemoryRouter });
+  render(<Dashboard {...baseProps} profileError={true} />, { wrapper: MemoryRouter });
   expect(screen.getByRole("button", { name: /try again/i })).toBeInTheDocument();
 });
 
-test("joining by code opens the modal and submits the typed room name", () => {
+test("joining by name opens the modal and submits the typed room name", () => {
   renderSignedIn();
 
   fireEvent.click(screen.getByRole("button", { name: /join by name/i }));
@@ -113,7 +112,12 @@ test("a failed create is announced on the dashboard", () => {
 });
 
 test("links to the privacy policy and terms", () => {
-  render(<Dashboard {...baseProps} isLoading={false} userExists={true} userInfo={{ username: "ada" } as any} />, { wrapper: MemoryRouter });
+  render(<Dashboard {...baseProps} userExists={true} userInfo={{ username: "ada" } as any} />, { wrapper: MemoryRouter });
   expect(screen.getByRole("link", { name: "Privacy" })).toHaveAttribute("href", "/privacy");
   expect(screen.getByRole("link", { name: "Terms" })).toHaveAttribute("href", "/terms");
+});
+
+test("the lounge has a page heading for screen readers", () => {
+  renderSignedIn();
+  expect(screen.getByRole("heading", { level: 1, name: "Lounge" })).toBeInTheDocument();
 });
