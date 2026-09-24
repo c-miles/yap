@@ -16,7 +16,7 @@
   display: grid;
   justify-content: center;
   align-content: center;
-  flex-shrink: 0; /* It is a flex child of the container, so hold width and do not squeeze */
+  flex-shrink: 0;
 }
 
 .video-element {

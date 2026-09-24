@@ -168,9 +168,7 @@ const VideoGrid: React.FC<VideoGridProps> = ({
   };
   const tileStyle = { width: layout.tileWidth, height: layout.tileHeight };
 
-  // Center a lone trailing tile (e.g. 3 people fill a 2x2 with one in the last
-  // row); the grid would otherwise pin it to the left. Multi-tile short rows
-  // stay left-aligned.
+  // center a lone last-row tile (3 people in a 2x2); the grid would pin it left
   const lastRowStart = (layout.rows - 1) * layout.cols;
   const lastRowCount = count - lastRowStart;
   const loneTileOffset =

@@ -26,7 +26,7 @@ export default function useMediaStream({ onStreamUpdated }: { onStreamUpdated?: 
   const selectedCameraIdRef = useRef<string | undefined>(undefined);
   const selectedMicIdRef = useRef<string | undefined>(undefined);
 
-  // Enumerate cameras/mics; re-run on permission grant and devicechange.
+  // labels come back blank until permission is granted, so this re-runs after getUserMedia
   const enumerateAndSetDevices = useCallback(async () => {
     try {
       const deviceList = await navigator.mediaDevices.enumerateDevices();
@@ -50,11 +50,10 @@ export default function useMediaStream({ onStreamUpdated }: { onStreamUpdated?: 
       .getUserMedia({ audio: true, video: VIDEO_CONSTRAINTS })
       .then((mediaStream) => {
         if (!isInitialized.current) {
-          // unmounted or superseded while the prompt was open, don't strand a live camera
+          // unmounted while the prompt was open, don't strand a live camera
           mediaStream.getTracks().forEach((track) => track.stop());
           return;
         }
-        // stop any prior session first so an overlapping acquire can't leak a live camera
         streamRef.current?.getTracks().forEach((track) => track.stop());
         streamRef.current = mediaStream;
         setStream(mediaStream);
@@ -141,10 +140,8 @@ export default function useMediaStream({ onStreamUpdated }: { onStreamUpdated?: 
         videoTrack.enabled = !videoTrack.enabled;
         setVideoEnabled(videoTrack.enabled);
       } else {
-        // no live video track (never acquired, or iOS ended it mid-call) — and
-        // iOS allows only one live capture session, so a video-only getUserMedia
-        // here could mute our audio. acquire a fresh audio+video session, swap
-        // it in everywhere, then retire the old one.
+        // iOS allows one live capture session, so a video-only getUserMedia would kill
+        // our mic. grab audio+video and swap the whole stream
         if (acquiringVideo.current) {
           return;
         }
@@ -197,15 +194,12 @@ export default function useMediaStream({ onStreamUpdated }: { onStreamUpdated?: 
     }
   };
 
-  // Constraints for the device kind NOT being switched — honor an already
-  // selected device on that side instead of falling back to defaults.
   const videoConstraintsFor = (cameraId?: string): MediaTrackConstraints =>
     cameraId ? { ...VIDEO_CONSTRAINTS, deviceId: { exact: cameraId } } : VIDEO_CONSTRAINTS;
 
   const audioConstraintsFor = (micId?: string): MediaTrackConstraints | boolean =>
     micId ? { deviceId: { exact: micId } } : true;
 
-  // same iOS-safe swap as toggleVideo: carry the enabled states over, swap, then stop the old tracks
   const swapToNewDevice = (
     newStream: MediaStream,
     onDone: () => void
@@ -252,6 +246,7 @@ export default function useMediaStream({ onStreamUpdated }: { onStreamUpdated?: 
     }
     switching.current = true;
 
+    // the kind not being switched keeps its selected device, not the browser default
     const cameraId = kind === "camera" ? deviceId : selectedCameraIdRef.current;
     const micId = kind === "mic" ? deviceId : selectedMicIdRef.current;
 
@@ -277,7 +272,6 @@ export default function useMediaStream({ onStreamUpdated }: { onStreamUpdated?: 
       })
       .catch((error) => {
         console.error(`Error switching ${kind}:`, error);
-        // keep last-known-good selection; don't lie about which device is live
         setDeviceSwitchError("Couldn't switch to that device — it may be in use by another app.");
         switching.current = false;
       });

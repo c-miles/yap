@@ -76,12 +76,11 @@ export default function usePeerConnection({
     peerManagerRef.current?.removePeer(userId);
   }, []);
 
-  // for switching cameras or microphones mid-call
+  // any new local stream (device switch, or toggleVideo's iOS recovery) goes out via replaceTrack
   const updateLocalStream = useCallback(async (stream: MediaStream) => {
     await peerManagerRef.current?.updateLocalStream(stream);
   }, []);
 
-  // socket reconnects orphan every pc (server forgot us) — start fresh
   const resetAllPeers = useCallback(() => {
     peerManagerRef.current?.removeAllPeers();
   }, []);

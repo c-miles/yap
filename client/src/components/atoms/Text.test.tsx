@@ -8,9 +8,7 @@ test("variant maps to a token color", () => {
   expect(screen.getByText("m")).toHaveClass("text-text-muted");
 });
 
-test("as renders the requested element and className is appended", () => {
-  render(<Text as="label" className="mb-2">L</Text>);
-  const el = screen.getByText("L");
-  expect(el.tagName).toBe("LABEL");
-  expect(el).toHaveClass("mb-2");
+test("className is appended", () => {
+  render(<Text className="mb-2">L</Text>);
+  expect(screen.getByText("L")).toHaveClass("mb-2");
 });

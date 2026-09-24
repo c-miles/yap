@@ -44,32 +44,25 @@ test("retryMediaAccess is re-entrant-guarded — calling it twice in a row does 
 
   const { result } = renderHook(() => useMediaStream({ onStreamUpdated: jest.fn() }));
 
-  // initial mount acquisition is in flight (never resolved yet)
   expect(getUserMedia).toHaveBeenCalledTimes(1);
 
-  // fire two rapid retries while the first call is still pending
   await act(async () => {
     result.current.retryMediaAccess();
     result.current.retryMediaAccess();
   });
 
-  // the re-entrancy guard must have blocked the second (and any retry)
-  // acquisition while one was already in flight
   expect(getUserMedia).toHaveBeenCalledTimes(1);
 
-  // resolve the outstanding call and let state settle cleanly
   await act(async () => {
     resolvers[0](fakeStream());
   });
   await waitFor(() => expect(result.current.streamReady).toBe(true));
 
-  // now that the guard has cleared, a further retry is allowed to proceed
   await act(async () => {
     result.current.retryMediaAccess();
   });
   await waitFor(() => expect(getUserMedia).toHaveBeenCalledTimes(2));
 
-  // resolve the final acquisition too, so no promise is left dangling
   await act(async () => {
     resolvers[1](fakeStream());
   });

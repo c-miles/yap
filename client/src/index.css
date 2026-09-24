@@ -13,7 +13,7 @@
     --text-secondary: #cbd5e1;
     --text-muted: #94a3b8;
 
-    /* accent — teal signal for focus, links, icons and live cues, never a button fill */
+    /* accent — teal signal for focus, links, icons and live cues, never a solid button fill */
     --accent: #2dd4bf;
     --accent-fg: #0f172a;
     --accent-subtle: rgb(45 212 191 / 0.12);

@@ -136,10 +136,9 @@ const RoomContainer: React.FC = () => {
   useEffect(() => {
     if (!socket) return;
 
-    // manager-level "reconnect" fires only on true RE-connections, never the
-    // first connect — so the initial (buffered) join can't double-fire
     let authRetries = 0;
 
+    // the manager's "reconnect" skips the first connect, so this can't double the initial join
     const handleReconnect = () => {
       // a successful reconnect means auth (if it was retried) went through
       authRetries = 0;

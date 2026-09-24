@@ -13,7 +13,8 @@ import { normalizeRequestedHeight } from "../services/videoRequests.js";
 export const socketEvents = (io) => {
   const registry = createRoomRegistry();
 
-  // the one leave path, for leaveRoom, disconnect and a replaced stale socket
+  // the one leave path, for leaveRoom and disconnect. a socket replaced by a rejoin is
+  // already out of the registry, so its disconnect no-ops here
   async function handleLeave(socket, { leaveChannel = false } = {}) {
     const left = registry.leave(socket.id);
     if (!left) {

@@ -4,7 +4,7 @@ import WaveBackground from "./WaveBackground/WaveBackground";
 import Navbar from "./Navbar";
 import Footer from "./Footer";
 
-// used as a layout route, so the waves stay mounted (and don't jump) between pages
+// a layout route in App so the waves stay mounted between pages; room screens wrap themselves in it
 const PageShell: React.FC<{ chrome?: boolean; children?: React.ReactNode }> = ({ chrome, children }) => {
   const { pathname } = useLocation();
   const showChrome = chrome ?? pathname !== "/";

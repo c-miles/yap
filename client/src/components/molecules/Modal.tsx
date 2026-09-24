@@ -37,16 +37,17 @@ const Modal: React.FC<ModalProps> = ({ open, onClose, title, children }) => (
             leaveTo="opacity-0 scale-95"
           >
             <Dialog.Panel className="w-full max-w-md transform overflow-hidden rounded-xl glass-strong p-6 text-left align-middle transition-all">
-              <Dialog.Title as={Heading} className="mb-4 pr-8 relative">
-                {title}
+              <div className="mb-4 flex items-start justify-between gap-4">
+                <Dialog.Title as={Heading}>{title}</Dialog.Title>
                 <button
+                  type="button"
                   onClick={onClose}
                   aria-label="Close"
-                  className="focus-ring absolute right-0 top-0 text-text-muted hover:text-text transition-base"
+                  className="focus-ring rounded-lg text-text-muted hover:text-text transition-base"
                 >
-                  <Icon icon={X} size="md" />
+                  <Icon icon={X} size="md" aria-hidden="true" />
                 </button>
-              </Dialog.Title>
+              </div>
               {children}
             </Dialog.Panel>
           </Transition.Child>

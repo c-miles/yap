@@ -1,6 +1,3 @@
-// every mutation is one atomic update with the capacity check in the filter,
-// so two concurrent joins can't both squeeze into the last seat
-
 export async function upsertParticipant(RoomModel, roomId, participant) {
   // Same user already in the room (refresh/second tab): replace their entry.
   const rejoined = await RoomModel.findOneAndUpdate(
@@ -59,7 +56,7 @@ export async function setMediaState(RoomModel, roomId, userId, kind, enabled) {
   );
 }
 
-// whatever the client sends, this comes out as two booleans
+// always two booleans; missing input means camera off, mic on
 export function resolveJoinMediaState(mediaState) {
   if (!mediaState || typeof mediaState !== "object") {
     return { video: false, audio: true };
