@@ -28,7 +28,7 @@ export interface Cursor {
   placed: boolean;
 }
 
-// vertical lines, padded past every edge so the waves never pull away from the sides
+// padded past the edges so the waves never pull away from the sides
 export function createField(width: number, height: number): WaveField {
   const lineCount = Math.ceil((width + 200) / X_GAP);
   const pointCount = Math.ceil((height + 30) / Y_GAP);
@@ -111,7 +111,7 @@ export function drawField(ctx: CanvasRenderingContext2D, field: WaveField, width
   for (const line of field) {
     const [first] = line;
     ctx.moveTo(first.x + first.waveX, first.y + first.waveY);
-    // the last point skips the cursor push so each line stays pinned at the bottom
+    // the last point ignores the cursor so each line stays pinned
     line.forEach((p, i) => {
       const pinned = i === line.length - 1;
       ctx.lineTo(p.x + p.waveX + (pinned ? 0 : p.cursorX), p.y + p.waveY + (pinned ? 0 : p.cursorY));
