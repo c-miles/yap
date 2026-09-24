@@ -57,7 +57,8 @@ export const clerkAppearance: Appearance = {
       borderRadius: "1rem",
     },
     card: { backgroundColor: "transparent", boxShadow: "none" },
-    headerTitle: { fontWeight: 650, fontStretch: "104%", letterSpacing: "-0.01em", "&:empty": { display: "none" } },
+    header: { "&:has(.cl-headerTitle:empty)": { gap: 0 } },
+    headerTitle: { fontWeight: 650, fontStretch: "104%", letterSpacing: "-0.01em" },
     formButtonPrimary: {
       backgroundColor: colors.action,
       color: colors.text,
