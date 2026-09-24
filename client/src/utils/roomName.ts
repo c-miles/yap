@@ -8,3 +8,5 @@ export const normalizeRoomName = (input: string): string => {
   const lowered = input.trim().toLowerCase();
   return (lowered.match(/\/room\/([^/?#]+)/)?.[1] ?? lowered).replace(/\s+/g, "-");
 };
+
+export const inviteUrl = (roomName: string): string => `${window.location.origin}/room/${roomName}`;

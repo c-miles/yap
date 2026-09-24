@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { BeatLoader } from "react-spinners";
+import { Spinner } from "../atoms";
 
 import Profile from "./Profile";
 import useAuthUser from "../../hooks/useAuthUser";
@@ -25,11 +25,7 @@ const ProfileContainer: React.FC = () => {
   };
 
   if (userExists === null && !profileError) {
-    return (
-      <div className="flex items-center justify-center min-h-[calc(100vh-64px)]">
-        <BeatLoader color="var(--accent)" aria-label="Loading" />
-      </div>
-    );
+    return <Spinner className="m-auto" />;
   }
 
   return (

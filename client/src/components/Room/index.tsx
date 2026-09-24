@@ -94,7 +94,6 @@ const RoomContainer: React.FC = () => {
     localVideoRef,
     permissionError,
     retryMediaAccess,
-    retryVideoAccess,
     selectCamera,
     selectedCameraId,
     selectedMicId,
@@ -323,7 +322,6 @@ const RoomContainer: React.FC = () => {
         localVideoRef={localVideoRef}
         participants={participants}
         profilePicture={localPicture}
-        retryVideoAccess={retryVideoAccess}
         setVideoPermissionError={setVideoPermissionError}
         videoPermissionError={videoPermissionError}
         roomId={roomId}

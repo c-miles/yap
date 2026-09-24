@@ -28,7 +28,7 @@ const Navbar: React.FC = () => {
   };
 
   return (
-    <nav className="sticky top-0 h-16 bg-surface border-b border-border z-50">
+    <nav className="sticky top-0 z-sticky h-16 bg-glass backdrop-blur-md border-b border-glass-border">
       <div className="h-full px-4 flex items-center justify-between">
         <Link to={user ? "/dashboard" : "/"} className="focus-ring rounded">
           <Wordmark />
@@ -41,7 +41,7 @@ const Navbar: React.FC = () => {
               aria-label="Account menu"
               aria-haspopup="menu"
               aria-expanded={isOpen}
-              className="flex items-center gap-2 p-2 rounded-lg hover:bg-surface-raised transition-colors"
+              className="focus-ring flex items-center gap-2 p-2 rounded-lg hover:bg-glass-hover transition-colors"
             >
               <Avatar src={user.imageUrl} name={user.fullName || "User"} size="sm" />
               <Icon
@@ -54,17 +54,17 @@ const Navbar: React.FC = () => {
             </button>
             
             {isOpen && (
-              <div className="absolute right-0 mt-2 w-48 bg-surface border border-border rounded-lg shadow-lg overflow-hidden">
+              <div className="absolute right-0 mt-2 w-48 glass-strong rounded-xl overflow-hidden">
                 <button
                   onClick={() => { navigate('/profile'); setIsOpen(false); }}
-                  className="w-full px-4 py-3 text-left text-text hover:bg-surface-raised transition-colors"
+                  className="focus-ring w-full px-4 py-3 text-left text-text hover:bg-glass-hover transition-colors"
                 >
                   Profile
                 </button>
-                <div className="border-t border-border" />
+                <div className="border-t border-glass-border" />
                 <button
                   onClick={handleSignOut}
-                  className="w-full px-4 py-3 text-left text-danger hover:bg-surface-raised transition-colors"
+                  className="focus-ring w-full px-4 py-3 text-left text-text hover:bg-glass-hover transition-colors"
                 >
                   Sign out
                 </button>

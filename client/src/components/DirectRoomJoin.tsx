@@ -1,11 +1,12 @@
 import React, { useEffect, useState } from "react";
 import { Link, useParams, useNavigate, useLocation } from "react-router-dom";
 import { useUser } from "@clerk/react";
-import { BeatLoader } from "react-spinners";
-import { isValidRoomNameFormat } from "../utils/roomNameGenerator";
+import { isValidRoomNameFormat } from "../utils/roomName";
 import RoomContainer from "./Room";
 import { findRoom } from "../services/rooms";
-import { Heading, Text, buttonClassName } from "./atoms";
+import { Spinner, buttonClassName } from "./atoms";
+import { StatePanel } from "./molecules";
+import PageShell from "./PageShell";
 
 const DirectRoomJoin: React.FC = () => {
   const { roomId } = useParams<{ roomId: string }>();
@@ -66,23 +67,20 @@ const DirectRoomJoin: React.FC = () => {
 
   if (error) {
     return (
-      <main className="flex flex-col items-center justify-center gap-3 h-screen px-6 text-center">
-        <Heading level={1}>{error.title}</Heading>
-        <Text variant="secondary">{error.detail}</Text>
-        <Link to="/dashboard" className={buttonClassName("primary", "md", "mt-4")}>
-          Back to lounge
-        </Link>
-      </main>
+      <PageShell chrome={false}>
+        <StatePanel className="m-auto" title={error.title} description={error.detail}>
+          <Link to="/dashboard" className={buttonClassName()}>
+            Back to lounge
+          </Link>
+        </StatePanel>
+      </PageShell>
     );
   }
 
   return (
-    <div className="flex flex-col items-center justify-center h-screen gap-4">
-      <BeatLoader color="var(--accent)" />
-      <h3 className="text-lg font-medium text-text">
-        {!isLoaded ? "Checking authentication..." : "Joining room..."}
-      </h3>
-    </div>
+    <PageShell chrome={false}>
+      <Spinner className="m-auto" label={isLoaded ? "Joining room…" : "Checking your sign-in…"} />
+    </PageShell>
   );
 };
 

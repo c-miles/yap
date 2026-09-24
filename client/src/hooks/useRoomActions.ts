@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { authFetch } from "../services/authFetch";
 import { findRoom, FoundRoom } from "../services/rooms";
-import { normalizeRoomName } from "../utils/roomNameGenerator";
+import { normalizeRoomName } from "../utils/roomName";
 
 const useRoomActions = () => {
   const navigate = useNavigate();

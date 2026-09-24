@@ -24,7 +24,6 @@ interface RoomProps {
   localVideoRef: React.RefObject<HTMLVideoElement>;
   participants: Map<string, Participant>;
   profilePicture?: string;
-  retryVideoAccess: () => void;
   setVideoPermissionError: (error: 'denied' | 'notfound' | 'other' | null) => void;
   videoPermissionError: 'denied' | 'notfound' | 'other' | null;
   roomId: string | undefined;
@@ -48,7 +47,6 @@ const Room: React.FC<RoomProps> = ({
   localVideoRef,
   participants,
   profilePicture,
-  retryVideoAccess,
   setVideoPermissionError,
   videoPermissionError,
   roomId,
@@ -64,6 +62,7 @@ const Room: React.FC<RoomProps> = ({
 }) => {
   const [isMessageThreadOpen, setIsMessageThreadOpen] = useState(false);
   const [isShareModalOpen, setIsShareModalOpen] = useState(false);
+  const inviteName = roomName ?? roomId;
   const [isMobile, setIsMobile] = useState(false);
   const [tileHeight, setTileHeight] = useState(0);
 
@@ -165,10 +164,10 @@ const Room: React.FC<RoomProps> = ({
             profilePicture={profilePicture}
             onTileHeightChange={setTileHeight}
           />
-          {participants.size === 0 && (
+          {participants.size === 0 && inviteName && (
             <div className="absolute inset-x-0 top-20 z-10 flex justify-center pointer-events-none px-4">
               <div className="pointer-events-auto">
-                <WaitingForOthers roomName={roomName ?? roomId} />
+                <WaitingForOthers roomName={inviteName} />
               </div>
             </div>
           )}
@@ -206,20 +205,18 @@ const Room: React.FC<RoomProps> = ({
 
       <video ref={localVideoRef} autoPlay muted playsInline style={{ display: "none" }} />
 
-      {roomName && (
+      {inviteName && (
         <ShareRoomModal
           open={isShareModalOpen}
           onClose={handleCloseShareModal}
-          roomName={roomName}
+          roomName={inviteName}
         />
       )}
 
       <PermissionErrorModal
         open={!!videoPermissionError}
         onClose={() => setVideoPermissionError(null)}
-        onRetry={retryVideoAccess}
         errorType={videoPermissionError || 'other'}
-        mediaType="video"
       />
     </div>
   );

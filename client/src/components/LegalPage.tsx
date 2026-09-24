@@ -28,13 +28,13 @@ const LegalPage: React.FC<{ title: string; updated: string; children: React.Reac
 }) => {
   useDocumentTitle(title);
   return (
-    <main className="max-w-2xl mx-auto px-4 py-12 space-y-8">
+    <article className="glass-panel rounded-xl mx-auto w-full max-w-2xl p-6 sm:p-8 space-y-8">
       <header className="space-y-2">
         <Heading level={1}>{title}</Heading>
         <Text variant="muted">Last updated {updated}</Text>
       </header>
       {children}
-    </main>
+    </article>
   );
 };
 

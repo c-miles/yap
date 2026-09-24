@@ -35,7 +35,7 @@ const Dashboard: React.FC<DashboardProps> = ({
   };
 
   return (
-    <div className="m-auto w-full flex flex-col items-center p-8">
+    <div className="m-auto w-full flex flex-col items-center">
       <h1 className="sr-only">Lounge</h1>
       {userExists === null && !profileError ? (
         <Spinner />

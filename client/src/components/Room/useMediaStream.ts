@@ -307,10 +307,6 @@ export default function useMediaStream({ onStreamUpdated }: UseMediaStreamProps)
     await acquireMedia();
   };
 
-  const retryVideoAccess = () => {
-    setVideoPermissionError(null);
-    // User can just try clicking the video button again
-  };
 
   return {
     audioEnabled,
@@ -319,7 +315,6 @@ export default function useMediaStream({ onStreamUpdated }: UseMediaStreamProps)
     localVideoRef,
     permissionError,
     retryMediaAccess,
-    retryVideoAccess,
     selectCamera,
     selectedCameraId,
     selectedMicId,

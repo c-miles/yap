@@ -8,6 +8,7 @@ import DirectRoomJoin from "./DirectRoomJoin";
 
 jest.mock("@clerk/react", () => ({ useUser: jest.fn() }));
 jest.mock("./Room", () => () => <div data-testid="room" />);
+jest.mock("./WaveBackground/WaveBackground", () => () => null);
 jest.mock("../services/authFetch", () => ({ authFetch: jest.fn() }));
 
 const mockedUseUser = useUser as jest.Mock;
@@ -32,7 +33,7 @@ function renderAt(path: string, state?: object) {
 test("shows an auth spinner while Clerk is still loading", () => {
   mockedUseUser.mockReturnValue({ isLoaded: false, isSignedIn: false });
   renderAt("/room/507f1f77bcf86cd799439011");
-  expect(screen.getByText(/checking authentication/i)).toBeInTheDocument();
+  expect(screen.getByText(/checking your sign-in/i)).toBeInTheDocument();
 });
 
 test("logged-out users are sent to /?room=<id> to sign in", () => {

@@ -2,7 +2,7 @@ import React, { useCallback, useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useClerk, useUser } from "@clerk/react";
 import { Button, Text, Wordmark } from "./atoms";
-import { isValidRoomNameFormat } from "../utils/roomNameGenerator";
+import { isValidRoomNameFormat } from "../utils/roomName";
 import useDocumentTitle from "../hooks/useDocumentTitle";
 
 const LandingPage: React.FC = () => {
@@ -39,7 +39,7 @@ const LandingPage: React.FC = () => {
   }, [isLoaded, isSignedIn, roomPath, openSignIn]);
 
   return (
-    <div className="m-auto flex flex-col items-center px-6 py-16 text-center">
+    <div className="m-auto flex flex-col items-center text-center">
         {room && isValidRoomNameFormat(room) && (
           <Text variant="secondary" className="mb-6">
             You're invited to <span className="font-medium text-text">{room}</span>

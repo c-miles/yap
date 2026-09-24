@@ -15,7 +15,7 @@ const PageShell: React.FC<{ chrome?: boolean; children?: React.ReactNode }> = ({
         <WaveBackground />
       </div>
       {showChrome && <Navbar />}
-      <main className="flex-1 flex flex-col">{children ?? <Outlet />}</main>
+      <main className="flex-1 flex flex-col px-4 py-10">{children ?? <Outlet />}</main>
       {showChrome && <Footer />}
     </div>
   );
