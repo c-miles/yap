@@ -17,7 +17,7 @@ const AnchorButton: React.FC<{
     onClick={onClick}
     aria-pressed={off}
     className={`focus-ring flex flex-col items-center justify-center gap-1 rounded-xl min-w-[64px] min-h-[48px] px-3 py-2 text-xs font-medium transition-colors
-      ${off ? "bg-danger text-white" : "bg-surface-raised text-text hover:brightness-125"}`}
+      ${off ? "bg-danger text-accent-fg" : "bg-surface-raised text-text hover:brightness-125"}`}
   >
     <span aria-hidden="true">{off ? offIcon : onIcon}</span>
     <span>{label}</span>
@@ -104,7 +104,7 @@ const ControlBar: React.FC<ControlBarProps> = ({
           type="button"
           onClick={onLeaveRoom}
           className="focus-ring flex items-center gap-2 rounded-xl min-h-[48px] px-4 ml-2 text-sm font-semibold
-            bg-danger text-white hover:brightness-110 transition"
+            bg-danger text-accent-fg hover:brightness-110 transition"
         >
           <Icon icon={LogOut} size="md" aria-hidden="true" />
           <span>Leave</span>

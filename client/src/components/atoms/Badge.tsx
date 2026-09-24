@@ -7,7 +7,7 @@ interface BadgeProps extends React.HTMLAttributes<HTMLSpanElement> {
 
 const VARIANT = {
   accent: "bg-accent text-accent-fg",
-  danger: "bg-danger text-text",
+  danger: "bg-danger text-accent-fg",
   neutral: "bg-surface-raised text-text",
 } as const;
 
