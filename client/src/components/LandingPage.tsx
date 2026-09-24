@@ -1,20 +1,36 @@
-import React, { useEffect } from "react";
-import { useNavigate } from "react-router-dom";
-import { useUser } from "@clerk/react";
-import AuthenticationButton from "./AuthenticationButton";
+import React, { useCallback, useEffect } from "react";
+import { useNavigate, useSearchParams } from "react-router-dom";
+import { useClerk, useUser } from "@clerk/react";
 import WaveBackground from "./WaveBackground/WaveBackground";
-import { Heading, Text } from "./atoms";
+import { Button, Heading, Text } from "./atoms";
 
 const LandingPage: React.FC = () => {
-  const { isSignedIn } = useUser();
+  const { isLoaded, isSignedIn } = useUser();
   const isAuthenticated = isSignedIn === true;
+  const clerk = useClerk();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  // signed-out room links land here as /?room=<id> to sign in first
+  const room = searchParams.get("room");
+  const roomPath = room ? `/room/${encodeURIComponent(room)}` : null;
 
   useEffect(() => {
     if (isAuthenticated) {
-      navigate("/dashboard");
+      navigate(roomPath ?? "/dashboard", { replace: true });
     }
-  }, [isAuthenticated, navigate]);
+  }, [isAuthenticated, roomPath, navigate]);
+
+  // explicit, since first-time google/github sign-ups finish on clerk's callback page and lose ?room
+  const openSignIn = useCallback(
+    () => clerk.openSignIn(roomPath ? { forceRedirectUrl: roomPath, signUpForceRedirectUrl: roomPath } : {}),
+    [clerk, roomPath]
+  );
+
+  useEffect(() => {
+    if (isLoaded && !isSignedIn && roomPath) {
+      openSignIn();
+    }
+  }, [isLoaded, isSignedIn, roomPath, openSignIn]);
 
   return (
     <div className="min-h-screen bg-bg flex items-center justify-center px-4 relative overflow-hidden">
@@ -27,7 +43,9 @@ const LandingPage: React.FC = () => {
         </Text>
 
         {!isAuthenticated && (
-          <AuthenticationButton />
+          <Button variant="primary" size="lg" onClick={openSignIn}>
+            Sign In
+          </Button>
         )}
       </div>
     </div>
