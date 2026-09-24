@@ -10,6 +10,7 @@ jest.mock("@clerk/react", () => ({
   useClerk: () => ({}),
 }));
 jest.mock("./components/Navbar", () => () => <nav />);
+jest.mock("./components/WaveBackground/WaveBackground", () => () => null);
 jest.mock("./components/Dashboard", () => () => <p>lounge</p>);
 jest.mock("./components/DirectRoomJoin", () => () => <div />);
 jest.mock("./components/LandingPage", () => () => <p>landing</p>);

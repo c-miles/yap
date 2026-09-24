@@ -1,4 +1,5 @@
 import React from 'react';
+import { Heading, Text } from "../atoms";
 
 interface DashboardCardProps {
   icon: React.ReactNode;
@@ -20,15 +21,15 @@ const DashboardCard: React.FC<DashboardCardProps> = ({
       onClick={onClick}
       disabled={busy}
       aria-busy={busy}
-      className="focus-ring glass w-full p-8 rounded-lg enabled:hover:-translate-y-0.5 transition-all duration-150 text-left disabled:opacity-60 disabled:cursor-wait"
+      className="focus-ring glass w-full p-8 rounded-xl enabled:hover:-translate-y-0.5 transition-base text-left disabled:opacity-60 disabled:cursor-wait"
     >
       <div className="flex flex-col items-center text-center gap-4">
         <div className="w-20 h-20 bg-accent-subtle rounded-full flex items-center justify-center">
           {icon}
         </div>
         <div>
-          <h3 className="font-display text-xl font-semibold text-text mb-2">{title}</h3>
-          <p className="text-sm text-text-muted">{description}</p>
+          <Heading className="mb-2">{title}</Heading>
+          <Text variant="muted" className="text-sm">{description}</Text>
         </div>
       </div>
     </button>

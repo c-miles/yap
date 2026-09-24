@@ -1,7 +1,6 @@
 import React, { useCallback, useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useClerk, useUser } from "@clerk/react";
-import WaveBackground from "./WaveBackground/WaveBackground";
 import { Button, Text, Wordmark } from "./atoms";
 import { isValidRoomNameFormat } from "../utils/roomNameGenerator";
 import useDocumentTitle from "../hooks/useDocumentTitle";
@@ -40,9 +39,7 @@ const LandingPage: React.FC = () => {
   }, [isLoaded, isSignedIn, roomPath, openSignIn]);
 
   return (
-    <div className="relative isolate bg-bg overflow-hidden">
-      <WaveBackground className="-z-10" />
-      <main className="min-h-screen flex flex-col items-center justify-center px-6 py-16 text-center">
+    <div className="m-auto flex flex-col items-center px-6 py-16 text-center">
         {room && isValidRoomNameFormat(room) && (
           <Text variant="secondary" className="mb-6">
             You're invited to <span className="font-medium text-text">{room}</span>
@@ -61,7 +58,6 @@ const LandingPage: React.FC = () => {
             Sign in
           </Button>
         )}
-      </main>
     </div>
   );
 };

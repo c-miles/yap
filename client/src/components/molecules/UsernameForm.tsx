@@ -12,7 +12,7 @@ const UsernameForm: React.FC<{ form: UsernameFormState }> = ({ form }) => (
       required
       error={form.error}
     />
-    <Button type="submit" variant="primary" className="w-full mt-4" disabled={form.isSubmitting}>
+    <Button type="submit" className="w-full mt-4" disabled={form.isSubmitting}>
       {form.isSubmitting ? "Saving…" : "Set username"}
     </Button>
   </form>

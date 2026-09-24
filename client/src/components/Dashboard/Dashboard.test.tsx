@@ -4,8 +4,6 @@ import "@testing-library/jest-dom";
 import { MemoryRouter } from "react-router-dom";
 import Dashboard from "./Dashboard";
 
-jest.mock("../WaveBackground/WaveBackground", () => () => null);
-
 const baseProps = {
   createRoom: jest.fn(),
   joinRoom: jest.fn(),
@@ -109,12 +107,6 @@ test("a failed create is announced on the dashboard", () => {
   renderSignedIn({ createError: "Couldn't start a room. Try again." });
 
   expect(screen.getByRole("alert")).toHaveTextContent("Couldn't start a room. Try again.");
-});
-
-test("links to the privacy policy and terms", () => {
-  render(<Dashboard {...baseProps} userExists={true} userInfo={{ username: "ada" } as any} />, { wrapper: MemoryRouter });
-  expect(screen.getByRole("link", { name: "Privacy" })).toHaveAttribute("href", "/privacy");
-  expect(screen.getByRole("link", { name: "Terms" })).toHaveAttribute("href", "/terms");
 });
 
 test("the lounge has a page heading for screen readers", () => {

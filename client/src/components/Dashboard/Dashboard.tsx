@@ -1,12 +1,8 @@
 import React, { useState } from "react";
-import { BeatLoader } from "react-spinners";
 import { DashboardProps } from "../../types/dashboardTypes";
 import { Video, Users } from "lucide-react";
-import { Button, Input, Card, Heading, Text, Icon } from "../atoms";
-import { Modal, UsernameForm } from "../molecules";
-import DashboardCard from "../molecules/DashboardCard";
-import Footer from "../Footer";
-import WaveBackground from "../WaveBackground/WaveBackground";
+import { Button, Input, Icon, Spinner } from "../atoms";
+import { DashboardCard, Modal, StatePanel, UsernameForm } from "../molecules";
 import useDocumentTitle from "../../hooks/useDocumentTitle";
 
 const Dashboard: React.FC<DashboardProps> = ({
@@ -39,29 +35,18 @@ const Dashboard: React.FC<DashboardProps> = ({
   };
 
   return (
-    <div className="relative isolate flex items-center justify-center min-h-[calc(100vh-64px)] p-8 pb-24">
-      <WaveBackground className="-z-10" />
+    <div className="m-auto w-full flex flex-col items-center p-8">
       <h1 className="sr-only">Lounge</h1>
       {userExists === null && !profileError ? (
-        <BeatLoader color="var(--accent)" aria-label="Loading" />
+        <Spinner />
       ) : profileError ? (
-        <div className="w-full max-w-md">
-          <Card className="text-center">
-            <Heading level={2} className="mb-4">Couldn't load your profile</Heading>
-            <Text variant="muted" className="mb-6">Something went wrong talking to the server</Text>
-            <Button variant="primary" className="w-full" onClick={onRetryProfile}>
-              Try again
-            </Button>
-          </Card>
-        </div>
+        <StatePanel headingLevel={2} title="Couldn't load your profile" description="Something went wrong talking to the server.">
+          <Button onClick={onRetryProfile}>Try again</Button>
+        </StatePanel>
       ) : showUsernameForm ? (
-        <div className="w-full max-w-md">
-          <Card className="text-center">
-            <Heading level={2} className="mb-4">Welcome to Yap</Heading>
-            <Text variant="muted" className="mb-6">Choose a username to get started</Text>
-            <UsernameForm form={usernameForm} />
-          </Card>
-        </div>
+        <StatePanel headingLevel={2} title="Welcome to Yap" description="Choose a username to get started.">
+          <UsernameForm form={usernameForm} />
+        </StatePanel>
       ) : (
         <>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8 w-full max-w-4xl">
@@ -108,7 +93,6 @@ const Dashboard: React.FC<DashboardProps> = ({
           </Modal>
         </>
       )}
-      <Footer className="absolute inset-x-0 bottom-0" />
     </div>
   );
 };
