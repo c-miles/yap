@@ -1,6 +1,6 @@
 import { useEffect, useState, useRef } from "react";
 import { UseMediaStreamProps } from "../../types/mediaStreamTypes";
-import { VIDEO_CONSTRAINTS } from "./videoEncoding";
+import { VIDEO_CONSTRAINTS } from "./videoQuality";
 
 interface DeviceLists {
   cameras: MediaDeviceInfo[];

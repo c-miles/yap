@@ -1,16 +1,11 @@
 import { useEffect, useRef, useCallback } from "react";
 import { Socket } from "socket.io-client";
-import { PeerConnectionManager } from "./PeerConnectionManager";
+import { PeerConnectionCallbacks, PeerConnectionManager } from "./PeerConnectionManager";
 
-// MediaConstraints interface removed as it's not being used
-
-interface UsePeerConnectionProps {
+interface UsePeerConnectionProps extends PeerConnectionCallbacks {
   socket: Socket | null;
   userId: string;
   roomId: string;
-  onStreamAdded: (userId: string, stream: MediaStream) => void;
-  onStreamRemoved: (userId: string) => void;
-  onConnectionStateChange: (userId: string, state: RTCPeerConnectionState) => void;
 }
 
 export default function usePeerConnection({
@@ -19,41 +14,41 @@ export default function usePeerConnection({
   roomId,
   onStreamAdded,
   onStreamRemoved,
-  onConnectionStateChange
+  onConnectionStateChange,
+  onVideoStats,
 }: UsePeerConnectionProps) {
   const peerManagerRef = useRef<PeerConnectionManager | null>(null);
 
-  // Store callbacks in refs to avoid recreating PeerConnectionManager
-  const callbacksRef = useRef({
+  // the manager outlives renders, so it calls through this ref to reach the latest callbacks
+  const callbacksRef = useRef<PeerConnectionCallbacks>({
     onStreamAdded,
     onStreamRemoved,
-    onConnectionStateChange
+    onConnectionStateChange,
+    onVideoStats,
   });
 
-  // Update callback refs when they change
   useEffect(() => {
     callbacksRef.current = {
       onStreamAdded,
       onStreamRemoved,
-      onConnectionStateChange
+      onConnectionStateChange,
+      onVideoStats,
     };
-  }, [onStreamAdded, onStreamRemoved, onConnectionStateChange]);
+  }, [onStreamAdded, onStreamRemoved, onConnectionStateChange, onVideoStats]);
 
-  // Initialize peer connection manager
   useEffect(() => {
     if (!socket || !userId || !roomId) return;
 
-    // Only create if we don't have one already
     if (peerManagerRef.current) {
       return;
     }
 
-    peerManagerRef.current = new PeerConnectionManager(
-      socket,
-      userId,
-      roomId,
-      callbacksRef.current
-    );
+    peerManagerRef.current = new PeerConnectionManager(socket, userId, {
+      onStreamAdded: (id, stream) => callbacksRef.current.onStreamAdded(id, stream),
+      onStreamRemoved: (id) => callbacksRef.current.onStreamRemoved(id),
+      onConnectionStateChange: (id, state) => callbacksRef.current.onConnectionStateChange(id, state),
+      onVideoStats: (snapshot) => callbacksRef.current.onVideoStats?.(snapshot),
+    });
 
     return () => {
       peerManagerRef.current?.cleanup();
@@ -61,7 +56,6 @@ export default function usePeerConnection({
     };
   }, [socket, userId, roomId]);
 
-  // Set local stream
   const setLocalStream = useCallback((stream: MediaStream) => {
     if (!peerManagerRef.current) return;
     peerManagerRef.current.setLocalStream(stream);
@@ -78,22 +72,19 @@ export default function usePeerConnection({
     }
   }, []);
 
-  // Disconnect from a peer
   const disconnectFromPeer = useCallback((userId: string) => {
     peerManagerRef.current?.removePeer(userId);
   }, []);
 
-  // Toggle video
   const toggleVideo = useCallback((enabled: boolean) => {
     peerManagerRef.current?.toggleVideo(enabled);
   }, []);
 
-  // Toggle audio
   const toggleAudio = useCallback((enabled: boolean) => {
     peerManagerRef.current?.toggleAudio(enabled);
   }, []);
 
-  // Update local stream (for changing cameras/microphones)
+  // for switching cameras or microphones mid-call
   const updateLocalStream = useCallback(async (stream: MediaStream) => {
     await peerManagerRef.current?.updateLocalStream(stream);
   }, []);

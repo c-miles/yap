@@ -1,7 +1,10 @@
 import { Socket } from "socket.io-client";
 import { getIceServers } from "../../services/iceServers";
 import { isPolite, shouldIgnoreOffer } from "./negotiationState";
-import { withVideoBitrateCap } from "./videoEncoding";
+import { initialStepper, stepQuality, StepperState } from "./qualityStepper";
+import { withStartBitrate } from "./sdpHints";
+import { startBitrateKbps, targetEncoding, withEncoding } from "./videoQuality";
+import { PeerVideoStats, readSenderStats, SenderStats, VideoStatsSnapshot } from "./videoStats";
 
 interface PeerConnection {
   connection: RTCPeerConnection;
@@ -15,6 +18,16 @@ interface PeerConnection {
   disconnectTimer: ReturnType<typeof setTimeout> | null;
   stuckTimer: ReturnType<typeof setTimeout> | null;
   restartAttempts: number;
+  encodingUpdate: Promise<void>;
+  encodingStale: boolean;
+  videoStats?: SenderStats;
+}
+
+export interface PeerConnectionCallbacks {
+  onStreamAdded: (userId: string, stream: MediaStream) => void;
+  onStreamRemoved: (userId: string) => void;
+  onConnectionStateChange: (userId: string, state: RTCPeerConnectionState) => void;
+  onVideoStats?: (snapshot: VideoStatsSnapshot) => void;
 }
 
 const DISCONNECT_GRACE_MS = 4000;
@@ -22,6 +35,14 @@ const MAX_ICE_RESTARTS = 2;
 const MAX_PENDING_CANDIDATES = 32;
 const STUCK_CONNECTION_TIMEOUT_MS = 8000;
 const STUCK_CONNECTION_JITTER_MS = 2000;
+const STATS_INTERVAL_MS = 3000;
+
+const videoSender = (pc: RTCPeerConnection) => pc.getSenders().find((sender) => sender.track?.kind === "video");
+
+const markAsMotion = (stream: MediaStream) =>
+  stream.getVideoTracks().forEach((track) => {
+    track.contentHint = "motion";
+  });
 
 export class PeerConnectionManager {
   private peers: Map<string, PeerConnection> = new Map();
@@ -30,12 +51,11 @@ export class PeerConnectionManager {
   private localStream: MediaStream | null = null;
   private socket: Socket;
   private userId: string;
-  private _roomId: string; // Reserved for future room-specific WebRTC features
-  private callbacks: {
-    onStreamAdded: (userId: string, stream: MediaStream) => void;
-    onStreamRemoved: (userId: string) => void;
-    onConnectionStateChange: (userId: string, state: RTCPeerConnectionState) => void;
-  };
+  private callbacks: PeerConnectionCallbacks;
+  // kept apart from peers so requests survive a rebuild and can land before the connection does
+  private requestedHeights: Map<string, number> = new Map();
+  private stepper: StepperState;
+  private statsTimer: ReturnType<typeof setInterval>;
 
   private readonly handleReceiveOffer = async ({ offer, fromUserId }: { offer: RTCSessionDescriptionInit; fromUserId: string }) => {
     await this.handleOffer(fromUserId, offer);
@@ -49,20 +69,28 @@ export class PeerConnectionManager {
     await this.handleIceCandidate(fromUserId, candidate);
   };
 
+  private readonly handleReceiveVideoRequest = ({ maxHeight, fromUserId }: { maxHeight: number; fromUserId: string }) => {
+    this.requestedHeights.set(fromUserId, maxHeight);
+    const peer = this.peers.get(fromUserId);
+    if (peer) {
+      this.applyVideoEncoding(peer);
+    }
+  };
+
   constructor(
     socket: Socket,
     userId: string,
-    roomId: string,
-    callbacks: {
-      onStreamAdded: (userId: string, stream: MediaStream) => void;
-      onStreamRemoved: (userId: string) => void;
-      onConnectionStateChange: (userId: string, state: RTCPeerConnectionState) => void;
-    }
+    callbacks: PeerConnectionCallbacks
   ) {
     this.socket = socket;
     this.userId = userId;
-    this._roomId = roomId;
     this.callbacks = callbacks;
+    const onPhone = window.matchMedia("(pointer: coarse)").matches;
+    this.stepper = initialStepper(onPhone ? 1 : 0);
+    this.statsTimer = setInterval(
+      () => this.sampleVideoStats().catch((error) => console.error("Error sampling video stats:", error)),
+      STATS_INTERVAL_MS
+    );
 
     this.setupSocketListeners();
 
@@ -74,12 +102,85 @@ export class PeerConnectionManager {
     this.socket.on("receiveOffer", this.handleReceiveOffer);
     this.socket.on("receiveAnswer", this.handleReceiveAnswer);
     this.socket.on("receiveIceCandidate", this.handleReceiveIceCandidate);
+    this.socket.on("receiveVideoRequest", this.handleReceiveVideoRequest);
   }
 
-  private capVideoSender(sender: RTCRtpSender): void {
-    sender.setParameters(withVideoBitrateCap(sender.getParameters())).catch((error) => {
-      console.error("Error capping video bitrate:", error);
+  private withStartHint(description: RTCSessionDescription | null): RTCSessionDescriptionInit | null {
+    return description && { type: description.type, sdp: withStartBitrate(description.sdp, startBitrateKbps(this.peers.size)) };
+  }
+
+  // serialized per peer since overlapping setParameters calls can reject.
+  // failed or too-early updates get retried on the next stats tick
+  private applyVideoEncoding(peer: PeerConnection): void {
+    peer.encodingUpdate = peer.encodingUpdate
+      .then(() => this.updateVideoEncoding(peer))
+      .then((applied) => {
+        peer.encodingStale = !applied;
+      })
+      .catch((error) => {
+        peer.encodingStale = true;
+        console.error(`Error updating video encoding for ${peer.userId}:`, error);
+      });
+  }
+
+  private async updateVideoEncoding(peer: PeerConnection): Promise<boolean> {
+    const sender = videoSender(peer.connection);
+    if (!sender?.track || peer.connection.connectionState === "closed") {
+      return true;
+    }
+    const { width = 0, height = 0 } = sender.track.getSettings();
+    const params = withEncoding(
+      sender.getParameters(),
+      targetEncoding({
+        peerCount: this.peers.size,
+        stepDown: this.stepper.stepDown,
+        requestedHeight: this.requestedHeights.get(peer.userId),
+        captureShortSide: Math.min(width, height),
+      })
+    );
+    if (!params) {
+      return false;
+    }
+    await sender.setParameters(params);
+    return true;
+  }
+
+  private applyAllVideoEncodings(): void {
+    this.peers.forEach((peer) => this.applyVideoEncoding(peer));
+  }
+
+  private async sampleVideoStats(): Promise<void> {
+    const samples = await Promise.all(Array.from(this.peers.values()).map((peer) => this.sampleVideoSender(peer)));
+    const peers = samples.filter((sample): sample is PeerVideoStats => sample !== null);
+    const cameraOn = Boolean(this.localStream?.getVideoTracks().some((track) => track.enabled));
+    // idle senders (camera off, or paused by the viewer) report no limit and would vote us back up
+    const reasons = cameraOn
+      ? peers
+          .filter((sample) => sample.requestedHeight !== 0)
+          .map((sample) => sample.limitation)
+          .filter((reason): reason is string => Boolean(reason))
+      : [];
+
+    const next = stepQuality(this.stepper, reasons);
+    const stepped = next.stepDown !== this.stepper.stepDown;
+    this.stepper = next;
+    this.peers.forEach((peer) => {
+      if (stepped || peer.encodingStale) {
+        this.applyVideoEncoding(peer);
+      }
     });
+    this.callbacks.onVideoStats?.({ peerCount: this.peers.size, stepDown: next.stepDown, peers });
+  }
+
+  private async sampleVideoSender(peer: PeerConnection): Promise<PeerVideoStats | null> {
+    const sender = videoSender(peer.connection);
+    if (!sender) {
+      return null;
+    }
+    const report = await sender.getStats().catch(() => null);
+    const stats = report && readSenderStats(report, peer.videoStats);
+    peer.videoStats = stats ?? undefined;
+    return stats && { ...stats, userId: peer.userId, requestedHeight: this.requestedHeights.get(peer.userId) };
   }
 
   setLocalStream(stream: MediaStream): void {
@@ -88,6 +189,7 @@ export class PeerConnectionManager {
     if (!stream.getTracks().some((track) => track.readyState === "live")) {
       return;
     }
+    markAsMotion(stream);
     this.localStream = stream;
     // addTrack fires onnegotiationneeded, so late tracks renegotiate on their own
     this.peers.forEach((peer) => {
@@ -97,9 +199,9 @@ export class PeerConnectionManager {
         }
         const sender = peer.connection.getSenders().find((s) => s.track?.kind === track.kind);
         if (!sender) {
-          const newSender = peer.connection.addTrack(track, stream);
+          peer.connection.addTrack(track, stream);
           if (track.kind === "video") {
-            this.capVideoSender(newSender);
+            this.applyVideoEncoding(peer);
           }
         }
       });
@@ -136,6 +238,8 @@ export class PeerConnectionManager {
       disconnectTimer: null,
       stuckTimer: null,
       restartAttempts: 0,
+      encodingUpdate: Promise.resolve(),
+      encodingStale: false,
     };
     this.peers.set(targetUserId, peer);
 
@@ -155,12 +259,11 @@ export class PeerConnectionManager {
         if (track.readyState === "ended") {
           return; // a stale caller handed us a retired stream — never wire dead tracks
         }
-        const sender = pc.addTrack(track, this.localStream!);
-        if (track.kind === "video") {
-          this.capVideoSender(sender);
-        }
+        pc.addTrack(track, this.localStream!);
       });
     }
+    // a new peer changes the call size, which moves everyone's rung
+    this.applyAllVideoEncodings();
 
     // every offer starts here — initial tracks, late tracks, restartIce.
     // colliding offers resolve via the polite/impolite roles.
@@ -171,7 +274,7 @@ export class PeerConnectionManager {
       try {
         peer.makingOffer = true;
         await pc.setLocalDescription();
-        this.socket.emit("sendOffer", { targetUserId, offer: pc.localDescription });
+        this.socket.emit("sendOffer", { targetUserId, offer: this.withStartHint(pc.localDescription) });
       } catch (error) {
         console.error(`Error negotiating with ${targetUserId}:`, error);
       } finally {
@@ -199,6 +302,8 @@ export class PeerConnectionManager {
         case "connected":
           this.clearTimers(peer);
           peer.restartAttempts = 0;
+          // firefox has no encodings to set until negotiation finishes
+          this.applyVideoEncoding(peer);
           break;
         case "disconnected":
           // often just a wifi blip — give it a moment before forcing a restart
@@ -297,7 +402,7 @@ export class PeerConnectionManager {
       await pc.setRemoteDescription(offer);
       await this.flushCandidateQueue(peer);
       await pc.setLocalDescription(); // creates the answer
-      this.socket.emit("sendAnswer", { targetUserId: fromUserId, answer: pc.localDescription });
+      this.socket.emit("sendAnswer", { targetUserId: fromUserId, answer: this.withStartHint(pc.localDescription) });
     } catch (error) {
       console.error(`Error handling offer from ${fromUserId}:`, error);
     }
@@ -360,6 +465,7 @@ export class PeerConnectionManager {
       peer.connection.close();
       this.peers.delete(userId);
       this.callbacks.onStreamRemoved(userId);
+      this.applyAllVideoEncodings();
     }
     this.pendingCandidates.delete(userId);
   }
@@ -372,27 +478,42 @@ export class PeerConnectionManager {
     });
     this.peers.clear();
     this.pendingCandidates.clear();
+    this.requestedHeights.clear();
   }
 
   async updateLocalStream(stream: MediaStream): Promise<void> {
+    markAsMotion(stream);
     this.localStream = stream;
+    const replacements: Promise<void>[] = [];
     // replaceTrack avoids renegotiation; addTrack of a new kind triggers it automatically
     this.peers.forEach((peer) => {
       const senders = peer.connection.getSenders();
       stream.getTracks().forEach((track) => {
         const sender = senders.find((s) => s.track?.kind === track.kind);
         if (sender) {
-          sender.replaceTrack(track).catch((error) => {
-            console.error(`Error replacing ${track.kind} track for ${peer.userId}:`, error);
-          });
+          replacements.push(
+            sender.replaceTrack(track).then(
+              () => {
+                // a new camera can capture at a different size, so rescale
+                if (track.kind === "video") {
+                  this.applyVideoEncoding(peer);
+                }
+              },
+              (error) => {
+                console.error(`Error replacing ${track.kind} track for ${peer.userId}:`, error);
+                throw error;
+              }
+            )
+          );
         } else {
-          const newSender = peer.connection.addTrack(track, stream);
+          peer.connection.addTrack(track, stream);
           if (track.kind === "video") {
-            this.capVideoSender(newSender);
+            this.applyVideoEncoding(peer);
           }
         }
       });
     });
+    await Promise.all(replacements);
   }
 
   toggleVideo(enabled: boolean): void {
@@ -415,6 +536,8 @@ export class PeerConnectionManager {
     this.socket.off("receiveOffer", this.handleReceiveOffer);
     this.socket.off("receiveAnswer", this.handleReceiveAnswer);
     this.socket.off("receiveIceCandidate", this.handleReceiveIceCandidate);
+    this.socket.off("receiveVideoRequest", this.handleReceiveVideoRequest);
+    clearInterval(this.statsTimer);
 
     this.removeAllPeers();
     if (this.localStream) {
