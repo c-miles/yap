@@ -42,10 +42,10 @@ test("a plain visit waits for the visitor to start", () => {
   expect(mockOpenSignIn).not.toHaveBeenCalled();
 });
 
-test("one Sign in button covers new and returning people", () => {
+test("one Get started button covers new and returning people", () => {
   renderAt("/");
   expect(screen.getAllByRole("button")).toHaveLength(1);
-  fireEvent.click(screen.getByRole("button", { name: "Sign in" }));
+  fireEvent.click(screen.getByRole("button", { name: "Get started" }));
   expect(mockOpenSignIn).toHaveBeenCalledWith({ withSignUp: true });
 });
 
@@ -62,7 +62,7 @@ test("a room link says which room you're joining", () => {
 test("reopening sign-in after closing it still comes back to the room", () => {
   renderAt("/?room=brave-blue-fox");
   mockOpenSignIn.mockClear();
-  fireEvent.click(screen.getByRole("button", { name: "Sign in" }));
+  fireEvent.click(screen.getByRole("button", { name: "Get started" }));
   expect(mockOpenSignIn).toHaveBeenCalledWith(backToRoom);
 });
 
