@@ -3,7 +3,7 @@ import Noise from "../../utils/perlin";
 import { createCursor, createField, drawField, moveCursor, stepField } from "./waves";
 import "./WaveBackground.css";
 
-const WaveBackground: React.FC<{ className?: string }> = ({ className = "" }) => {
+const WaveBackground: React.FC<{ className?: string; still?: boolean }> = ({ className = "", still: stillProp = false }) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
@@ -16,7 +16,7 @@ const WaveBackground: React.FC<{ className?: string }> = ({ className = "" }) =>
     const noise = new Noise(Math.random());
     const cursor = createCursor();
     const showCursorDot = !window.matchMedia("(hover: none) and (pointer: coarse)").matches;
-    const still = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const still = stillProp || window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     let field = createField(0, 0);
     let width = 0;
     let height = 0;
@@ -73,7 +73,7 @@ const WaveBackground: React.FC<{ className?: string }> = ({ className = "" }) =>
       window.removeEventListener("mousemove", onMouseMove);
       window.removeEventListener("touchmove", onTouchMove);
     };
-  }, []);
+  }, [stillProp]);
 
   return (
     <div

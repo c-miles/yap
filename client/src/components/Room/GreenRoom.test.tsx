@@ -3,6 +3,12 @@ import { render, screen, fireEvent } from "@testing-library/react";
 import "@testing-library/jest-dom";
 import GreenRoom from "./GreenRoom";
 
+jest.mock("../WaveBackground/WaveBackground", () => () => null);
+
+beforeEach(() => {
+  window.matchMedia = jest.fn().mockReturnValue({ matches: false });
+});
+
 const base = {
   stream: null, streamReady: true, permissionError: null,
   audioEnabled: true, videoEnabled: true,
@@ -10,7 +16,7 @@ const base = {
   devices: { cameras: [{ kind: "videoinput", deviceId: "cam1", label: "Cam 1" } as MediaDeviceInfo],
              mics: [{ kind: "audioinput", deviceId: "mic1", label: "Mic 1" } as MediaDeviceInfo] },
   selectCamera: jest.fn(), selectMic: jest.fn(),
-  onRetry: jest.fn(), onJoin: jest.fn(),
+  onRetry: jest.fn(), onJoin: jest.fn(), onCancel: jest.fn(),
 };
 
 test("Join fires onJoin when ready", () => {
@@ -43,4 +49,16 @@ test("asks for a username before joining when there isn't one", () => {
   render(<GreenRoom {...base} usernameForm={usernameForm} />);
   expect(screen.getByPlaceholderText(/choose a username/i)).toBeInTheDocument();
   expect(screen.queryByRole("button", { name: /^join$/i })).toBeNull();
+});
+
+test("there's a way back to the lounge before joining", () => {
+  render(<GreenRoom {...base} />);
+  fireEvent.click(screen.getByRole("button", { name: "Back to lounge" }));
+  expect(base.onCancel).toHaveBeenCalled();
+});
+
+test("the way back is there even when permission was denied", () => {
+  render(<GreenRoom {...base} streamReady={false} permissionError="denied" />);
+  fireEvent.click(screen.getByRole("button", { name: "Back to lounge" }));
+  expect(base.onCancel).toHaveBeenCalled();
 });

@@ -1,8 +1,9 @@
 import React, { useCallback } from "react";
-import { ChevronDown, Mic, MicOff, ShieldAlert, Video, VideoOff } from "lucide-react";
+import { ArrowLeft, ChevronDown, Mic, MicOff, ShieldAlert, Video, VideoOff } from "lucide-react";
 import { Icon } from "../atoms";
 import { UsernameForm } from "../molecules";
 import { UsernameFormState } from "../../hooks/useUsernameForm";
+import WaveBackground from "../WaveBackground/WaveBackground";
 import { useMicLevel } from "./useMicLevel";
 
 interface GreenRoomProps {
@@ -20,6 +21,7 @@ interface GreenRoomProps {
   selectMic: (id: string) => void;
   deviceSwitchError?: string | null;
   onRetry: () => void;
+  onCancel: () => void;
   usernameForm?: UsernameFormState;
   roomName?: string;
   onJoin: () => void;
@@ -99,6 +101,7 @@ const GreenRoom: React.FC<GreenRoomProps> = ({
   onRetry,
   roomName,
   onJoin,
+  onCancel,
   usernameForm,
 }) => {
   const micLevel = useMicLevel(stream);
@@ -114,117 +117,132 @@ const GreenRoom: React.FC<GreenRoomProps> = ({
   );
 
   const showPreviewVideo = !!(stream && videoEnabled);
+  const touchDevice = window.matchMedia("(pointer: coarse)").matches;
 
   return (
-    <div className="fixed inset-0 flex flex-col items-center justify-center gap-6 bg-bg text-text px-6 text-center overflow-y-auto py-8">
-      <h1 className="text-2xl font-semibold">{roomName ? `Joining ${roomName}` : "Joining the call"}</h1>
+    <div className="fixed inset-0 isolate bg-bg text-text">
+      <WaveBackground className="-z-10" still={touchDevice} />
+      <button
+        type="button"
+        onClick={onCancel}
+        aria-label="Back to lounge"
+        className="focus-ring absolute top-4 left-4 z-10 flex items-center gap-1.5 min-h-[44px] px-3 rounded-lg text-text-secondary hover:text-text hover:bg-surface transition-colors"
+      >
+        <Icon icon={ArrowLeft} size="sm" aria-hidden="true" />
+        Lounge
+      </button>
+      <div className="h-full overflow-y-auto">
+        <div className="min-h-full flex flex-col items-center justify-center gap-6 px-6 py-16 text-center">
+          <h1 className="font-display text-2xl font-semibold">{roomName ? `Joining ${roomName}` : "Joining the call"}</h1>
 
-      <div className="relative w-full max-w-md aspect-video rounded-xl overflow-hidden bg-surface border border-border">
-        {showPreviewVideo ? (
-          <video
-            ref={attachStream}
-            autoPlay
-            muted
-            playsInline
-            className="w-full h-full object-cover"
-          />
-        ) : (
-          <div className="w-full h-full flex flex-col items-center justify-center gap-2 text-text-secondary">
-            <Icon icon={VideoOff} size="xl" aria-hidden="true" />
-            <span className="text-sm">Camera off</span>
-          </div>
-        )}
-      </div>
-
-      <div className="w-full max-w-md flex items-center gap-3">
-        <Icon icon={Mic} size="sm" className="text-text-secondary shrink-0" aria-hidden="true" />
-        <div
-          role="meter"
-          aria-label="Microphone level"
-          aria-valuenow={Math.round(micLevel * 100)}
-          aria-valuemin={0}
-          aria-valuemax={100}
-          className="flex-1 h-2 rounded-full bg-surface-raised overflow-hidden"
-        >
-          <div
-            className="h-full rounded-full bg-accent transition-[width] duration-75 motion-reduce:transition-none"
-            style={{ width: `${micLevel * 100}%` }}
-          />
-        </div>
-      </div>
-
-      {/* Hidden on permission-denied: pickers/toggles would be empty no-ops. */}
-      {!permissionError && (
-        <>
-          <div className="w-full max-w-md grid grid-cols-1 sm:grid-cols-2 gap-3 text-left">
-            <DeviceSelect label="Camera" value={selectedCameraId} onChange={selectCamera} options={devices.cameras} />
-            <DeviceSelect label="Microphone" value={selectedMicId} onChange={selectMic} options={devices.mics} />
+          <div className="relative w-full max-w-md aspect-video rounded-xl overflow-hidden bg-surface border border-border">
+            {showPreviewVideo ? (
+              <video
+                ref={attachStream}
+                autoPlay
+                muted
+                playsInline
+                className="w-full h-full object-cover"
+              />
+            ) : (
+              <div className="w-full h-full flex flex-col items-center justify-center gap-2 text-text-secondary">
+                <Icon icon={VideoOff} size="xl" aria-hidden="true" />
+                <span className="text-sm">Camera off</span>
+              </div>
+            )}
           </div>
 
-          {deviceSwitchError && (
-            <p className="flex items-center gap-2 text-danger text-sm max-w-md">
-              <Icon icon={ShieldAlert} size="sm" aria-hidden="true" />
-              {deviceSwitchError}
-            </p>
+          <div className="w-full max-w-md flex items-center gap-3">
+            <Icon icon={Mic} size="sm" className="text-text-secondary shrink-0" aria-hidden="true" />
+            <div
+              role="meter"
+              aria-label="Microphone level"
+              aria-valuenow={Math.round(micLevel * 100)}
+              aria-valuemin={0}
+              aria-valuemax={100}
+              className="flex-1 h-2 rounded-full bg-surface-raised overflow-hidden"
+            >
+              <div
+                className="h-full rounded-full bg-accent transition-[width] duration-75 motion-reduce:transition-none"
+                style={{ width: `${micLevel * 100}%` }}
+              />
+            </div>
+          </div>
+
+          {/* Hidden on permission-denied: pickers/toggles would be empty no-ops. */}
+          {!permissionError && (
+            <>
+              <div className="w-full max-w-md grid grid-cols-1 sm:grid-cols-2 gap-3 text-left">
+                <DeviceSelect label="Camera" value={selectedCameraId} onChange={selectCamera} options={devices.cameras} />
+                <DeviceSelect label="Microphone" value={selectedMicId} onChange={selectMic} options={devices.mics} />
+              </div>
+
+              {deviceSwitchError && (
+                <p className="flex items-center gap-2 text-danger text-sm max-w-md">
+                  <Icon icon={ShieldAlert} size="sm" aria-hidden="true" />
+                  {deviceSwitchError}
+                </p>
+              )}
+
+              <div className="flex items-center gap-3">
+                <ToggleButton
+                  label="Mic"
+                  off={!audioEnabled}
+                  onClick={toggleAudio}
+                  onIcon={<Icon icon={Mic} size="md" />}
+                  offIcon={<Icon icon={MicOff} size="md" />}
+                />
+                <ToggleButton
+                  label="Camera"
+                  off={!videoEnabled}
+                  onClick={toggleVideo}
+                  onIcon={<Icon icon={Video} size="md" />}
+                  offIcon={<Icon icon={VideoOff} size="md" />}
+                />
+              </div>
+            </>
           )}
 
-          <div className="flex items-center gap-3">
-            <ToggleButton
-              label="Mic"
-              off={!audioEnabled}
-              onClick={toggleAudio}
-              onIcon={<Icon icon={Mic} size="md" />}
-              offIcon={<Icon icon={MicOff} size="md" />}
-            />
-            <ToggleButton
-              label="Camera"
-              off={!videoEnabled}
-              onClick={toggleVideo}
-              onIcon={<Icon icon={Video} size="md" />}
-              offIcon={<Icon icon={VideoOff} size="md" />}
-            />
-          </div>
-        </>
-      )}
-
-      {permissionError ? (
-        <div className="flex flex-col items-center gap-3 max-w-md">
-          <p className="flex items-center gap-2 text-danger text-sm">
-            <Icon icon={ShieldAlert} size="sm" aria-hidden="true" />
-            {PERMISSION_MESSAGES[permissionError]}
-          </p>
-          <button
-            type="button"
-            onClick={onRetry}
-            className="focus-ring min-h-[48px] px-6 rounded-xl bg-surface-raised text-text hover:brightness-125 transition"
-          >
-            Try again
-          </button>
-        </div>
-      ) : usernameForm ? (
-        <div className="w-full max-w-sm">
-          <p className="font-medium">Pick a username</p>
-          <p className="mb-4 text-sm text-text-secondary">This is how you'll show up in the call.</p>
-          <UsernameForm form={usernameForm} />
-        </div>
-      ) : (
-        <>
-          {!streamReady && (
-            <p className="text-text-secondary text-sm max-w-md">
-              Allow camera &amp; mic to join.
-            </p>
+          {permissionError ? (
+            <div className="flex flex-col items-center gap-3 max-w-md">
+              <p className="flex items-center gap-2 text-danger text-sm">
+                <Icon icon={ShieldAlert} size="sm" aria-hidden="true" />
+                {PERMISSION_MESSAGES[permissionError]}
+              </p>
+              <button
+                type="button"
+                onClick={onRetry}
+                className="focus-ring min-h-[48px] px-6 rounded-xl bg-surface-raised text-text hover:brightness-125 transition"
+              >
+                Try again
+              </button>
+            </div>
+          ) : usernameForm ? (
+            <div className="w-full max-w-sm">
+              <p className="font-medium">Pick a username</p>
+              <p className="mb-4 text-sm text-text-secondary">This is how you'll show up in the call.</p>
+              <UsernameForm form={usernameForm} />
+            </div>
+          ) : (
+            <>
+              {!streamReady && (
+                <p className="text-text-secondary text-sm max-w-md">
+                  Allow camera &amp; mic to join.
+                </p>
+              )}
+              <button
+                type="button"
+                onClick={onJoin}
+                disabled={!streamReady}
+                className="focus-ring min-h-[48px] px-8 rounded-xl bg-accent text-accent-fg font-semibold hover:bg-accent-hover transition-colors
+                  disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-accent"
+              >
+                Join
+              </button>
+            </>
           )}
-          <button
-            type="button"
-            onClick={onJoin}
-            disabled={!streamReady}
-            className="focus-ring min-h-[48px] px-8 rounded-xl bg-accent text-accent-fg font-semibold hover:bg-accent-hover transition-colors
-              disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-accent"
-          >
-            Join
-          </button>
-        </>
-      )}
+        </div>
+      </div>
     </div>
   );
 };

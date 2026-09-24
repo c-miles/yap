@@ -304,6 +304,7 @@ const RoomContainer: React.FC = () => {
         onRetry={retryMediaAccess}
         roomName={roomName}
         onJoin={() => setPhase("in-call")}
+        onCancel={() => navigate("/dashboard")}
         usernameForm={needsUsername ? usernameForm : undefined}
       />
     );
