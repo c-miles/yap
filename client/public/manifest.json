@@ -1,6 +1,7 @@
 {
   "short_name": "yap",
-  "name": "yap - Video Chat",
+  "name": "yap",
+  "description": "Drop-in video rooms for your group.",
   "icons": [
     {
       "src": "favicon.ico",

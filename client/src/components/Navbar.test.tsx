@@ -6,9 +6,10 @@ import Navbar from "./Navbar";
 
 const mockSignOut = jest.fn();
 const mockNavigate = jest.fn();
+let mockUser: { imageUrl: string; fullName: string } | null = { imageUrl: "", fullName: "Ada" };
 
 jest.mock("@clerk/react", () => ({
-  useUser: () => ({ user: { imageUrl: "", fullName: "Ada" } }),
+  useUser: () => ({ user: mockUser }),
   useClerk: () => ({ signOut: () => mockSignOut() }),
 }));
 
@@ -17,27 +18,39 @@ jest.mock("react-router-dom", () => ({
   useNavigate: () => mockNavigate,
 }));
 
+const renderNavbar = () => render(<MemoryRouter><Navbar /></MemoryRouter>);
+
 beforeEach(() => {
-  mockSignOut.mockClear();
-  mockNavigate.mockClear();
+  mockUser = { imageUrl: "", fullName: "Ada" };
 });
 
-test("opens the account menu with Profile and Logout", () => {
-  render(<MemoryRouter><Navbar /></MemoryRouter>);
+test("the wordmark takes signed-in people to the lounge", () => {
+  renderNavbar();
+  expect(screen.getByRole("link", { name: "yap" })).toHaveAttribute("href", "/dashboard");
+});
+
+test("the wordmark takes signed-out visitors home", () => {
+  mockUser = null;
+  renderNavbar();
+  expect(screen.getByRole("link", { name: "yap" })).toHaveAttribute("href", "/");
+});
+
+test("opens the account menu with Profile and Sign out", () => {
+  renderNavbar();
   fireEvent.click(screen.getByRole("button", { name: /account menu/i }));
   expect(screen.getByText("Profile")).toBeInTheDocument();
-  expect(screen.getByText("Logout")).toBeInTheDocument();
+  expect(screen.getByText("Sign out")).toBeInTheDocument();
 });
 
-test("clicking Logout calls signOut", () => {
-  render(<MemoryRouter><Navbar /></MemoryRouter>);
+test("clicking Sign out calls signOut", () => {
+  renderNavbar();
   fireEvent.click(screen.getByRole("button", { name: /account menu/i }));
-  fireEvent.click(screen.getByText("Logout"));
+  fireEvent.click(screen.getByText("Sign out"));
   expect(mockSignOut).toHaveBeenCalled();
 });
 
 test("clicking Profile navigates to /profile", () => {
-  render(<MemoryRouter><Navbar /></MemoryRouter>);
+  renderNavbar();
   fireEvent.click(screen.getByRole("button", { name: /account menu/i }));
   fireEvent.click(screen.getByText("Profile"));
   expect(mockNavigate).toHaveBeenCalledWith("/profile");

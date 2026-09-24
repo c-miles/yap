@@ -9,8 +9,8 @@ const html = read("public/index.html");
 const preloaded = urls(html, /rel="preload" href="%PUBLIC_URL%(\/fonts\/[^"]+)"/g);
 const fontFaces = urls(html, /url\("%PUBLIC_URL%(\/fonts\/[^"]+)"\)/g);
 
-test("preloads the latin fonts so the first paint is already in our fonts", () => {
-  expect(preloaded).toEqual(expect.arrayContaining(["/fonts/inter-latin.woff2", "/fonts/bricolage-grotesque-latin.woff2"]));
+test("preloads the latin font so the first paint is already in our font", () => {
+  expect(preloaded).toEqual(["/fonts/zalando-sans-latin.woff2"]);
 });
 
 test("every preloaded font is one an @font-face actually uses", () => {

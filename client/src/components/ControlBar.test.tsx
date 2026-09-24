@@ -12,27 +12,26 @@ const base = {
   toggleMessageThread: jest.fn(),
   onShareRoom: jest.fn(),
   onLeaveRoom: jest.fn(),
+  unreadCount: 0,
 };
 
-test("renders all five controls with anchor + leave labels", () => {
+test("renders all five controls, each named for what it does", () => {
   render(<ControlBar {...base} />);
-  expect(screen.getByRole("button", { name: /mic/i })).toBeInTheDocument();
-  expect(screen.getByRole("button", { name: /camera/i })).toBeInTheDocument();
-  expect(screen.getByRole("button", { name: /share/i })).toBeInTheDocument();
-  expect(screen.getByRole("button", { name: /chat/i })).toBeInTheDocument();
-  expect(screen.getByRole("button", { name: /leave/i })).toBeInTheDocument();
+  expect(screen.getByRole("button", { name: "Mute" })).toBeInTheDocument();
+  expect(screen.getByRole("button", { name: "Turn off camera" })).toBeInTheDocument();
+  expect(screen.getByRole("button", { name: "Share room" })).toBeInTheDocument();
+  expect(screen.getByRole("button", { name: "Chat" })).toBeInTheDocument();
+  expect(screen.getByRole("button", { name: "Leave call" })).toBeInTheDocument();
 });
 
-test("mic toggle exposes pressed state when muted", () => {
-  const { rerender } = render(<ControlBar {...base} audioEnabled={true} />);
-  expect(screen.getByRole("button", { name: /mic/i })).toHaveAttribute("aria-pressed", "false");
-  rerender(<ControlBar {...base} audioEnabled={false} />);
-  expect(screen.getByRole("button", { name: /mic/i })).toHaveAttribute("aria-pressed", "true");
+test("a muted mic offers to unmute", () => {
+  render(<ControlBar {...base} audioEnabled={false} />);
+  expect(screen.getByRole("button", { name: "Unmute" })).toBeInTheDocument();
 });
 
 test("leave fires onLeaveRoom", () => {
   render(<ControlBar {...base} />);
-  fireEvent.click(screen.getByRole("button", { name: /leave/i }));
+  fireEvent.click(screen.getByRole("button", { name: "Leave call" }));
   expect(base.onLeaveRoom).toHaveBeenCalled();
 });
 

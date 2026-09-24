@@ -47,6 +47,12 @@ test("draws a single still frame for people who prefer reduced motion", () => {
   expect(window.requestAnimationFrame).not.toHaveBeenCalled();
 });
 
+test("can be asked for a single still frame", () => {
+  render(<WaveBackground still />);
+  expect(ctx.stroke).toHaveBeenCalledTimes(1);
+  expect(window.requestAnimationFrame).not.toHaveBeenCalled();
+});
+
 test("never blocks touch scrolling", () => {
   render(<WaveBackground />);
   const notBlocked = fireEvent.touchMove(document.body, { touches: [{ clientX: 10, clientY: 10 }] });

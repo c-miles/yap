@@ -1,8 +1,8 @@
 import React, { useState, useRef, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useUser, useClerk } from "@clerk/react";
 import { ChevronDown } from "lucide-react";
-import { Avatar, Icon } from "./atoms";
+import { Avatar, Icon, Wordmark } from "./atoms";
 
 const Navbar: React.FC = () => {
   const { user } = useUser();
@@ -22,27 +22,17 @@ const Navbar: React.FC = () => {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  const handleLogout = () => {
-    // Redirect target comes from ClerkProviderWithNavigate's afterSignOutUrl.
+  const handleSignOut = () => {
+    // the redirect comes from afterSignOutUrl in ClerkProviderWithNavigate
     signOut();
   };
 
-  const navigateToDashboard = () => {
-    navigate("/dashboard");
-  };
-
   return (
-    <nav className="sticky top-0 h-16 bg-surface border-b border-border z-50">
+    <nav className="sticky top-0 z-sticky h-16 bg-glass backdrop-blur-md border-b border-glass-border">
       <div className="h-full px-4 flex items-center justify-between">
-        <div className="flex items-center gap-6">
-          <h1 className="text-xl font-medium text-text">yap</h1>
-          <button
-            onClick={navigateToDashboard}
-            className="text-text-muted hover:text-text transition-colors"
-          >
-            Lounge
-          </button>
-        </div>
+        <Link to={user ? "/dashboard" : "/"} className="focus-ring rounded">
+          <Wordmark />
+        </Link>
         
         {user && (
           <div className="relative" ref={dropdownRef}>
@@ -51,7 +41,7 @@ const Navbar: React.FC = () => {
               aria-label="Account menu"
               aria-haspopup="menu"
               aria-expanded={isOpen}
-              className="flex items-center gap-2 p-2 rounded-lg hover:bg-primary transition-colors"
+              className="focus-ring flex items-center gap-2 p-2 rounded-lg hover:bg-glass-hover transition-base"
             >
               <Avatar src={user.imageUrl} name={user.fullName || "User"} size="sm" />
               <Icon
@@ -64,19 +54,19 @@ const Navbar: React.FC = () => {
             </button>
             
             {isOpen && (
-              <div className="absolute right-0 mt-2 w-48 bg-surface border border-border rounded-lg shadow-lg overflow-hidden">
+              <div className="absolute right-0 mt-2 w-48 glass-strong rounded-xl overflow-hidden">
                 <button
                   onClick={() => { navigate('/profile'); setIsOpen(false); }}
-                  className="w-full px-4 py-3 text-left text-text hover:bg-primary transition-colors"
+                  className="focus-ring w-full px-4 py-3 text-left text-text hover:bg-glass-hover transition-base"
                 >
                   Profile
                 </button>
-                <div className="border-t border-border" />
+                <div className="border-t border-glass-border" />
                 <button
-                  onClick={handleLogout}
-                  className="w-full px-4 py-3 text-left text-text hover:bg-danger transition-colors"
+                  onClick={handleSignOut}
+                  className="focus-ring w-full px-4 py-3 text-left text-text hover:bg-glass-hover transition-base"
                 >
-                  Logout
+                  Sign out
                 </button>
               </div>
             )}

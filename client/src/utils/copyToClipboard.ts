@@ -1,6 +1,5 @@
-// Copies text, returning whether it truly succeeded. Async Clipboard API in secure contexts, execCommand fallback for HTTP/LAN and older browsers.
-//
-// Deliberately `if (navigator.clipboard)`, not `navigator.clipboard?.writeText`: in an insecure context clipboard is undefined and `?.` returns undefined without throwing, silently skipping the fallback.
+// `if (navigator.clipboard)` on purpose: on plain http it's undefined, and `?.writeText`
+// would quietly skip the execCommand fallback
 export async function copyToClipboard(text: string): Promise<boolean> {
   try {
     if (navigator.clipboard) {

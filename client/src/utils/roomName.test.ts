@@ -1,4 +1,4 @@
-import { normalizeRoomName } from "./roomNameGenerator";
+import { normalizeRoomName } from "./roomName";
 
 describe("normalizeRoomName", () => {
   test.each([

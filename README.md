@@ -1,6 +1,6 @@
-# Yap
+# yap
 
-Yap is a six-person video chat app. Each participant connects directly to every
+yap is a six-person video chat app. Each participant connects directly to every
 other participant over WebRTC, so audio and video flow peer-to-peer rather than
 through a central media server, with a lightweight Node server handling only
 sign-in, signaling, and chat history. Rooms are created and shared with
@@ -61,14 +61,14 @@ human-readable names like `brave-blue-tiger`.
 
    ```env
    REACT_APP_CLERK_PUBLISHABLE_KEY=pk_test_...
-   REACT_APP_API_BASE_URL=http://localhost:3001
    ```
 
    The Clerk keys come from your Clerk application's API keys page. The
    publishable key is public and appears in both files; the secret key stays in
-   the root `.env` only. `REACT_APP_API_BASE_URL` points the client at the local
-   server in development and should be left unset in production, where the server
-   serves the built client from the same origin.
+   the root `.env` only. In development the client talks to the server on port
+   3001; in production it uses its own origin, since the server serves the built
+   client. `REACT_APP_API_BASE_URL` overrides that and should stay unset in
+   production.
 
 3. Start MongoDB if you are running it locally, then start the server and client
    in separate terminals:
@@ -85,16 +85,18 @@ Open `http://localhost:3000` and sign in to begin.
 
 ## Usage
 
-Creating a room: from the dashboard, choose "Start a room." You are taken
-straight into the call and given a room name such as `brave-blue-tiger`. Share
-that name, or the room's URL, with the people you want to invite.
+Creating a room: from the lounge, choose "Start a room." You get a room name
+such as `brave-blue-tiger` and a green room to check your camera and mic before
+joining. Share that name, or the room's URL, with the people you want to invite.
+Shared room links preview as "Join brave-blue-tiger" in chat apps.
 
-Joining a room: choose "Join by code" and enter the room name, or open a room
-link directly. After signing in, you land in the call. A room holds up to six
-people; further joins are turned away.
+Joining a room: choose "Join by name" and enter the room name, or open a room
+link directly. If you're signed out, the link opens sign-in and then brings you
+to that room's green room. A room holds up to six people; further joins are
+turned away.
 
 During a call you can toggle your camera and microphone, open the chat panel to
-message everyone in the room, and leave to return to the dashboard. Each remote
+message everyone in the room, and leave to return to the lounge. Each remote
 tile shows that participant's connection state, and dropped connections attempt
 to recover on their own.
 

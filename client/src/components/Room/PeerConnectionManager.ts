@@ -8,7 +8,6 @@ import { PeerVideoStats, readSenderStats, SenderStats, VideoStatsSnapshot } from
 
 interface PeerConnection {
   connection: RTCPeerConnection;
-  stream?: MediaStream;
   userId: string;
   polite: boolean;
   makingOffer: boolean;
@@ -184,8 +183,7 @@ export class PeerConnectionManager {
   }
 
   setLocalStream(stream: MediaStream): void {
-    // a stale caller (closure over a retired stream) can't even revert the
-    // reference if every track it's holding is already dead
+    // a stale closure can pass a retired stream; if all its tracks are dead, keep the current one
     if (!stream.getTracks().some((track) => track.readyState === "live")) {
       return;
     }
@@ -215,7 +213,7 @@ export class PeerConnectionManager {
 
     const iceServers = await getIceServers();
 
-    // Re-check after the await: an offer for this peer may have raced us.
+    // re-check after the await, an offer for this peer may have raced us
     if (this.peers.has(targetUserId)) {
       return;
     }
@@ -257,7 +255,7 @@ export class PeerConnectionManager {
     if (this.localStream) {
       this.localStream.getTracks().forEach((track) => {
         if (track.readyState === "ended") {
-          return; // a stale caller handed us a retired stream — never wire dead tracks
+          return; // iOS can kill the camera, leaving ended tracks in localStream
         }
         pc.addTrack(track, this.localStream!);
       });
@@ -284,7 +282,6 @@ export class PeerConnectionManager {
 
     pc.ontrack = (event) => {
       if (event.streams && event.streams[0]) {
-        peer.stream = event.streams[0];
         this.callbacks.onStreamAdded(targetUserId, event.streams[0]);
       }
     };
@@ -347,7 +344,7 @@ export class PeerConnectionManager {
     }
     if (peer.restartAttempts >= MAX_ICE_RESTARTS) {
       console.error(`Connection to ${peer.userId} failed after ${MAX_ICE_RESTARTS} ICE restarts; tearing down`);
-      // out of retries — tear down. the grid shows "connection lost"; an automatic rebuild path is future work.
+      // out of retries, tear down
       this.removePeer(peer.userId);
       return;
     }
@@ -514,22 +511,6 @@ export class PeerConnectionManager {
       });
     });
     await Promise.all(replacements);
-  }
-
-  toggleVideo(enabled: boolean): void {
-    if (this.localStream) {
-      this.localStream.getVideoTracks().forEach((track) => {
-        track.enabled = enabled;
-      });
-    }
-  }
-
-  toggleAudio(enabled: boolean): void {
-    if (this.localStream) {
-      this.localStream.getAudioTracks().forEach((track) => {
-        track.enabled = enabled;
-      });
-    }
   }
 
   cleanup(): void {

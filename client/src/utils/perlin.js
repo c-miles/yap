@@ -1,4 +1,3 @@
-// Perlin noise implementation
 class Noise {
   constructor(seed = Math.random()) {
     this.seed = seed;
@@ -11,7 +10,6 @@ class Noise {
       p[i] = i;
     }
     
-    // Shuffle using seed
     let n = this.seed * 256;
     for (let i = 255; i > 0; i--) {
       n = (n * 9301 + 49297) % 233280;
@@ -19,7 +17,6 @@ class Noise {
       [p[i], p[j]] = [p[j], p[i]];
     }
     
-    // Duplicate for overflow
     for (let i = 0; i < 256; i++) {
       p[256 + i] = p[i];
     }
@@ -45,23 +42,18 @@ class Noise {
   perlin2(x, y) {
     const p = this.permutation;
     
-    // Find unit square
     const X = Math.floor(x) & 255;
     const Y = Math.floor(y) & 255;
     
-    // Find relative x, y of point in square
     x -= Math.floor(x);
     y -= Math.floor(y);
     
-    // Compute fade curves
     const u = this.fade(x);
     const v = this.fade(y);
     
-    // Hash coordinates of square corners
     const A = p[X] + Y;
     const B = p[X + 1] + Y;
     
-    // Blend results from corners
     return this.lerp(v,
       this.lerp(u, this.grad(p[A], x, y), this.grad(p[B], x - 1, y)),
       this.lerp(u, this.grad(p[A + 1], x, y - 1), this.grad(p[B + 1], x - 1, y - 1))

@@ -21,7 +21,7 @@ beforeEach(() => {
 });
 
 test("acquires audio+video up front with video enabled", async () => {
-  const { result } = renderHook(() => useMediaStream({ onStreamUpdated: jest.fn() } as any));
+  const { result } = renderHook(() => useMediaStream({ onStreamUpdated: jest.fn() }));
   await waitFor(() => expect(result.current.streamReady).toBe(true));
   expect((navigator.mediaDevices.getUserMedia as jest.Mock)).toHaveBeenCalledWith(
     expect.objectContaining({ audio: true, video: expect.anything() })
@@ -30,7 +30,7 @@ test("acquires audio+video up front with video enabled", async () => {
 });
 
 test("enumerates devices after grant", async () => {
-  const { result } = renderHook(() => useMediaStream({ onStreamUpdated: jest.fn() } as any));
+  const { result } = renderHook(() => useMediaStream({ onStreamUpdated: jest.fn() }));
   await waitFor(() => expect(result.current.devices.cameras.length).toBe(1));
   expect(result.current.devices.mics.length).toBe(1);
 });
@@ -42,34 +42,27 @@ test("retryMediaAccess is re-entrant-guarded — calling it twice in a row does 
   );
   (navigator as any).mediaDevices.getUserMedia = getUserMedia;
 
-  const { result } = renderHook(() => useMediaStream({ onStreamUpdated: jest.fn() } as any));
+  const { result } = renderHook(() => useMediaStream({ onStreamUpdated: jest.fn() }));
 
-  // initial mount acquisition is in flight (never resolved yet)
   expect(getUserMedia).toHaveBeenCalledTimes(1);
 
-  // fire two rapid retries while the first call is still pending
   await act(async () => {
     result.current.retryMediaAccess();
     result.current.retryMediaAccess();
   });
 
-  // the re-entrancy guard must have blocked the second (and any retry)
-  // acquisition while one was already in flight
   expect(getUserMedia).toHaveBeenCalledTimes(1);
 
-  // resolve the outstanding call and let state settle cleanly
   await act(async () => {
     resolvers[0](fakeStream());
   });
   await waitFor(() => expect(result.current.streamReady).toBe(true));
 
-  // now that the guard has cleared, a further retry is allowed to proceed
   await act(async () => {
     result.current.retryMediaAccess();
   });
   await waitFor(() => expect(getUserMedia).toHaveBeenCalledTimes(2));
 
-  // resolve the final acquisition too, so no promise is left dangling
   await act(async () => {
     resolvers[1](fakeStream());
   });
@@ -77,7 +70,7 @@ test("retryMediaAccess is re-entrant-guarded — calling it twice in a row does 
 });
 
 test("selectCamera requests the exact device and stops the previous stream's tracks", async () => {
-  const { result } = renderHook(() => useMediaStream({ onStreamUpdated: jest.fn() } as any));
+  const { result } = renderHook(() => useMediaStream({ onStreamUpdated: jest.fn() }));
   await waitFor(() => expect(result.current.streamReady).toBe(true));
 
   const oldStream = result.current.stream as MediaStream;
@@ -101,7 +94,7 @@ test("selectCamera requests the exact device and stops the previous stream's tra
 });
 
 test("selectMic requests the exact mic device and preserves a previously-selected camera", async () => {
-  const { result } = renderHook(() => useMediaStream({ onStreamUpdated: jest.fn() } as any));
+  const { result } = renderHook(() => useMediaStream({ onStreamUpdated: jest.fn() }));
   await waitFor(() => expect(result.current.streamReady).toBe(true));
 
   // select a camera first so its id is remembered on the ref used by selectMic
@@ -129,7 +122,7 @@ test("selectMic requests the exact mic device and preserves a previously-selecte
 
 test("a device swap while video is toggled off leaves the new stream's video track disabled", async () => {
   const onStreamUpdated = jest.fn().mockResolvedValue(undefined);
-  const { result } = renderHook(() => useMediaStream({ onStreamUpdated } as any));
+  const { result } = renderHook(() => useMediaStream({ onStreamUpdated }));
   await waitFor(() => expect(result.current.streamReady).toBe(true));
 
   act(() => {
@@ -150,7 +143,7 @@ test("a device swap while video is toggled off leaves the new stream's video tra
 
 test("onStreamUpdated is invoked with the new stream during a device swap", async () => {
   const onStreamUpdated = jest.fn().mockResolvedValue(undefined);
-  const { result } = renderHook(() => useMediaStream({ onStreamUpdated } as any));
+  const { result } = renderHook(() => useMediaStream({ onStreamUpdated }));
   await waitFor(() => expect(result.current.streamReady).toBe(true));
 
   const newStream = fakeStream();

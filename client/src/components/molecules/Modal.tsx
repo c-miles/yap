@@ -1,19 +1,16 @@
 import React, { Fragment } from "react";
 import { Dialog, Transition } from "@headlessui/react";
 import { X } from "lucide-react";
-import { Icon } from "../atoms";
+import { Heading, Icon } from "../atoms";
 
 interface ModalProps {
   open: boolean;
   onClose: () => void;
   title: string;
-  size?: "sm" | "md";
   children: React.ReactNode;
 }
 
-const MAX_W = { sm: "max-w-sm", md: "max-w-md" } as const;
-
-const Modal: React.FC<ModalProps> = ({ open, onClose, title, size = "md", children }) => (
+const Modal: React.FC<ModalProps> = ({ open, onClose, title, children }) => (
   <Transition appear show={open} as={Fragment}>
     <Dialog as="div" className="relative z-modal" onClose={onClose}>
       <Transition.Child
@@ -25,7 +22,7 @@ const Modal: React.FC<ModalProps> = ({ open, onClose, title, size = "md", childr
         leaveFrom="opacity-100"
         leaveTo="opacity-0"
       >
-        <div className="fixed inset-0 bg-black/50" />
+        <div className="fixed inset-0 bg-scrim" />
       </Transition.Child>
 
       <div className="fixed inset-0 overflow-y-auto">
@@ -39,17 +36,18 @@ const Modal: React.FC<ModalProps> = ({ open, onClose, title, size = "md", childr
             leaveFrom="opacity-100 scale-100"
             leaveTo="opacity-0 scale-95"
           >
-            <Dialog.Panel className={`w-full ${MAX_W[size]} transform overflow-hidden rounded-lg bg-surface border border-border p-6 text-left align-middle shadow-xl transition-all`}>
-              <Dialog.Title as="h3" className="text-lg font-medium leading-6 text-text mb-4 relative">
-                {title}
+            <Dialog.Panel className="w-full max-w-md transform overflow-hidden rounded-xl glass-strong p-6 text-left align-middle transition-all">
+              <div className="mb-4 flex items-start justify-between gap-4">
+                <Dialog.Title as={Heading}>{title}</Dialog.Title>
                 <button
+                  type="button"
                   onClick={onClose}
                   aria-label="Close"
-                  className="focus-ring absolute right-0 top-0 text-text-muted hover:text-text transition-colors"
+                  className="focus-ring rounded-lg text-text-muted hover:text-text transition-base"
                 >
-                  <Icon icon={X} size="md" />
+                  <Icon icon={X} size="md" aria-hidden="true" />
                 </button>
-              </Dialog.Title>
+              </div>
               {children}
             </Dialog.Panel>
           </Transition.Child>

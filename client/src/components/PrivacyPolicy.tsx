@@ -5,7 +5,7 @@ import LegalPage, { ContactLink, LegalList, LegalSection } from "./LegalPage";
 const PrivacyPolicy: React.FC = () => (
   <LegalPage title="Privacy policy" updated="September 24, 2026">
     <Text variant="secondary">
-      Yap is a video chat app made by Anomaly Labs LLC. This page explains what Yap keeps
+      yap is a video chat app made by Anomaly Labs LLC. This page explains what yap keeps
       about you, and what it doesn't.
     </Text>
 
@@ -36,7 +36,7 @@ const PrivacyPolicy: React.FC = () => (
       </LegalList>
     </LegalSection>
 
-    <LegalSection title="Who helps run Yap">
+    <LegalSection title="Who helps run yap">
       <Text variant="secondary">These services only get what they need to do their job:</Text>
       <LegalList>
         <li>Clerk handles sign-in.</li>
@@ -55,7 +55,7 @@ const PrivacyPolicy: React.FC = () => (
     </LegalSection>
 
     <LegalSection title="Children">
-      <Text variant="secondary">Yap isn't meant for children under 13.</Text>
+      <Text variant="secondary">yap isn't meant for children under 13.</Text>
     </LegalSection>
 
     <LegalSection title="Changes">

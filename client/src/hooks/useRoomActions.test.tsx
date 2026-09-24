@@ -48,7 +48,7 @@ describe("joinRoom", () => {
 
     expect(mockedAuthFetch).toHaveBeenCalledWith("/rooms/find-by-name/jolly-red-fox");
     expect(result.current.location.pathname).toBe("/room/room123");
-    expect(result.current.location.state).toEqual({ isHost: false, friendlyName: "jolly-red-fox" });
+    expect(result.current.location.state).toEqual({ friendlyName: "jolly-red-fox" });
   });
 
   test("looks up a link copied from the address bar by its room id", async () => {
@@ -60,7 +60,7 @@ describe("joinRoom", () => {
     });
 
     expect(mockedAuthFetch).toHaveBeenCalledWith("/rooms/find-by-name/507f1f77bcf86cd799439011");
-    expect(result.current.location.state).toEqual({ isHost: false, friendlyName: "jolly-red-fox" });
+    expect(result.current.location.state).toEqual({ friendlyName: "jolly-red-fox" });
   });
 
   test("reports a missing room as not found and stays on the dashboard", async () => {
@@ -143,7 +143,7 @@ describe("joinRoom", () => {
 });
 
 describe("createRoom", () => {
-  test("enters the new room as host", async () => {
+  test("enters the new room", async () => {
     mockedAuthFetch.mockResolvedValue(jsonResponse(201, { roomId: "room456", friendlyName: "calm-blue-owl" }));
     const { result } = renderRoomActions();
 
@@ -152,7 +152,7 @@ describe("createRoom", () => {
     });
 
     expect(result.current.location.pathname).toBe("/room/room456");
-    expect(result.current.location.state).toEqual({ isHost: true, friendlyName: "calm-blue-owl" });
+    expect(result.current.location.state).toEqual({ friendlyName: "calm-blue-owl" });
   });
 
   test("shows an error instead of entering /room/undefined when the server fails", async () => {

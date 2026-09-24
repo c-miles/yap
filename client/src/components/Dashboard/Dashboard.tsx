@@ -1,26 +1,16 @@
 import React, { useState } from "react";
-import { BeatLoader } from "react-spinners";
 import { DashboardProps } from "../../types/dashboardTypes";
 import { Video, Users } from "lucide-react";
-import { Button, Input, Card, Heading, Text, Icon } from "../atoms";
-import { Modal } from "../molecules";
-import DashboardCard from "../molecules/DashboardCard";
-import Footer from "../Footer";
-import WaveBackground from "../WaveBackground/WaveBackground";
+import { Button, Input, Icon, Spinner } from "../atoms";
+import { DashboardCard, Modal, StatePanel, UsernameForm } from "../molecules";
+import useDocumentTitle from "../../hooks/useDocumentTitle";
 
 const Dashboard: React.FC<DashboardProps> = ({
   createRoom,
   joinRoom,
-  handleUsernameSubmit,
-  isSubmitting,
-  newUsername,
-  setNewUsername,
+  usernameForm,
   userInfo,
   userExists,
-  usernameError,
-  isAuthenticated,
-  isLoading,
-  onLogin,
   profileError,
   onRetryProfile,
   isCreating,
@@ -29,6 +19,7 @@ const Dashboard: React.FC<DashboardProps> = ({
   joinError,
   clearJoinError,
 }) => {
+  useDocumentTitle("Lounge");
   const showUsernameForm = userExists === false || !userInfo?.username;
   const [roomName, setRoomName] = useState("");
   const [showJoinRoomForm, setShowJoinRoomForm] = useState(false);
@@ -44,63 +35,23 @@ const Dashboard: React.FC<DashboardProps> = ({
   };
 
   return (
-    <div className="relative isolate flex items-center justify-center min-h-[calc(100vh-64px)] p-8 pb-24">
-      <WaveBackground className="-z-10" />
-      {isLoading || (isAuthenticated && userExists === null && !profileError) ? (
-        <BeatLoader color="var(--primary-hov)" />
-      ) : !isAuthenticated ? (
-        <div className="w-full max-w-md">
-          <Card padding="lg" className="text-center">
-            <Heading level={2} className="mb-4">Welcome to yap</Heading>
-            <Text variant="muted" className="mb-6">Log in to start or join a room</Text>
-            <Button variant="primary" className="w-full" onClick={onLogin}>
-              Log in
-            </Button>
-          </Card>
-        </div>
+    <div className="m-auto w-full flex flex-col items-center">
+      <h1 className="sr-only">Lounge</h1>
+      {userExists === null && !profileError ? (
+        <Spinner />
       ) : profileError ? (
-        <div className="w-full max-w-md">
-          <Card padding="lg" className="text-center">
-            <Heading level={2} className="mb-4">Couldn't load your profile</Heading>
-            <Text variant="muted" className="mb-6">Something went wrong talking to the server</Text>
-            <Button variant="primary" className="w-full" onClick={onRetryProfile}>
-              Try again
-            </Button>
-          </Card>
-        </div>
+        <StatePanel headingLevel={2} title="Couldn't load your profile" description="Something went wrong talking to the server.">
+          <Button onClick={onRetryProfile}>Try again</Button>
+        </StatePanel>
       ) : showUsernameForm ? (
-        <div className="w-full max-w-md">
-          <form
-            onSubmit={handleUsernameSubmit}
-            className="bg-surface border border-border rounded-lg p-8 text-center"
-          >
-            <Heading level={2} className="mb-4">Welcome to yap</Heading>
-            <Text variant="muted" className="mb-6">Choose a username to get started</Text>
-
-            <Input
-              type="text"
-              value={newUsername}
-              onChange={(e) => setNewUsername(e.target.value)}
-              placeholder="Choose a username"
-              required
-              error={usernameError}
-            />
-            
-            <Button 
-              type="submit" 
-              variant="primary" 
-              className="w-full mt-4"
-              disabled={isSubmitting}
-            >
-              {isSubmitting ? "Creating Account..." : "Set Username"}
-            </Button>
-          </form>
-        </div>
+        <StatePanel headingLevel={2} title="Welcome to yap" description="Choose a username to get started.">
+          <UsernameForm form={usernameForm} />
+        </StatePanel>
       ) : (
         <>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8 w-full max-w-4xl">
             <DashboardCard
-              icon={<Icon icon={Video} size="xl" className="text-text" />}
+              icon={<Icon icon={Video} size="xl" className="text-accent" />}
               title="Start a room"
               description="Create a new video room and invite others to join"
               onClick={createRoom}
@@ -108,9 +59,9 @@ const Dashboard: React.FC<DashboardProps> = ({
             />
 
             <DashboardCard
-              icon={<Icon icon={Users} size="xl" className="text-text" />}
-              title="Join by code"
-              description="Enter a room code to join an existing conversation"
+              icon={<Icon icon={Users} size="xl" className="text-accent" />}
+              title="Join by name"
+              description="Enter a room name to join an existing call"
               onClick={() => setShowJoinRoomForm(true)}
             />
 
@@ -121,7 +72,7 @@ const Dashboard: React.FC<DashboardProps> = ({
             )}
           </div>
 
-          <Modal open={showJoinRoomForm} onClose={closeJoinRoomForm} title="Join Room">
+          <Modal open={showJoinRoomForm} onClose={closeJoinRoomForm} title="Join a room">
             <form onSubmit={onJoinRoomSubmit}>
               <Input
                 type="text"
@@ -135,14 +86,13 @@ const Dashboard: React.FC<DashboardProps> = ({
                 error={joinError}
               />
 
-              <Button type="submit" variant="primary" className="w-full mt-4" disabled={isJoining}>
-                {isJoining ? "Joining..." : "Join Room"}
+              <Button type="submit" className="w-full mt-4" disabled={isJoining}>
+                {isJoining ? "Joining…" : "Join room"}
               </Button>
             </form>
           </Modal>
         </>
       )}
-      <Footer className="absolute inset-x-0 bottom-0" />
     </div>
   );
 };

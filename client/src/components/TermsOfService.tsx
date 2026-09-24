@@ -6,7 +6,7 @@ import LegalPage, { ContactLink, LegalList, LegalSection } from "./LegalPage";
 const TermsOfService: React.FC = () => (
   <LegalPage title="Terms of service" updated="September 23, 2026">
     <Text variant="secondary">
-      These terms cover your use of Yap, a video chat app made by Anomaly Labs LLC. By using Yap
+      These terms cover your use of yap, a video chat app made by Anomaly Labs LLC. By using yap
       you agree to them. Our{" "}
       <Link to="/privacy" className="focus-ring text-accent hover:underline">
         privacy policy
@@ -14,7 +14,7 @@ const TermsOfService: React.FC = () => (
       explains what we do with your data.
     </Text>
 
-    <LegalSection title="Using Yap">
+    <LegalSection title="Using yap">
       <Text variant="secondary">
         You need to be at least 13. You're responsible for your account and what happens under
         it, so keep your login to yourself.
@@ -23,9 +23,9 @@ const TermsOfService: React.FC = () => (
 
     <LegalSection title="Be decent">
       <LegalList>
-        <li>Don't use Yap for anything illegal.</li>
+        <li>Don't use yap for anything illegal.</li>
         <li>Don't harass, threaten, or abuse people.</li>
-        <li>Don't spam, or try to break, overload, or get around Yap's security.</li>
+        <li>Don't spam, or try to break, overload, or get around yap's security.</li>
         <li>Don't record or share a call without the consent of the people in it.</li>
       </LegalList>
     </LegalSection>
@@ -33,28 +33,28 @@ const TermsOfService: React.FC = () => (
     <LegalSection title="Your messages">
       <Text variant="secondary">
         Chat messages you send are yours. You let us store them and show them to the people in
-        the room, which is what Yap needs to do to work.
+        the room, which is what yap needs to do to work.
       </Text>
     </LegalSection>
 
-    <LegalSection title="Yap is provided as-is">
+    <LegalSection title="yap is provided as-is">
       <Text variant="secondary">
-        We work to keep Yap running and secure, but we can't promise it will always be available,
+        We work to keep yap running and secure, but we can't promise it will always be available,
         free of bugs, or that every call will connect. To the extent the law allows, Anomaly Labs
-        isn't liable for any indirect, incidental, or consequential damages from using Yap.
+        isn't liable for any indirect, incidental, or consequential damages from using yap.
       </Text>
     </LegalSection>
 
     <LegalSection title="Ending things">
       <Text variant="secondary">
-        You can stop using Yap anytime, and email <ContactLink /> to have your account deleted.
+        You can stop using yap anytime, and email <ContactLink /> to have your account deleted.
         We may suspend or remove accounts that break these terms.
       </Text>
     </LegalSection>
 
     <LegalSection title="Changes">
       <Text variant="secondary">
-        We may update these terms. If we do, we'll change the date at the top, and using Yap after
+        We may update these terms. If we do, we'll change the date at the top, and using yap after
         that means you accept the new version.
       </Text>
     </LegalSection>

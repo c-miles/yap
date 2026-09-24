@@ -13,7 +13,6 @@ const ParticipantSchema = new mongoose.Schema({
 });
 
 const RoomSchema = new mongoose.Schema({
-  roomId: String,
   friendlyName: { type: String, unique: true, required: true },
   participants: [ParticipantSchema],
   maxParticipants: { type: Number, default: 6 },

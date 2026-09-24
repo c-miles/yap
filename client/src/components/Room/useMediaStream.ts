@@ -1,5 +1,4 @@
 import { useCallback, useEffect, useState, useRef } from "react";
-import { UseMediaStreamProps } from "../../types/mediaStreamTypes";
 import { VIDEO_CONSTRAINTS } from "./videoQuality";
 
 interface DeviceLists {
@@ -7,7 +6,7 @@ interface DeviceLists {
   mics: MediaDeviceInfo[];
 }
 
-export default function useMediaStream({ onStreamUpdated }: UseMediaStreamProps) {
+export default function useMediaStream({ onStreamUpdated }: { onStreamUpdated?: (stream: MediaStream) => Promise<void> }) {
   const [audioEnabled, setAudioEnabled] = useState(true);
   const [stream, setStream] = useState<MediaStream | null>(null);
   const [streamReady, setStreamReady] = useState(false);
@@ -19,7 +18,6 @@ export default function useMediaStream({ onStreamUpdated }: UseMediaStreamProps)
   const [selectedMicId, setSelectedMicId] = useState<string | undefined>(undefined);
   const [deviceSwitchError, setDeviceSwitchError] = useState<string | null>(null);
 
-  const localVideoRef = useRef<HTMLVideoElement>(null);
   const streamRef = useRef<MediaStream | null>(null);
   const isInitialized = useRef(false);
   const acquiring = useRef(false);
@@ -28,7 +26,7 @@ export default function useMediaStream({ onStreamUpdated }: UseMediaStreamProps)
   const selectedCameraIdRef = useRef<string | undefined>(undefined);
   const selectedMicIdRef = useRef<string | undefined>(undefined);
 
-  // Enumerate cameras/mics; re-run on permission grant and devicechange.
+  // labels come back blank until permission is granted, so this re-runs after getUserMedia
   const enumerateAndSetDevices = useCallback(async () => {
     try {
       const deviceList = await navigator.mediaDevices.enumerateDevices();
@@ -52,11 +50,10 @@ export default function useMediaStream({ onStreamUpdated }: UseMediaStreamProps)
       .getUserMedia({ audio: true, video: VIDEO_CONSTRAINTS })
       .then((mediaStream) => {
         if (!isInitialized.current) {
-          // Unmounted (or retry superseded) while the permission prompt was open — don't strand a live camera/mic session.
+          // unmounted while the prompt was open, don't strand a live camera
           mediaStream.getTracks().forEach((track) => track.stop());
           return;
         }
-        // Belt-and-suspenders: stop any prior session before replacing it so an overlapping acquisition never leaks a live camera/mic.
         streamRef.current?.getTracks().forEach((track) => track.stop());
         streamRef.current = mediaStream;
         setStream(mediaStream);
@@ -103,7 +100,6 @@ export default function useMediaStream({ onStreamUpdated }: UseMediaStreamProps)
 
     acquireMedia();
 
-    // Cleanup function that only runs on actual unmount
     return () => {
       if (streamRef.current) {
         streamRef.current.getTracks().forEach((track) => track.stop());
@@ -125,12 +121,6 @@ export default function useMediaStream({ onStreamUpdated }: UseMediaStreamProps)
     };
   }, [enumerateAndSetDevices]);
 
-  useEffect(() => {
-    if (localVideoRef.current && streamReady && stream) {
-      localVideoRef.current.srcObject = stream;
-    }
-  }, [streamReady, stream]);
-
   const toggleAudio = () => {
     if (stream) {
       const audioTracks = stream.getAudioTracks();
@@ -147,14 +137,11 @@ export default function useMediaStream({ onStreamUpdated }: UseMediaStreamProps)
       // backgrounding/incoming calls, and a toggle-on has to recover from that
       const videoTrack = stream.getVideoTracks().find((track) => track.readyState === "live");
       if (videoTrack) {
-        // Video track exists, just toggle it
         videoTrack.enabled = !videoTrack.enabled;
         setVideoEnabled(videoTrack.enabled);
       } else {
-        // no live video track (never acquired, or iOS ended it mid-call) — and
-        // iOS allows only one live capture session, so a video-only getUserMedia
-        // here could mute our audio. acquire a fresh audio+video session, swap
-        // it in everywhere, then retire the old one.
+        // iOS allows one live capture session, so a video-only getUserMedia would kill
+        // our mic. grab audio+video and swap the whole stream
         if (acquiringVideo.current) {
           return;
         }
@@ -207,15 +194,12 @@ export default function useMediaStream({ onStreamUpdated }: UseMediaStreamProps)
     }
   };
 
-  // Constraints for the device kind NOT being switched — honor an already
-  // selected device on that side instead of falling back to defaults.
   const videoConstraintsFor = (cameraId?: string): MediaTrackConstraints =>
     cameraId ? { ...VIDEO_CONSTRAINTS, deviceId: { exact: cameraId } } : VIDEO_CONSTRAINTS;
 
   const audioConstraintsFor = (micId?: string): MediaTrackConstraints | boolean =>
     micId ? { deviceId: { exact: micId } } : true;
 
-  // Mirrors toggleVideo's iOS recovery: carry enable-states onto the new stream, swap, stop the old tracks (never strand a live session).
   const swapToNewDevice = (
     newStream: MediaStream,
     onDone: () => void
@@ -246,7 +230,7 @@ export default function useMediaStream({ onStreamUpdated }: UseMediaStreamProps)
     Promise.resolve(onStreamUpdated?.(newStream))
       .catch((error) => {
         console.error("Error updating peer connections with new stream:", error);
-        // Local preview switched but replaceTrack failed — remote peers see a dead track. Surface it rather than fake success.
+        // the preview switched but replaceTrack failed, so peers see a dead track
         setDeviceSwitchError("Couldn't apply the new device to the call.");
       })
       .finally(() => {
@@ -256,14 +240,13 @@ export default function useMediaStream({ onStreamUpdated }: UseMediaStreamProps)
   };
 
   const selectDevice = (kind: "camera" | "mic", deviceId: string) => {
-    // Single guard shared across camera/mic: switching both kinds serializes
-    // switches (rather than letting a camera and mic switch interleave and
-    // re-acquire the other side from a not-yet-committed ref).
+    // one guard for both kinds, so a camera and mic switch can't interleave and read a stale ref
     if (switching.current) {
       return;
     }
     switching.current = true;
 
+    // the kind not being switched keeps its selected device, not the browser default
     const cameraId = kind === "camera" ? deviceId : selectedCameraIdRef.current;
     const micId = kind === "mic" ? deviceId : selectedMicIdRef.current;
 
@@ -289,7 +272,6 @@ export default function useMediaStream({ onStreamUpdated }: UseMediaStreamProps)
       })
       .catch((error) => {
         console.error(`Error switching ${kind}:`, error);
-        // keep last-known-good selection; don't lie about which device is live
         setDeviceSwitchError("Couldn't switch to that device — it may be in use by another app.");
         switching.current = false;
       });
@@ -299,7 +281,6 @@ export default function useMediaStream({ onStreamUpdated }: UseMediaStreamProps)
   const selectMic = (deviceId: string) => selectDevice("mic", deviceId);
 
   const retryMediaAccess = async () => {
-    console.log("Retrying media access...");
     setPermissionError(null);
     setStreamReady(false);
     isInitialized.current = true;
@@ -307,19 +288,12 @@ export default function useMediaStream({ onStreamUpdated }: UseMediaStreamProps)
     await acquireMedia();
   };
 
-  const retryVideoAccess = () => {
-    setVideoPermissionError(null);
-    // User can just try clicking the video button again
-  };
-
   return {
     audioEnabled,
     devices,
     deviceSwitchError,
-    localVideoRef,
     permissionError,
     retryMediaAccess,
-    retryVideoAccess,
     selectCamera,
     selectedCameraId,
     selectedMicId,

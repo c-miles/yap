@@ -4,6 +4,8 @@ import Room from "./Room";
 import GreenRoom from "./GreenRoom";
 
 import useAuthUser from "../../hooks/useAuthUser";
+import useUsernameForm from "../../hooks/useUsernameForm";
+import useDocumentTitle from "../../hooks/useDocumentTitle";
 import useMediaStream from "./useMediaStream";
 import usePeerConnection from "./usePeerConnection";
 import VideoStatsOverlay from "./VideoStatsOverlay";
@@ -12,24 +14,25 @@ import useRoomState, { Participant } from "./useRoomState";
 import useSocket from "../../services/useSocket";
 
 interface LocationState {
-  isHost?: boolean;
   friendlyName?: string;
 }
 
 const RoomContainer: React.FC = () => {
-  const { userInfo, clerkUser } = useAuthUser();
+  const { userInfo, userExists, profileError, retryProfileLoad, clerkUser, handleUsernameSubmit } = useAuthUser();
+  const usernameForm = useUsernameForm(handleUsernameSubmit);
+  const profileStatus = userExists !== null ? "ready" : profileError ? "error" : "loading";
   const socket = useSocket();
   const location = useLocation();
   const navigate = useNavigate();
   const state = location.state as LocationState;
 
   const [roomName] = useState<string | undefined>(state?.friendlyName);
+  useDocumentTitle(roomName ?? "Video room");
   const [phase, setPhase] = useState<"green-room" | "in-call">("green-room");
   const showStats = new URLSearchParams(location.search).has("stats");
   const [videoStats, setVideoStats] = useState<VideoStatsSnapshot | null>(null);
 
-  // stable identity: the clerk user id. DirectRoomJoin guarantees we're
-  // authenticated before this component renders.
+  // DirectRoomJoin only renders this once signed in
   const localUserId = clerkUser?.id ?? "";
   const localUsername = userInfo?.username || clerkUser?.username || clerkUser?.firstName || "Guest";
   const localPicture = userInfo?.picture ?? clerkUser?.imageUrl;
@@ -49,7 +52,6 @@ const RoomContainer: React.FC = () => {
     setMultipleParticipants,
   } = useRoomState();
 
-  // Callbacks for peer connection events
   const handleStreamAdded = useCallback((userId: string, stream: MediaStream) => {
     updateParticipantStream(userId, stream);
   }, [updateParticipantStream]);
@@ -69,8 +71,6 @@ const RoomContainer: React.FC = () => {
     setLocalStream,
     connectToPeer,
     disconnectFromPeer,
-    toggleVideo: togglePeerVideo,
-    toggleAudio: togglePeerAudio,
     updateLocalStream,
     resetAllPeers,
   } = usePeerConnection({
@@ -86,10 +86,8 @@ const RoomContainer: React.FC = () => {
   const {
     audioEnabled,
     devices,
-    localVideoRef,
     permissionError,
     retryMediaAccess,
-    retryVideoAccess,
     selectCamera,
     selectedCameraId,
     selectedMicId,
@@ -102,14 +100,9 @@ const RoomContainer: React.FC = () => {
     videoEnabled,
     videoPermissionError,
     deviceSwitchError,
-  } = useMediaStream({
-    roomId,
-    socket,
-    userPicture: localPicture,
-    onStreamUpdated: updateLocalStream
-  });
+  } = useMediaStream({ onStreamUpdated: updateLocalStream });
 
-  // A ref, not a closure: keeps emitJoinRoom's identity stable so toggling mic/cam doesn't re-register the socket effect's listeners. Refreshed every render.
+  // a ref keeps emitJoinRoom stable, so mic/cam toggles don't re-register the socket listeners
   const mediaStateRef = useRef({ video: videoEnabled, audio: audioEnabled });
   mediaStateRef.current = { video: videoEnabled, audio: audioEnabled };
 
@@ -125,12 +118,10 @@ const RoomContainer: React.FC = () => {
 
   const hasJoinedRef = useRef(false);
 
-  // Reset join flag when room changes
   useEffect(() => {
     hasJoinedRef.current = false;
   }, [roomId]);
 
-  // Join once past the green room, when socket + stream are ready and no permission error.
   useEffect(() => {
     if (phase === "in-call" && socket && roomId && localUserId && streamReady && stream && setLocalStream && !hasJoinedRef.current && !permissionError) {
       setLocalStream(stream);
@@ -142,14 +133,12 @@ const RoomContainer: React.FC = () => {
     }
   }, [phase, socket, roomId, localUserId, streamReady, stream, setLocalStream, setIsConnecting, permissionError, emitJoinRoom]);
 
-  // Handle socket events
   useEffect(() => {
     if (!socket) return;
 
-    // manager-level "reconnect" fires only on true RE-connections, never the
-    // first connect — so the initial (buffered) join can't double-fire
     let authRetries = 0;
 
+    // the manager's "reconnect" skips the first connect, so this can't double the initial join
     const handleReconnect = () => {
       // a successful reconnect means auth (if it was retried) went through
       authRetries = 0;
@@ -160,9 +149,7 @@ const RoomContainer: React.FC = () => {
       }
     };
 
-    // Socket.IO does NOT auto-reconnect after a middleware (auth) rejection —
-    // a token hiccup at reconnect time would otherwise freeze the room with
-    // no signal. Retry a bounded number of times before giving up.
+    // socket.io won't reconnect on its own after an auth rejection, so retry a few times
     const handleConnectError = (err: Error) => {
       if (err.message === "unauthorized" && authRetries < 3) {
         authRetries += 1;
@@ -244,39 +231,32 @@ const RoomContainer: React.FC = () => {
     };
   }, [socket, stream, emitJoinRoom, setMultipleParticipants, addParticipant, removeParticipant, updateParticipantMediaState, connectToPeer, disconnectFromPeer, setRoomError, setIsConnecting, setLocalStream, resetAllPeers]);
 
-
-  // Handle local video toggle
   const handleToggleVideo = useCallback(() => {
     toggleVideo();
-    togglePeerVideo(!videoEnabled);
 
-    // Emit to other users
     if (socket && roomId) {
       socket.emit("toggleVideo", {
         videoEnabled: !videoEnabled,
       });
     }
-  }, [toggleVideo, togglePeerVideo, videoEnabled, socket, roomId]);
+  }, [toggleVideo, videoEnabled, socket, roomId]);
 
-  // Handle local audio toggle
   const handleToggleAudio = useCallback(() => {
     toggleAudio();
-    togglePeerAudio(!audioEnabled);
 
-    // Emit to other users
     if (socket && roomId) {
       socket.emit("toggleAudio", {
         audioEnabled: !audioEnabled,
       });
     }
-  }, [toggleAudio, togglePeerAudio, audioEnabled, socket, roomId]);
+  }, [toggleAudio, audioEnabled, socket, roomId]);
 
   const handleLeaveRoom = useCallback(() => {
     if (socket && roomId) {
       socket.emit("leaveRoom");
     }
     resetAllPeers();
-    // Navigating away unmounts RoomContainer, which stops the local tracks.
+    // unmounting RoomContainer stops the local tracks
     navigate("/dashboard");
   }, [socket, roomId, resetAllPeers, navigate]);
 
@@ -299,6 +279,10 @@ const RoomContainer: React.FC = () => {
         onRetry={retryMediaAccess}
         roomName={roomName}
         onJoin={() => setPhase("in-call")}
+        onCancel={() => navigate("/dashboard")}
+        profileStatus={profileStatus}
+        onRetryProfile={retryProfileLoad}
+        usernameForm={profileStatus === "ready" && !userInfo?.username ? usernameForm : undefined}
       />
     );
   }
@@ -311,10 +295,8 @@ const RoomContainer: React.FC = () => {
         localUserId={localUserId}
         localUsername={localUsername}
         localVideoEnabled={videoEnabled}
-        localVideoRef={localVideoRef}
         participants={participants}
         profilePicture={localPicture}
-        retryVideoAccess={retryVideoAccess}
         setVideoPermissionError={setVideoPermissionError}
         videoPermissionError={videoPermissionError}
         roomId={roomId}
@@ -325,7 +307,6 @@ const RoomContainer: React.FC = () => {
         toggleVideo={handleToggleVideo}
         onLeaveRoom={handleLeaveRoom}
         onDashboard={() => navigate("/dashboard")}
-        username={localUsername}
         socket={socket}
       />
       {showStats && (

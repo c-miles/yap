@@ -9,23 +9,31 @@
     --surface: #1e293b;
     --surface-raised: #334155;
     --border: #334155;
-    --border-subtle: #1e293b;
     --text: #f8fafc;
     --text-secondary: #cbd5e1;
     --text-muted: #94a3b8;
 
-    /* legacy neutral — kept so un-migrated screen usages don't regress */
-    --primary: #475569;
-    --primary-hov: #64748b;
-
-    /* accent — teal "signal", used sparingly for CTAs/focus/live cues */
+    /* accent — teal signal for focus, links, icons and live cues, never a solid button fill */
     --accent: #2dd4bf;
-    --accent-hover: #14b8a6;
     --accent-fg: #0f172a;
+    --accent-subtle: rgb(45 212 191 / 0.12);
+    --accent-border: rgb(45 212 191 / 0.4);
+
+    /* glass — translucent slate for everything that floats over the waves or video */
+    --glass: rgb(30 41 59 / 0.55);
+    --glass-hover: rgb(51 65 85 / 0.75);
+    --glass-strong: rgb(30 41 59 / 0.85);
+    --glass-border: rgb(148 163 184 / 0.25);
+    --glass-border-hover: rgb(148 163 184 / 0.45);
+    --glass-action: rgb(248 250 252 / 0.08);
+    --glass-action-hover: rgb(248 250 252 / 0.14);
+    --glass-action-border: rgb(248 250 252 / 0.2);
+    --field: rgb(15 23 42 / 0.7);
+    --scrim: rgb(2 6 23 / 0.6);
 
     /* status */
     --danger: #f87171;
-    --success: #34d399;
+    --danger-fg: #0f172a;
     --warning: #fbbf24;
   }
 
@@ -43,12 +51,27 @@
   }
 }
 
-/* Base transition styles */
-.transition-base {
-  @apply transition-all duration-150 ease-out;
-}
+@layer components {
+  .transition-base {
+    @apply transition-all duration-150 ease-out;
+  }
 
-/* Focus ring styles for accessibility */
-.focus-ring {
-  @apply focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-accent;
+  /* interactive: buttons and cards */
+  .glass {
+    @apply bg-glass border border-glass-border backdrop-blur-sm hover:bg-glass-hover hover:border-glass-border-hover;
+  }
+
+  /* static: panels resting on the waves */
+  .glass-panel {
+    @apply bg-glass border border-glass-border backdrop-blur-sm;
+  }
+
+  /* static: modals, menus and anything over content or video */
+  .glass-strong {
+    @apply bg-glass-strong border border-glass-border backdrop-blur-md shadow-xl;
+  }
+
+  .focus-ring {
+    @apply focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent;
+  }
 }

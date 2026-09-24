@@ -4,19 +4,12 @@ import "@testing-library/jest-dom";
 import { MemoryRouter } from "react-router-dom";
 import Dashboard from "./Dashboard";
 
-jest.mock("../WaveBackground/WaveBackground", () => () => null);
-
 const baseProps = {
   createRoom: jest.fn(),
   joinRoom: jest.fn(),
-  handleUsernameSubmit: jest.fn(),
-  isSubmitting: false,
-  newUsername: "",
-  setNewUsername: jest.fn(),
-  usernameError: "",
+  usernameForm: { username: "", setUsername: jest.fn(), error: "", isSubmitting: false, submit: jest.fn() },
   userInfo: null,
   userExists: null,
-  onLogin: jest.fn(),
   profileError: false,
   onRetryProfile: jest.fn(),
   isCreating: false,
@@ -28,8 +21,6 @@ const baseProps = {
 
 const signedInProps = {
   ...baseProps,
-  isLoading: false,
-  isAuthenticated: true,
   userExists: true,
   userInfo: { username: "ada" } as any,
 };
@@ -41,26 +32,20 @@ afterEach(() => {
   jest.useRealTimers();
 });
 
-test("prompts logged-out visitors to log in instead of spinning forever", () => {
-  render(<Dashboard {...baseProps} isLoading={false} isAuthenticated={false} />, { wrapper: MemoryRouter });
-  expect(screen.getByRole("button", { name: /log in/i })).toBeInTheDocument();
-});
-
-test("shows a spinner only while auth state is still loading", () => {
-  const { container } = render(<Dashboard {...baseProps} isLoading={true} isAuthenticated={false} />, { wrapper: MemoryRouter });
-  expect(container.querySelector("span")).not.toBeNull(); // BeatLoader renders spans
-  expect(screen.queryByRole("button", { name: /log in/i })).toBeNull();
+test("shows a spinner while the profile loads", () => {
+  render(<Dashboard {...baseProps} />, { wrapper: MemoryRouter });
+  expect(screen.getByLabelText("Loading")).toBeInTheDocument();
 });
 
 test("offers a retry instead of spinning forever when the profile fetch fails", () => {
-  render(<Dashboard {...baseProps} isLoading={false} isAuthenticated={true} profileError={true} />, { wrapper: MemoryRouter });
+  render(<Dashboard {...baseProps} profileError={true} />, { wrapper: MemoryRouter });
   expect(screen.getByRole("button", { name: /try again/i })).toBeInTheDocument();
 });
 
-test("joining by code opens the modal and submits the typed room name", () => {
+test("joining by name opens the modal and submits the typed room name", () => {
   renderSignedIn();
 
-  fireEvent.click(screen.getByRole("button", { name: /join by code/i }));
+  fireEvent.click(screen.getByRole("button", { name: /join by name/i }));
 
   const input = screen.getByPlaceholderText("Enter room name");
   fireEvent.change(input, { target: { value: "my-room" } });
@@ -74,7 +59,7 @@ test("a failed join keeps the modal open and shows why", () => {
   // headless ui only unmounts a closed modal after its leave transition runs
   jest.useFakeTimers();
   const { rerender } = renderSignedIn();
-  fireEvent.click(screen.getByRole("button", { name: /join by code/i }));
+  fireEvent.click(screen.getByRole("button", { name: /join by name/i }));
   fireEvent.change(screen.getByPlaceholderText("Enter room name"), { target: { value: "jolly-red-fox" } });
   fireEvent.click(screen.getByRole("button", { name: /join room/i }));
 
@@ -89,7 +74,7 @@ test("a failed join keeps the modal open and shows why", () => {
 
 test("editing the room name clears a stale join error", () => {
   renderSignedIn({ joinError: "Room not found. Check the name and try again." });
-  fireEvent.click(screen.getByRole("button", { name: /join by code/i }));
+  fireEvent.click(screen.getByRole("button", { name: /join by name/i }));
 
   fireEvent.change(screen.getByPlaceholderText("Enter room name"), { target: { value: "jolly-red-fox" } });
 
@@ -98,7 +83,7 @@ test("editing the room name clears a stale join error", () => {
 
 test("closing the join modal clears a stale join error", () => {
   renderSignedIn({ joinError: "Room not found. Check the name and try again." });
-  fireEvent.click(screen.getByRole("button", { name: /join by code/i }));
+  fireEvent.click(screen.getByRole("button", { name: /join by name/i }));
 
   fireEvent.click(screen.getByRole("button", { name: /close/i }));
 
@@ -107,7 +92,7 @@ test("closing the join modal clears a stale join error", () => {
 
 test("the join button is disabled and says so while the lookup runs", () => {
   renderSignedIn({ isJoining: true });
-  fireEvent.click(screen.getByRole("button", { name: /join by code/i }));
+  fireEvent.click(screen.getByRole("button", { name: /join by name/i }));
 
   expect(screen.getByRole("button", { name: /joining/i })).toBeDisabled();
 });
@@ -124,8 +109,7 @@ test("a failed create is announced on the dashboard", () => {
   expect(screen.getByRole("alert")).toHaveTextContent("Couldn't start a room. Try again.");
 });
 
-test("links to the privacy policy and terms, even when logged out", () => {
-  render(<Dashboard {...baseProps} isLoading={false} isAuthenticated={false} />, { wrapper: MemoryRouter });
-  expect(screen.getByRole("link", { name: "Privacy" })).toHaveAttribute("href", "/privacy");
-  expect(screen.getByRole("link", { name: "Terms" })).toHaveAttribute("href", "/terms");
+test("the lounge has a page heading for screen readers", () => {
+  renderSignedIn();
+  expect(screen.getByRole("heading", { level: 1, name: "Lounge" })).toBeInTheDocument();
 });

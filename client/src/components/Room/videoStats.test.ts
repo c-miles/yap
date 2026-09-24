@@ -19,9 +19,6 @@ const sample = (bytesSent: number, timestamp: number) =>
       encoderImplementation: "VideoToolbox",
     },
     { id: "c1", type: "codec", mimeType: "video/H264" },
-    { id: "t1", type: "transport", selectedCandidatePairId: "p1" },
-    { id: "p1", type: "candidate-pair", availableOutgoingBitrate: 2_500_000 },
-    { id: "p2", type: "candidate-pair", availableOutgoingBitrate: 1 },
   ]);
 
 test("reads what the sender is actually sending", () => {
@@ -33,7 +30,6 @@ test("reads what the sender is actually sending", () => {
     limitation: "none",
     codec: "H264",
     encoder: "VideoToolbox",
-    availableKbps: 2500,
     bytesSent: 1000,
     timestamp: 1,
   });

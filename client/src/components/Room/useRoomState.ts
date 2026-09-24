@@ -1,9 +1,5 @@
 import { useState, useCallback } from "react";
-import { useLocation, useParams } from "react-router-dom";
-
-interface LocationState {
-  isHost?: boolean;
-}
+import { useParams } from "react-router-dom";
 
 export interface Participant {
   userId: string;
@@ -19,17 +15,11 @@ export interface Participant {
 
 export default function useRoomState() {
   const { roomId } = useParams<{ roomId: string }>();
-  const location = useLocation();
-  const state = location.state as LocationState;
 
-  const isHost = state?.isHost || false;
-
-  // Track all participants in the room
   const [participants, setParticipants] = useState<Map<string, Participant>>(new Map());
   const [roomError, setRoomError] = useState<string | null>(null);
   const [isConnecting, setIsConnecting] = useState(true);
 
-  // Add a participant
   const addParticipant = useCallback((participant: Participant) => {
     setParticipants((prev) => {
       const updated = new Map(prev);
@@ -38,7 +28,6 @@ export default function useRoomState() {
     });
   }, []);
 
-  // Remove a participant
   const removeParticipant = useCallback((userId: string) => {
     setParticipants((prev) => {
       const updated = new Map(prev);
@@ -47,7 +36,6 @@ export default function useRoomState() {
     });
   }, []);
 
-  // Update participant media state
   const updateParticipantMediaState = useCallback((userId: string, mediaState: Partial<Participant['mediaState']>) => {
     setParticipants((prev) => {
       const updated = new Map(prev);
@@ -62,7 +50,6 @@ export default function useRoomState() {
     });
   }, []);
 
-  // Update participant stream
   const updateParticipantStream = useCallback((userId: string, stream: MediaStream | undefined) => {
     setParticipants((prev) => {
       const updated = new Map(prev);
@@ -74,7 +61,6 @@ export default function useRoomState() {
     });
   }, []);
 
-  // Update participant connection state
   const updateParticipantConnectionState = useCallback((userId: string, connectionState: RTCPeerConnectionState) => {
     setParticipants((prev) => {
       const updated = new Map(prev);
@@ -100,7 +86,6 @@ export default function useRoomState() {
   }, []);
 
   return {
-    isHost,
     roomId,
     participants,
     roomError,

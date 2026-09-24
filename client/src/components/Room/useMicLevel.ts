@@ -1,6 +1,5 @@
 import { useEffect, useRef, useState } from "react";
 
-// Meter tunables: dBFS scale + attack/release ballistics.
 const FFT_SIZE = 1024;   // ~21ms window at 48kHz — responsive
 const MIN_DB = -60;      // dBFS floor  -> level 0
 const MAX_DB = 0;        // dBFS ceil   -> level 1
@@ -8,9 +7,6 @@ const ATTACK = 0.5;      // fast rise
 const RELEASE = 0.12;    // slow fall
 const EPSILON = 0.005;   // skip re-render below this delta
 
-// Smoothed microphone input level (0-1) from a stream's audio track, perceptually
-// scaled (RMS -> dBFS) with attack/release smoothing. Resumes the AudioContext,
-// which starts "suspended" under the autoplay policy; closes it on unmount/stream change.
 export function useMicLevel(stream: MediaStream | null): number {
   const [level, setLevel] = useState(0);
   const smoothedRef = useRef(0);
@@ -25,7 +21,7 @@ export function useMicLevel(stream: MediaStream | null): number {
       typeof AudioContext !== "undefined" ? AudioContext : (window as any).webkitAudioContext;
     if (!AudioCtx) return;
 
-    // Rapid device switching spins up a fresh AudioContext each time and can hit the browser's ~6-context cap and throw — must not crash the (decorative) meter.
+    // rapid device switches can hit the browser's ~6 AudioContext cap and throw
     const setUpGraph = (): {
       ctx: AudioContext;
       source: MediaStreamAudioSourceNode;
@@ -57,7 +53,7 @@ export function useMicLevel(stream: MediaStream | null): number {
     let rafId = 0;
     let cancelled = false;
 
-    // Suspended until a user gesture; the green room is reached via a click, so resume usually works — pointerdown listener is the fallback.
+    // autoplay policy starts it suspended. the click into the green room usually covers it, pointerdown is the fallback
     const resume = () => {
       if (ctx.state === "suspended") ctx.resume().catch(() => {});
     };

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
-import { AlertCircle } from "lucide-react";
-import { Icon } from "../atoms";
+import { Button, Spinner } from "../atoms";
+import { StatePanel } from "../molecules";
+import PageShell from "../PageShell";
 import ControlBar from "../ControlBar";
 import MessageThread from "../MessageThread/MessageThread";
 import ShareRoomModal from "../ShareRoomModal";
@@ -8,7 +9,6 @@ import PermissionErrorModal from "../PermissionErrorModal";
 import VideoGrid from "./VideoGrid";
 import CallHeader from "./CallHeader";
 import ChatToast from "./ChatToast";
-import WaitingForOthers from "./WaitingForOthers";
 import { useChat } from "./useChat";
 import { useVideoRequests } from "./useVideoRequests";
 import { useChromeVisibility } from "./useChromeVisibility";
@@ -21,10 +21,8 @@ interface RoomProps {
   localUserId: string;
   localUsername: string;
   localVideoEnabled: boolean;
-  localVideoRef: React.RefObject<HTMLVideoElement>;
   participants: Map<string, Participant>;
   profilePicture?: string;
-  retryVideoAccess: () => void;
   setVideoPermissionError: (error: 'denied' | 'notfound' | 'other' | null) => void;
   videoPermissionError: 'denied' | 'notfound' | 'other' | null;
   roomId: string | undefined;
@@ -35,7 +33,6 @@ interface RoomProps {
   toggleVideo: () => void;
   onLeaveRoom: () => void;
   onDashboard: () => void;
-  username?: string;
   socket: any;
 }
 
@@ -45,10 +42,8 @@ const Room: React.FC<RoomProps> = ({
   localUserId,
   localUsername,
   localVideoEnabled,
-  localVideoRef,
   participants,
   profilePicture,
-  retryVideoAccess,
   setVideoPermissionError,
   videoPermissionError,
   roomId,
@@ -59,16 +54,17 @@ const Room: React.FC<RoomProps> = ({
   toggleVideo,
   onLeaveRoom,
   onDashboard,
-  username,
   socket,
 }) => {
   const [isMessageThreadOpen, setIsMessageThreadOpen] = useState(false);
   const [isShareModalOpen, setIsShareModalOpen] = useState(false);
+  // a failed lookup leaves no friendly name, and an id invite still works
+  const inviteName = roomName ?? roomId;
   const [isMobile, setIsMobile] = useState(false);
   const [tileHeight, setTileHeight] = useState(0);
 
   const { messages, sendMessage, unreadCount, latestUnread } =
-    useChat(socket, roomId, username || localUsername, isMessageThreadOpen);
+    useChat(socket, roomId, localUsername, isMessageThreadOpen);
   useVideoRequests(socket, Array.from(participants.keys()), tileHeight);
 
   useEffect(() => {
@@ -81,8 +77,7 @@ const Room: React.FC<RoomProps> = ({
     return () => window.removeEventListener('resize', checkMobile);
   }, []);
 
-  // Auto-hide only when chat is closed, an open drawer must not let the
-  // controls (Leave, mic) fade out from under the conversation.
+  // open chat pins the controls so they can't fade out mid-conversation
   const { visible, reveal, hide } = useChromeVisibility(isMobile && !isMessageThreadOpen);
   const toggleChrome = () => (visible ? hide() : reveal());
 
@@ -98,51 +93,24 @@ const Room: React.FC<RoomProps> = ({
     setIsShareModalOpen(false);
   };
 
-  // Show error state
   if (roomError) {
     return (
-      <div className="app-layout">
-        <div className="room-container">
-          <div className="video-area">
-            <div className="max-w-md mx-auto p-6 rounded-lg border border-danger bg-surface-raised">
-              <div className="flex items-center gap-3 mb-3">
-                <Icon icon={AlertCircle} className="text-danger" size="lg" />
-                <h2 className="text-lg font-semibold text-danger">Unable to join room</h2>
-              </div>
-              <p className="text-text-secondary">{roomError}</p>
-              <button
-                type="button"
-                onClick={onDashboard}
-                className="focus-ring mt-4 min-h-[44px] px-5 rounded-lg bg-surface-raised text-text hover:brightness-125 transition"
-              >
-                Back to dashboard
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
+      <PageShell chrome={false}>
+        <StatePanel className="m-auto" title="Unable to join room" description={roomError}>
+          <Button onClick={onDashboard}>Back to lounge</Button>
+        </StatePanel>
+      </PageShell>
     );
   }
 
-  // Show loading state
   if (isConnecting) {
     return (
-      <div className="app-layout">
-        <div className="room-container">
-          <div className="video-area">
-            <div className="flex flex-col items-center justify-center gap-4">
-              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
-              <h3 className="text-lg font-medium text-text">
-                Connecting to room...
-              </h3>
-            </div>
-          </div>
-        </div>
+      <div className="app-layout items-center justify-center">
+        <Spinner label="Connecting to room…" />
       </div>
     );
   }
 
-  // Main room layout
   return (
     <div className="app-layout">
       <CallHeader
@@ -165,13 +133,6 @@ const Room: React.FC<RoomProps> = ({
             profilePicture={profilePicture}
             onTileHeightChange={setTileHeight}
           />
-          {participants.size === 0 && (
-            <div className="absolute inset-x-0 top-20 z-10 flex justify-center pointer-events-none px-4">
-              <div className="pointer-events-auto">
-                <WaitingForOthers roomName={roomName ?? roomId} />
-              </div>
-            </div>
-          )}
           <ChatToast message={latestUnread} />
         </div>
 
@@ -204,22 +165,18 @@ const Room: React.FC<RoomProps> = ({
         />
       </div>
 
-      <video ref={localVideoRef} autoPlay muted playsInline style={{ display: "none" }} />
-
-      {roomName && (
+      {inviteName && (
         <ShareRoomModal
           open={isShareModalOpen}
           onClose={handleCloseShareModal}
-          roomName={roomName}
+          roomName={inviteName}
         />
       )}
 
       <PermissionErrorModal
         open={!!videoPermissionError}
         onClose={() => setVideoPermissionError(null)}
-        onRetry={retryVideoAccess}
         errorType={videoPermissionError || 'other'}
-        mediaType="video"
       />
     </div>
   );
