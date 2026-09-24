@@ -15,9 +15,7 @@ const Dashboard: React.FC<DashboardProps> = ({
   usernameForm,
   userInfo,
   userExists,
-  isAuthenticated,
   isLoading,
-  onLogin,
   profileError,
   onRetryProfile,
   isCreating,
@@ -44,18 +42,8 @@ const Dashboard: React.FC<DashboardProps> = ({
   return (
     <div className="relative isolate flex items-center justify-center min-h-[calc(100vh-64px)] p-8 pb-24">
       <WaveBackground className="-z-10" />
-      {isLoading || (isAuthenticated && userExists === null && !profileError) ? (
+      {isLoading || (userExists === null && !profileError) ? (
         <BeatLoader color="var(--accent)" />
-      ) : !isAuthenticated ? (
-        <div className="w-full max-w-md">
-          <Card padding="lg" className="text-center">
-            <Heading level={2} className="mb-4">Welcome to yap</Heading>
-            <Text variant="muted" className="mb-6">Log in to start or join a room</Text>
-            <Button variant="primary" className="w-full" onClick={onLogin}>
-              Log in
-            </Button>
-          </Card>
-        </div>
       ) : profileError ? (
         <div className="w-full max-w-md">
           <Card padding="lg" className="text-center">

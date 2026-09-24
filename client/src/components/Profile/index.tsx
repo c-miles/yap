@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from "react";
+import { BeatLoader } from "react-spinners";
 
 import Profile from "./Profile";
 import useAuthUser from "../../hooks/useAuthUser";
 
 const ProfileContainer: React.FC = () => {
-  const { userInfo, handleUsernameSubmit } = useAuthUser();
+  const { userInfo, userExists, profileError, handleUsernameSubmit } = useAuthUser();
 
   const [username, setUsername] = useState(userInfo?.username || "");
   const [error, setError] = useState("");
@@ -22,6 +23,14 @@ const ProfileContainer: React.FC = () => {
       setIsEditing(false);
     }
   };
+
+  if (userExists === null && !profileError) {
+    return (
+      <div className="flex items-center justify-center min-h-[calc(100vh-64px)]">
+        <BeatLoader color="var(--accent)" />
+      </div>
+    );
+  }
 
   return (
     <Profile

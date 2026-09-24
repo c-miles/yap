@@ -6,6 +6,7 @@ import LandingPage from "./components/LandingPage";
 import Navbar from "./components/Navbar";
 import PrivacyPolicy from "./components/PrivacyPolicy";
 import Profile from "./components/Profile";
+import RequireSignIn from "./components/RequireSignIn";
 import TermsOfService from "./components/TermsOfService";
 
 const App = () => {
@@ -17,8 +18,8 @@ const App = () => {
       {showNavbar && <Navbar />}
       <Routes>
         <Route path="/" element={<LandingPage />} />
-        <Route path="/dashboard" element={<Dashboard />} />
-        <Route path="/profile" element={<Profile />} />
+        <Route path="/dashboard" element={<RequireSignIn><Dashboard /></RequireSignIn>} />
+        <Route path="/profile" element={<RequireSignIn><Profile /></RequireSignIn>} />
         <Route path="/privacy" element={<PrivacyPolicy />} />
         <Route path="/terms" element={<TermsOfService />} />
         <Route path="/room/:roomId" element={<DirectRoomJoin />} />

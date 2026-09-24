@@ -12,7 +12,6 @@ const baseProps = {
   usernameForm: { username: "", setUsername: jest.fn(), error: "", isSubmitting: false, submit: jest.fn() },
   userInfo: null,
   userExists: null,
-  onLogin: jest.fn(),
   profileError: false,
   onRetryProfile: jest.fn(),
   isCreating: false,
@@ -25,7 +24,6 @@ const baseProps = {
 const signedInProps = {
   ...baseProps,
   isLoading: false,
-  isAuthenticated: true,
   userExists: true,
   userInfo: { username: "ada" } as any,
 };
@@ -37,19 +35,13 @@ afterEach(() => {
   jest.useRealTimers();
 });
 
-test("prompts logged-out visitors to log in instead of spinning forever", () => {
-  render(<Dashboard {...baseProps} isLoading={false} isAuthenticated={false} />, { wrapper: MemoryRouter });
-  expect(screen.getByRole("button", { name: /log in/i })).toBeInTheDocument();
-});
-
-test("shows a spinner only while auth state is still loading", () => {
-  const { container } = render(<Dashboard {...baseProps} isLoading={true} isAuthenticated={false} />, { wrapper: MemoryRouter });
+test("shows a spinner while the profile loads", () => {
+  const { container } = render(<Dashboard {...baseProps} isLoading={true} />, { wrapper: MemoryRouter });
   expect(container.querySelector("span")).not.toBeNull(); // BeatLoader renders spans
-  expect(screen.queryByRole("button", { name: /log in/i })).toBeNull();
 });
 
 test("offers a retry instead of spinning forever when the profile fetch fails", () => {
-  render(<Dashboard {...baseProps} isLoading={false} isAuthenticated={true} profileError={true} />, { wrapper: MemoryRouter });
+  render(<Dashboard {...baseProps} isLoading={false} profileError={true} />, { wrapper: MemoryRouter });
   expect(screen.getByRole("button", { name: /try again/i })).toBeInTheDocument();
 });
 
@@ -120,8 +112,8 @@ test("a failed create is announced on the dashboard", () => {
   expect(screen.getByRole("alert")).toHaveTextContent("Couldn't start a room. Try again.");
 });
 
-test("links to the privacy policy and terms, even when logged out", () => {
-  render(<Dashboard {...baseProps} isLoading={false} isAuthenticated={false} />, { wrapper: MemoryRouter });
+test("links to the privacy policy and terms", () => {
+  render(<Dashboard {...baseProps} isLoading={false} userExists={true} userInfo={{ username: "ada" } as any} />, { wrapper: MemoryRouter });
   expect(screen.getByRole("link", { name: "Privacy" })).toHaveAttribute("href", "/privacy");
   expect(screen.getByRole("link", { name: "Terms" })).toHaveAttribute("href", "/terms");
 });
