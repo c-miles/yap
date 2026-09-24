@@ -17,6 +17,7 @@ const base = {
              mics: [{ kind: "audioinput", deviceId: "mic1", label: "Mic 1" } as MediaDeviceInfo] },
   selectCamera: jest.fn(), selectMic: jest.fn(),
   onRetry: jest.fn(), onJoin: jest.fn(), onCancel: jest.fn(),
+  profileStatus: "ready" as const, onRetryProfile: jest.fn(),
 };
 
 test("Join fires onJoin when ready", () => {
@@ -44,7 +45,7 @@ test("video disabled shows 'Camera off' and renders no video preview", () => {
   expect(document.querySelector("video")).toBeNull();
 });
 
-test("asks for a username before joining when there isn't one", () => {
+test("shows the username form in place of Join when given one", () => {
   const usernameForm = { username: "", setUsername: jest.fn(), error: "", isSubmitting: false, submit: jest.fn() };
   render(<GreenRoom {...base} usernameForm={usernameForm} />);
   expect(screen.getByPlaceholderText(/choose a username/i)).toBeInTheDocument();
@@ -61,4 +62,16 @@ test("the way back is there even when permission was denied", () => {
   render(<GreenRoom {...base} streamReady={false} permissionError="denied" />);
   fireEvent.click(screen.getByRole("button", { name: "Back to lounge" }));
   expect(base.onCancel).toHaveBeenCalled();
+});
+
+test("waits for the profile before allowing Join", () => {
+  render(<GreenRoom {...base} profileStatus="loading" />);
+  expect(screen.getByRole("button", { name: /^join$/i })).toBeDisabled();
+});
+
+test("a profile that fails to load offers a retry instead of Join", () => {
+  render(<GreenRoom {...base} profileStatus="error" />);
+  expect(screen.queryByRole("button", { name: /^join$/i })).toBeNull();
+  fireEvent.click(screen.getByRole("button", { name: /try again/i }));
+  expect(base.onRetryProfile).toHaveBeenCalled();
 });

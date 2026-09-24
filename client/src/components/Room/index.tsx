@@ -19,9 +19,9 @@ interface LocationState {
 }
 
 const RoomContainer: React.FC = () => {
-  const { userInfo, userExists, clerkUser, handleUsernameSubmit } = useAuthUser();
+  const { userInfo, userExists, profileError, retryProfileLoad, clerkUser, handleUsernameSubmit } = useAuthUser();
   const usernameForm = useUsernameForm(handleUsernameSubmit);
-  const needsUsername = userExists === false || (userExists === true && !userInfo?.username);
+  const profileStatus = userExists !== null ? "ready" : profileError ? "error" : "loading";
   const socket = useSocket();
   const location = useLocation();
   const navigate = useNavigate();
@@ -305,7 +305,9 @@ const RoomContainer: React.FC = () => {
         roomName={roomName}
         onJoin={() => setPhase("in-call")}
         onCancel={() => navigate("/dashboard")}
-        usernameForm={needsUsername ? usernameForm : undefined}
+        profileStatus={profileStatus}
+        onRetryProfile={retryProfileLoad}
+        usernameForm={profileStatus === "ready" && !userInfo?.username ? usernameForm : undefined}
       />
     );
   }

@@ -1,10 +1,12 @@
-import React, { useCallback } from "react";
+import React, { useCallback, useState } from "react";
 import { ArrowLeft, ChevronDown, Mic, MicOff, ShieldAlert, Video, VideoOff } from "lucide-react";
 import { Icon } from "../atoms";
 import { UsernameForm } from "../molecules";
 import { UsernameFormState } from "../../hooks/useUsernameForm";
 import WaveBackground from "../WaveBackground/WaveBackground";
 import { useMicLevel } from "./useMicLevel";
+
+const RETRY_BUTTON = "focus-ring min-h-[48px] px-6 rounded-xl bg-surface-raised text-text hover:brightness-125 transition";
 
 interface GreenRoomProps {
   stream: MediaStream | null;
@@ -22,6 +24,8 @@ interface GreenRoomProps {
   deviceSwitchError?: string | null;
   onRetry: () => void;
   onCancel: () => void;
+  profileStatus: "loading" | "error" | "ready";
+  onRetryProfile: () => void;
   usernameForm?: UsernameFormState;
   roomName?: string;
   onJoin: () => void;
@@ -46,7 +50,7 @@ const ToggleButton: React.FC<{
     onClick={onClick}
     aria-pressed={off}
     className={`focus-ring flex items-center justify-center gap-2 rounded-xl min-w-[48px] min-h-[48px] px-4 text-sm font-medium transition-colors
-      ${off ? "bg-danger text-white" : "bg-surface-raised text-text hover:brightness-125"}`}
+      ${off ? "bg-danger text-accent-fg" : "bg-surface-raised text-text hover:brightness-125"}`}
   >
     <span aria-hidden="true">{off ? offIcon : onIcon}</span>
     <span>{label}</span>
@@ -102,6 +106,8 @@ const GreenRoom: React.FC<GreenRoomProps> = ({
   roomName,
   onJoin,
   onCancel,
+  profileStatus,
+  onRetryProfile,
   usernameForm,
 }) => {
   const micLevel = useMicLevel(stream);
@@ -117,22 +123,22 @@ const GreenRoom: React.FC<GreenRoomProps> = ({
   );
 
   const showPreviewVideo = !!(stream && videoEnabled);
-  const touchDevice = window.matchMedia("(pointer: coarse)").matches;
+  const [touchDevice] = useState(() => window.matchMedia("(pointer: coarse)").matches);
 
   return (
     <div className="fixed inset-0 isolate bg-bg text-text">
       <WaveBackground className="-z-10" still={touchDevice} />
-      <button
-        type="button"
-        onClick={onCancel}
-        aria-label="Back to lounge"
-        className="focus-ring absolute top-4 left-4 z-10 flex items-center gap-1.5 min-h-[44px] px-3 rounded-lg text-text-secondary hover:text-text hover:bg-surface transition-colors"
-      >
-        <Icon icon={ArrowLeft} size="sm" aria-hidden="true" />
-        Lounge
-      </button>
       <div className="h-full overflow-y-auto">
-        <div className="min-h-full flex flex-col items-center justify-center gap-6 px-6 py-16 text-center">
+        <div className="relative min-h-full flex flex-col items-center justify-center gap-6 px-6 py-16 text-center">
+          <button
+            type="button"
+            onClick={onCancel}
+            aria-label="Back to lounge"
+            className="focus-ring absolute top-4 left-4 flex items-center gap-1.5 min-h-[44px] px-3 rounded-lg text-text-secondary hover:text-text hover:bg-surface transition-colors"
+          >
+            <Icon icon={ArrowLeft} size="sm" aria-hidden="true" />
+            Lounge
+          </button>
           <h1 className="font-display text-2xl font-semibold">{roomName ? `Joining ${roomName}` : "Joining the call"}</h1>
 
           <div className="relative w-full max-w-md aspect-video rounded-xl overflow-hidden bg-surface border border-border">
@@ -169,7 +175,7 @@ const GreenRoom: React.FC<GreenRoomProps> = ({
             </div>
           </div>
 
-          {/* Hidden on permission-denied: pickers/toggles would be empty no-ops. */}
+          {/* hidden on any permission error: pickers/toggles would be empty no-ops */}
           {!permissionError && (
             <>
               <div className="w-full max-w-md grid grid-cols-1 sm:grid-cols-2 gap-3 text-left">
@@ -212,8 +218,15 @@ const GreenRoom: React.FC<GreenRoomProps> = ({
               <button
                 type="button"
                 onClick={onRetry}
-                className="focus-ring min-h-[48px] px-6 rounded-xl bg-surface-raised text-text hover:brightness-125 transition"
+                className={RETRY_BUTTON}
               >
+                Try again
+              </button>
+            </div>
+          ) : profileStatus === "error" ? (
+            <div className="flex flex-col items-center gap-3 max-w-md">
+              <p className="text-sm text-text-secondary">Couldn't load your profile.</p>
+              <button type="button" onClick={onRetryProfile} className={RETRY_BUTTON}>
                 Try again
               </button>
             </div>
@@ -233,7 +246,7 @@ const GreenRoom: React.FC<GreenRoomProps> = ({
               <button
                 type="button"
                 onClick={onJoin}
-                disabled={!streamReady}
+                disabled={!streamReady || profileStatus === "loading"}
                 className="focus-ring min-h-[48px] px-8 rounded-xl bg-accent text-accent-fg font-semibold hover:bg-accent-hover transition-colors
                   disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-accent"
               >
