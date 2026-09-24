@@ -1,8 +1,8 @@
 import React, { useState, useRef, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useUser, useClerk } from "@clerk/react";
 import { ChevronDown } from "lucide-react";
-import { Avatar, Icon } from "./atoms";
+import { Avatar, Icon, Wordmark } from "./atoms";
 
 const Navbar: React.FC = () => {
   const { user } = useUser();
@@ -22,27 +22,17 @@ const Navbar: React.FC = () => {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  const handleLogout = () => {
+  const handleSignOut = () => {
     // Redirect target comes from ClerkProviderWithNavigate's afterSignOutUrl.
     signOut();
-  };
-
-  const navigateToDashboard = () => {
-    navigate("/dashboard");
   };
 
   return (
     <nav className="sticky top-0 h-16 bg-surface border-b border-border z-50">
       <div className="h-full px-4 flex items-center justify-between">
-        <div className="flex items-center gap-6">
-          <h1 className="text-xl font-medium text-text">yap</h1>
-          <button
-            onClick={navigateToDashboard}
-            className="text-text-muted hover:text-text transition-colors"
-          >
-            Lounge
-          </button>
-        </div>
+        <Link to={user ? "/dashboard" : "/"} className="focus-ring rounded">
+          <Wordmark />
+        </Link>
         
         {user && (
           <div className="relative" ref={dropdownRef}>
@@ -73,10 +63,10 @@ const Navbar: React.FC = () => {
                 </button>
                 <div className="border-t border-border" />
                 <button
-                  onClick={handleLogout}
-                  className="w-full px-4 py-3 text-left text-text hover:bg-danger transition-colors"
+                  onClick={handleSignOut}
+                  className="w-full px-4 py-3 text-left text-danger hover:bg-surface-raised transition-colors"
                 >
-                  Logout
+                  Sign out
                 </button>
               </div>
             )}
