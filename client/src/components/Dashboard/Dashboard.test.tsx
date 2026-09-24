@@ -36,8 +36,8 @@ afterEach(() => {
 });
 
 test("shows a spinner while the profile loads", () => {
-  const { container } = render(<Dashboard {...baseProps} isLoading={true} />, { wrapper: MemoryRouter });
-  expect(container.querySelector("span")).not.toBeNull(); // BeatLoader renders spans
+  render(<Dashboard {...baseProps} isLoading={true} />, { wrapper: MemoryRouter });
+  expect(screen.getByLabelText("Loading")).toBeInTheDocument();
 });
 
 test("offers a retry instead of spinning forever when the profile fetch fails", () => {

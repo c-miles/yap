@@ -8,9 +8,9 @@ jest.mock("../../hooks/useAuthUser", () => () => mockAuth);
 
 test("shows a loader instead of an empty profile while it loads", () => {
   mockAuth = { userInfo: null, userExists: null, handleUsernameSubmit: async () => "" };
-  const { container } = render(<ProfileContainer />);
+  render(<ProfileContainer />);
   expect(screen.queryByText(/joined yap/i)).toBeNull();
-  expect(container.querySelector("span")).not.toBeNull(); // BeatLoader renders spans
+  expect(screen.getByLabelText("Loading")).toBeInTheDocument();
 });
 
 test("shows the profile once it has loaded", () => {

@@ -27,7 +27,7 @@ const ProfileContainer: React.FC = () => {
   if (userExists === null && !profileError) {
     return (
       <div className="flex items-center justify-center min-h-[calc(100vh-64px)]">
-        <BeatLoader color="var(--accent)" />
+        <BeatLoader color="var(--accent)" aria-label="Loading" />
       </div>
     );
   }
