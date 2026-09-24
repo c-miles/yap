@@ -61,14 +61,14 @@ human-readable names like `brave-blue-tiger`.
 
    ```env
    REACT_APP_CLERK_PUBLISHABLE_KEY=pk_test_...
-   REACT_APP_API_BASE_URL=http://localhost:3001
    ```
 
    The Clerk keys come from your Clerk application's API keys page. The
    publishable key is public and appears in both files; the secret key stays in
-   the root `.env` only. `REACT_APP_API_BASE_URL` points the client at the local
-   server in development and should be left unset in production, where the server
-   serves the built client from the same origin.
+   the root `.env` only. In development the client talks to the server on port
+   3001; in production it uses its own origin, since the server serves the built
+   client. `REACT_APP_API_BASE_URL` overrides that and should stay unset in
+   production.
 
 3. Start MongoDB if you are running it locally, then start the server and client
    in separate terminals:
