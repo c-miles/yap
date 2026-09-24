@@ -3,7 +3,7 @@ import { Text } from "./atoms";
 import LegalPage, { ContactLink, LegalList, LegalSection } from "./LegalPage";
 
 const PrivacyPolicy: React.FC = () => (
-  <LegalPage title="Privacy policy" updated="September 23, 2026">
+  <LegalPage title="Privacy policy" updated="September 24, 2026">
     <Text variant="secondary">
       Yap is a video chat app made by Anomaly Labs LLC. This page explains what Yap keeps
       about you, and what it doesn't.
@@ -13,7 +13,7 @@ const PrivacyPolicy: React.FC = () => (
       <LegalList>
         <li>
           Your account details: name, email address, and profile picture. These come from Clerk,
-          our sign-in provider, or from Google or GitHub if you sign in with one of them.
+          our sign-in provider, or from Google, Microsoft, or GitHub if you sign in with one of them.
         </li>
         <li>The username you choose.</li>
         <li>
@@ -43,7 +43,7 @@ const PrivacyPolicy: React.FC = () => (
         <li>Render hosts the app.</li>
         <li>Our database host stores accounts, rooms, and chat messages.</li>
         <li>Cloudflare runs our DNS and the call relay.</li>
-        <li>Google or GitHub, if you choose to sign in with them.</li>
+        <li>Google, Microsoft, or GitHub, if you choose to sign in with them.</li>
       </LegalList>
     </LegalSection>
 
