@@ -7,3 +7,4 @@ node_modules/
 
 # local-only agent context
 CLAUDE.md
+.claude/settings.local.json
