@@ -2,7 +2,6 @@ import React, { useCallback, useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useClerk, useUser } from "@clerk/react";
 import WaveBackground from "./WaveBackground/WaveBackground";
-import Footer from "./Footer";
 import { Button, Text, Wordmark } from "./atoms";
 import { isValidRoomNameFormat } from "../utils/roomNameGenerator";
 import useDocumentTitle from "../hooks/useDocumentTitle";
@@ -41,9 +40,9 @@ const LandingPage: React.FC = () => {
   }, [isLoaded, isSignedIn, roomPath, openSignIn]);
 
   return (
-    <div className="relative isolate min-h-screen flex flex-col bg-bg overflow-hidden">
+    <div className="relative isolate bg-bg overflow-hidden">
       <WaveBackground className="-z-10" />
-      <main className="flex-1 flex flex-col items-center justify-center px-6 py-16 text-center">
+      <main className="min-h-screen flex flex-col items-center justify-center px-6 py-16 text-center">
         {room && isValidRoomNameFormat(room) && (
           <Text variant="secondary" className="mb-6">
             You're invited to <span className="font-medium text-text">{room}</span>
@@ -52,28 +51,16 @@ const LandingPage: React.FC = () => {
         <h1>
           <Wordmark size="lg" />
         </h1>
-        <Text variant="secondary" className="mt-6 max-w-[34ch] text-lg sm:text-xl text-balance">
+        <Text variant="secondary" className="mt-5 max-w-[34ch] sm:text-lg text-balance">
           Drop-in video rooms for your group. Share a link and hop in, no install needed.
-        </Text>
-        <Text variant="small" className="mt-3">
-          Free · Up to 6 people · Never recorded
         </Text>
 
         {!isAuthenticated && (
-          <>
-            <Button size="lg" className="mt-8 min-w-[12rem]" onClick={openSignIn}>
-              {roomPath ? "Join room" : "Start a room"}
-            </Button>
-            <Text variant="small" className="mt-4">
-              Have an account?{" "}
-              <button type="button" onClick={openSignIn} className="focus-ring rounded text-accent hover:underline">
-                Sign in
-              </button>
-            </Text>
-          </>
+          <Button size="lg" className="mt-8 min-w-[10rem]" onClick={openSignIn}>
+            Sign in
+          </Button>
         )}
       </main>
-      <Footer />
     </div>
   );
 };

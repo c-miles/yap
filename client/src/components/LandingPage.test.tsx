@@ -42,22 +42,11 @@ test("a plain visit waits for the visitor to start", () => {
   expect(mockOpenSignIn).not.toHaveBeenCalled();
 });
 
-test("starting a room opens one modal for signing in or up", () => {
+test("one Sign in button covers new and returning people", () => {
   renderAt("/");
-  fireEvent.click(screen.getByRole("button", { name: "Start a room" }));
-  expect(mockOpenSignIn).toHaveBeenCalledWith({ withSignUp: true });
-});
-
-test("returning people can sign in from the same page", () => {
-  renderAt("/");
+  expect(screen.getAllByRole("button")).toHaveLength(1);
   fireEvent.click(screen.getByRole("button", { name: "Sign in" }));
   expect(mockOpenSignIn).toHaveBeenCalledWith({ withSignUp: true });
-});
-
-test("links to the privacy policy and terms", () => {
-  renderAt("/");
-  expect(screen.getByRole("link", { name: "Privacy" })).toHaveAttribute("href", "/privacy");
-  expect(screen.getByRole("link", { name: "Terms" })).toHaveAttribute("href", "/terms");
 });
 
 test("a room link opens sign-in straight away, set to come back to the room", () => {
@@ -68,13 +57,12 @@ test("a room link opens sign-in straight away, set to come back to the room", ()
 test("a room link says which room you're joining", () => {
   renderAt("/?room=brave-blue-fox");
   expect(screen.getByText(/you're invited to/i)).toHaveTextContent("You're invited to brave-blue-fox");
-  expect(screen.getByRole("button", { name: "Join room" })).toBeInTheDocument();
 });
 
 test("reopening sign-in after closing it still comes back to the room", () => {
   renderAt("/?room=brave-blue-fox");
   mockOpenSignIn.mockClear();
-  fireEvent.click(screen.getByRole("button", { name: "Join room" }));
+  fireEvent.click(screen.getByRole("button", { name: "Sign in" }));
   expect(mockOpenSignIn).toHaveBeenCalledWith(backToRoom);
 });
 
