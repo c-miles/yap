@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from "react";
-import { Spinner } from "../atoms";
+import { Button, Spinner } from "../atoms";
+import { StatePanel } from "../molecules";
 
 import Profile from "./Profile";
 import useAuthUser from "../../hooks/useAuthUser";
 
 const ProfileContainer: React.FC = () => {
-  const { userInfo, userExists, profileError, handleUsernameSubmit } = useAuthUser();
+  const { userInfo, userExists, profileError, retryProfileLoad, handleUsernameSubmit } = useAuthUser();
 
   const [username, setUsername] = useState(userInfo?.username || "");
   const [error, setError] = useState("");
@@ -24,7 +25,15 @@ const ProfileContainer: React.FC = () => {
     }
   };
 
-  if (userExists === null && !profileError) {
+  if (profileError) {
+    return (
+      <StatePanel className="m-auto" title="Couldn't load your profile" description="Check your connection and try again.">
+        <Button onClick={retryProfileLoad}>Try again</Button>
+      </StatePanel>
+    );
+  }
+
+  if (userExists === null) {
     return <Spinner className="m-auto" />;
   }
 

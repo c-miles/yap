@@ -37,17 +37,17 @@ const DirectRoomJoin: React.FC = () => {
       return;
     }
 
-    if (!isValidRoomNameFormat(roomId)) {
-      setShouldRenderRoom(true);
-      return;
-    }
-
-    // friendly name in the URL, resolve it to the real room id
+    // a name or an id; either way the lookup brings back the name to show
     (async () => {
       try {
         const room = await findRoom(roomId);
         if (!room) {
-          setError({ title: `We couldn't find ${roomId}`, detail: "Double-check the link with whoever sent it." });
+          const which = isValidRoomNameFormat(roomId) ? roomId : "that room";
+          setError({ title: `We couldn't find ${which}`, detail: "Double-check the link with whoever sent it." });
+          return;
+        }
+        if (!room.friendlyName) {
+          setShouldRenderRoom(true);
           return;
         }
         navigate(`/room/${room.roomId}`, {

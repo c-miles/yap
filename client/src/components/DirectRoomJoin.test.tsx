@@ -42,10 +42,19 @@ test("logged-out users are sent to /?room=<id> to sign in", () => {
   expect(screen.getByText("at /?room=507f1f77bcf86cd799439011")).toBeInTheDocument();
 });
 
-test("authenticated users with a room id render the room", async () => {
+test("a bare room id link looks the room up so its name shows", async () => {
   mockedUseUser.mockReturnValue({ isLoaded: true, isSignedIn: true });
+  mockedAuthFetch.mockResolvedValue({ ok: true, status: 200, json: async () => ({ roomId: "507f1f77bcf86cd799439011", friendlyName: "brave-blue-fox" }) });
   renderAt("/room/507f1f77bcf86cd799439011");
   expect(await screen.findByTestId("room")).toBeInTheDocument();
+  expect(mockedAuthFetch).toHaveBeenCalledWith("/rooms/find-by-name/507f1f77bcf86cd799439011");
+});
+
+test("a room id that doesn't exist doesn't read out the id", async () => {
+  mockedUseUser.mockReturnValue({ isLoaded: true, isSignedIn: true });
+  mockedAuthFetch.mockResolvedValue({ ok: false, status: 404, json: async () => ({ message: "Room not found" }) });
+  renderAt("/room/507f1f77bcf86cd799439011");
+  expect(await screen.findByRole("heading", { name: "We couldn't find that room" })).toBeInTheDocument();
 });
 
 test("arriving with the room already looked up skips the lookup", async () => {
