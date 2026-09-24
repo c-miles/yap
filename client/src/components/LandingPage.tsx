@@ -51,12 +51,13 @@ const LandingPage: React.FC = () => {
         <h1>
           <Wordmark size="lg" />
         </h1>
-        <Text variant="secondary" className="mt-5 max-w-[34ch] sm:text-lg text-balance">
-          Drop-in video rooms for your group. Share a link and hop in, no install needed.
+        <Text variant="secondary" className="mt-5 sm:text-lg">
+          <span className="block">Drop-in video rooms for your group.</span>
+          <span className="block">Share a link and hop in.</span>
         </Text>
 
         {!isAuthenticated && (
-          <Button size="lg" className="mt-8 min-w-[10rem]" onClick={openSignIn}>
+          <Button variant="glass" size="lg" className="mt-8 min-w-[10rem]" onClick={openSignIn}>
             Sign in
           </Button>
         )}
