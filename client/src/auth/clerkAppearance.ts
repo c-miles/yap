@@ -18,6 +18,11 @@ const colors = {
   danger: "#f87171",
 };
 
+// the extra &s outrank clerk's own focus styles
+const keyboardFocus = {
+  "&&&:focus-visible": { boxShadow: `0 0 0 2px ${colors.surface}, 0 0 0 4px ${colors.accent}` },
+};
+
 export const clerkAppearance: Appearance = {
   variables: {
     colorPrimary: colors.accent,
@@ -30,6 +35,7 @@ export const clerkAppearance: Appearance = {
     colorInputForeground: colors.text,
     colorRing: colors.accent,
     colorDanger: colors.danger,
+    colorModalBackdrop: "rgba(2, 6, 23, 0.6)",
     borderRadius: "0.5rem",
   },
   elements: {
@@ -37,9 +43,16 @@ export const clerkAppearance: Appearance = {
     // && so it beats clerk's own phone-width margin
     modalContent: { "&&": { margin: "auto" } },
     headerTitle: { fontFamily: '"Bricolage Grotesque Variable", system-ui, sans-serif' },
-    formButtonPrimary: { "&:hover": { backgroundColor: colors.accentHover } },
+    formButtonPrimary: { "&:hover": { backgroundColor: colors.accentHover }, ...keyboardFocus },
+    socialButtonsIconButton: keyboardFocus,
+    modalCloseButton: keyboardFocus,
     footerActionLink: { "&:hover": { color: colors.accent } },
-    formFieldInput: { "&::placeholder": { color: colors.textMuted } },
+    footer: { "& a:focus-visible": { outline: `2px solid ${colors.accent}`, outlineOffset: "2px", borderRadius: "2px" } },
+    formFieldInput: {
+      "&::placeholder": { color: colors.textMuted },
+      "&&&:focus": { boxShadow: `0 0 0 2px ${colors.accent}` },
+      '&&&[data-feedback="error"]:focus': { boxShadow: `0 0 0 2px ${colors.danger}` },
+    },
     dividerLine: { backgroundColor: colors.border },
     // clerk lists providers alphabetically; this shows google first and github last
     socialButtonsIconButton__google: { order: -1 },
