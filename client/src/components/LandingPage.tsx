@@ -57,7 +57,7 @@ const LandingPage: React.FC = () => {
         </Text>
 
         {!isAuthenticated && (
-          <Button variant="glass" size="lg" className="mt-8 min-w-[10rem]" onClick={openSignIn}>
+          <Button size="lg" className="mt-8 min-w-[10rem]" onClick={openSignIn}>
             Sign in
           </Button>
         )}

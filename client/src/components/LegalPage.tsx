@@ -6,7 +6,7 @@ const CONTACT_EMAIL = "contact@anomaly-labs.com";
 
 export const LegalSection: React.FC<{ title: string; children: React.ReactNode }> = ({ title, children }) => (
   <section className="space-y-3">
-    <Heading level={2} size="md">{title}</Heading>
+    <Heading level={2}>{title}</Heading>
     {children}
   </section>
 );

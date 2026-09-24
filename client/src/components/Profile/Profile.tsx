@@ -42,11 +42,11 @@ const Profile: React.FC<ProfileProps> = ({
 
   return (
     <div className="flex flex-col items-center justify-center min-h-[calc(100vh-64px)] p-8">
-      <Card padding="lg" className="w-full max-w-md">
+      <Card className="w-full max-w-md">
         <div className="flex flex-col items-center">
           <Avatar src={userInfo?.picture} name={userInfo?.username || "User"} size="xl" className="mb-6" />
 
-          <Heading level={1} size="lg" className="mb-2">
+          <Heading level={1} className="mb-2">
             {userInfo?.username}
           </Heading>
 

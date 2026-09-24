@@ -1,22 +1,19 @@
 import React from 'react';
 
+export const fieldClassName =
+  'w-full min-h-11 px-4 bg-field text-text border rounded-lg placeholder:text-text-muted transition-base focus:outline-none focus:ring-2 focus:ring-accent';
+
 interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
   error?: string;
 }
 
-const Input: React.FC<InputProps> = ({ 
-  className = '',
-  error,
-  ...props 
-}) => {
-  const baseClasses = 'w-full px-4 py-2 bg-surface text-text border rounded-md transition-base focus:outline-none focus:ring-2 focus:ring-accent focus:ring-opacity-75 focus:border-transparent';
-  const errorClasses = error ? 'border-danger' : 'border-border';
+const Input: React.FC<InputProps> = ({ className = '', error, ...props }) => {
   const errorId = React.useId();
 
   return (
     <div className="w-full">
       <input
-        className={`${baseClasses} ${errorClasses} ${className}`}
+        className={`${fieldClassName} ${error ? 'border-danger' : 'border-glass-border'} ${className}`}
         aria-invalid={error ? true : undefined}
         aria-describedby={error ? errorId : undefined}
         {...props}

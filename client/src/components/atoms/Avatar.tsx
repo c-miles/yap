@@ -5,14 +5,14 @@ import Icon from "./Icon";
 interface AvatarProps {
   src?: string;
   name?: string;
-  size?: "sm" | "md" | "lg" | "xl";
+  size?: "sm" | "xl";
   className?: string;
 }
 
-const BOX = { sm: "w-8 h-8", md: "w-10 h-10", lg: "w-20 h-20", xl: "w-32 h-32" } as const;
-const GLYPH = { sm: "sm", md: "sm", lg: "xl", xl: "2xl" } as const;
+const BOX = { sm: "w-8 h-8", xl: "w-32 h-32" } as const;
+const GLYPH = { sm: "sm", xl: "2xl" } as const;
 
-const Avatar: React.FC<AvatarProps> = ({ src, name = "User", size = "md", className = "" }) => {
+const Avatar: React.FC<AvatarProps> = ({ src, name = "User", size = "sm", className = "" }) => {
   const [errored, setErrored] = useState(false);
   useEffect(() => setErrored(false), [src]);
   const box = `${BOX[size]} rounded-full ${className}`;

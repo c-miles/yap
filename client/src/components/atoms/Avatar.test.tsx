@@ -16,7 +16,7 @@ test("renders the image when src is provided", () => {
   render(<Avatar src="http://x/a.png" name="Ada" />);
   const img = screen.getByAltText("Ada") as HTMLImageElement;
   expect(img.tagName).toBe("IMG");
-  expect(img).toHaveClass("w-10", "h-10"); // md = 40px
+  expect(img).toHaveClass("w-8", "h-8");
 });
 
 test("falls back to the User icon when there is no src", () => {

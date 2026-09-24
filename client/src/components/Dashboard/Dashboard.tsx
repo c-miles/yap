@@ -46,7 +46,7 @@ const Dashboard: React.FC<DashboardProps> = ({
         <BeatLoader color="var(--accent)" aria-label="Loading" />
       ) : profileError ? (
         <div className="w-full max-w-md">
-          <Card padding="lg" className="text-center">
+          <Card className="text-center">
             <Heading level={2} className="mb-4">Couldn't load your profile</Heading>
             <Text variant="muted" className="mb-6">Something went wrong talking to the server</Text>
             <Button variant="primary" className="w-full" onClick={onRetryProfile}>
@@ -56,7 +56,7 @@ const Dashboard: React.FC<DashboardProps> = ({
         </div>
       ) : showUsernameForm ? (
         <div className="w-full max-w-md">
-          <Card padding="lg" className="text-center">
+          <Card className="text-center">
             <Heading level={2} className="mb-4">Welcome to Yap</Heading>
             <Text variant="muted" className="mb-6">Choose a username to get started</Text>
             <UsernameForm form={usernameForm} />
@@ -101,7 +101,7 @@ const Dashboard: React.FC<DashboardProps> = ({
                 error={joinError}
               />
 
-              <Button type="submit" variant="glass" className="w-full mt-4" disabled={isJoining}>
+              <Button type="submit" className="w-full mt-4" disabled={isJoining}>
                 {isJoining ? "Joining…" : "Join room"}
               </Button>
             </form>

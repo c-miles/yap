@@ -44,8 +44,6 @@ const IconControl: React.FC<{
     <span aria-hidden="true">{children}</span>
     {badge > 0 && (
       <Badge
-        variant="accent"
-        size="sm"
         aria-hidden="true"
         className="absolute -top-1 -right-1 min-w-[18px] h-[18px]"
       >
