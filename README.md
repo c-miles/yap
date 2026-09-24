@@ -1,6 +1,6 @@
-# Yap
+# yap
 
-Yap is a six-person video chat app. Each participant connects directly to every
+yap is a six-person video chat app. Each participant connects directly to every
 other participant over WebRTC, so audio and video flow peer-to-peer rather than
 through a central media server, with a lightweight Node server handling only
 sign-in, signaling, and chat history. Rooms are created and shared with

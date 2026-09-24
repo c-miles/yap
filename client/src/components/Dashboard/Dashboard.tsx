@@ -44,7 +44,7 @@ const Dashboard: React.FC<DashboardProps> = ({
           <Button onClick={onRetryProfile}>Try again</Button>
         </StatePanel>
       ) : showUsernameForm ? (
-        <StatePanel headingLevel={2} title="Welcome to Yap" description="Choose a username to get started.">
+        <StatePanel headingLevel={2} title="Welcome to yap" description="Choose a username to get started.">
           <UsernameForm form={usernameForm} />
         </StatePanel>
       ) : (

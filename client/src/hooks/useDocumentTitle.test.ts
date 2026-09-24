@@ -3,7 +3,7 @@ import useDocumentTitle from "./useDocumentTitle";
 
 test("names the page, then the app", () => {
   renderHook(() => useDocumentTitle("Lounge"));
-  expect(document.title).toBe("Lounge · Yap");
+  expect(document.title).toBe("Lounge · yap");
 });
 
 test("falls back to the site title", () => {
@@ -11,5 +11,5 @@ test("falls back to the site title", () => {
     initialProps: { title: "Lounge" as string | undefined },
   });
   rerender({ title: undefined });
-  expect(document.title).toBe("Yap · Drop-in video rooms for your group");
+  expect(document.title).toBe("yap · Drop-in video rooms for your group");
 });

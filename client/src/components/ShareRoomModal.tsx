@@ -51,7 +51,7 @@ const ShareRoomModal: React.FC<{ open: boolean; onClose: () => void; roomName: s
           valueClassName="text-sm text-text-secondary"
         />
         <p className="text-xs text-text-muted">
-          Anyone with a Yap account can hop in from this link, or by entering the room name.
+          Anyone with a yap account can hop in from this link, or by entering the room name.
         </p>
       </div>
       <span aria-live="polite" className="sr-only">

@@ -50,7 +50,7 @@ const Profile: React.FC<ProfileProps> = ({
         </Heading>
 
         <Text variant="muted" className="mb-6">
-          Joined Yap: {joinedDate}
+          Joined yap: {joinedDate}
         </Text>
 
         {!isEditing && (
