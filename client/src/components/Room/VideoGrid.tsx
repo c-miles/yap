@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { VolumeX } from "lucide-react";
 import { Icon } from "../atoms";
 import { Participant } from "./useRoomState";
@@ -17,6 +17,7 @@ interface VideoGridProps {
   localAudioEnabled: boolean;
   participants: Map<string, Participant>;
   profilePicture?: string;
+  onTileHeightChange?: (height: number) => void;
 }
 
 interface VideoElementProps {
@@ -129,7 +130,8 @@ const VideoGrid: React.FC<VideoGridProps> = ({
   localVideoEnabled,
   localAudioEnabled,
   participants,
-  profilePicture
+  profilePicture,
+  onTileHeightChange
 }) => {
   const { ref: containerRef, size } = useContainerSize<HTMLDivElement>();
 
@@ -159,6 +161,10 @@ const VideoGrid: React.FC<VideoGridProps> = ({
   const count = allParticipants.length;
   const aspectRatio = chooseAspectRatio(size.width, size.height);
   const layout = computeGridLayout(size.width, size.height, count, aspectRatio, GRID_GAP, MAX_TILE_WIDTH);
+
+  useEffect(() => {
+    onTileHeightChange?.(layout.tileHeight);
+  }, [layout.tileHeight, onTileHeightChange]);
 
   // Explicit grid columns (count and width from JS) keep the column count
   // structural, so a container resize can never reflow tiles into a stacked

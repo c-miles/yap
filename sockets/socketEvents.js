@@ -9,6 +9,7 @@ import {
   listOtherParticipants,
   resolveJoinMediaState,
 } from "../services/roomParticipants.js";
+import { normalizeRequestedHeight } from "../services/videoRequests.js";
 
 export const socketEvents = (io) => {
   const registry = createRoomRegistry();
@@ -37,9 +38,7 @@ export const socketEvents = (io) => {
     }
   }
 
-  // Relays an offer/answer/candidate to one user in the sender's room.
-  // fromUserId is stamped from the registry — the client-supplied value is
-  // ignored, so a client cannot impersonate another user in signaling.
+  // fromUserId comes from the registry, never the client, so nobody can spoof a sender
   function relayToUser(socket, targetUserId, event, payload) {
     const roomId = registry.getRoom(socket.id);
     const fromUserId = registry.getUser(socket.id);
@@ -54,10 +53,13 @@ export const socketEvents = (io) => {
   }
 
   io.on("connection", (socket) => {
+    // destructuring a missing payload throws inside socket.io's nextTick, which kills the process
+    const on = (event, handler) => socket.on(event, (payload) => handler(payload ?? {}));
+
     socket.on("disconnect", () => handleLeave(socket));
     socket.on("leaveRoom", () => handleLeave(socket, { leaveChannel: true }));
 
-    socket.on("joinRoom", async ({ roomId, username, profilePicture, mediaState }) => {
+    on("joinRoom", async ({ roomId, username, profilePicture, mediaState }) => {
       const userId = socket.data.userId;
       // pre-join mic/cam state from the green room; resolveJoinMediaState normalizes/guards absent or malformed input.
       const joinedMediaState = resolveJoinMediaState(mediaState);
@@ -121,7 +123,7 @@ export const socketEvents = (io) => {
       }
     });
 
-    socket.on("sendMessage", async ({ message, username }) => {
+    on("sendMessage", async ({ message, username }) => {
       const roomId = registry.getRoom(socket.id);
       if (!roomId) {
         return;
@@ -135,7 +137,7 @@ export const socketEvents = (io) => {
       }
     });
 
-    socket.on("toggleVideo", async ({ videoEnabled }) => {
+    on("toggleVideo", async ({ videoEnabled }) => {
       const roomId = registry.getRoom(socket.id);
       const userId = registry.getUser(socket.id);
       if (!roomId || !userId) {
@@ -149,7 +151,7 @@ export const socketEvents = (io) => {
       }
     });
 
-    socket.on("toggleAudio", async ({ audioEnabled }) => {
+    on("toggleAudio", async ({ audioEnabled }) => {
       const roomId = registry.getRoom(socket.id);
       const userId = registry.getUser(socket.id);
       if (!roomId || !userId) {
@@ -163,16 +165,23 @@ export const socketEvents = (io) => {
       }
     });
 
-    socket.on("sendOffer", ({ targetUserId, offer }) => {
+    on("sendOffer", ({ targetUserId, offer }) => {
       relayToUser(socket, targetUserId, "receiveOffer", { offer });
     });
 
-    socket.on("sendAnswer", ({ targetUserId, answer }) => {
+    on("sendAnswer", ({ targetUserId, answer }) => {
       relayToUser(socket, targetUserId, "receiveAnswer", { answer });
     });
 
-    socket.on("sendIceCandidate", ({ targetUserId, candidate }) => {
+    on("sendIceCandidate", ({ targetUserId, candidate }) => {
       relayToUser(socket, targetUserId, "receiveIceCandidate", { candidate });
+    });
+
+    on("sendVideoRequest", ({ targetUserId, maxHeight }) => {
+      const height = normalizeRequestedHeight(maxHeight);
+      if (height !== null) {
+        relayToUser(socket, targetUserId, "receiveVideoRequest", { maxHeight: height });
+      }
     });
   });
 };

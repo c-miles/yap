@@ -1,4 +1,4 @@
-import { useRef, useState, useCallback, useEffect } from "react";
+import { useState, useCallback } from "react";
 import { useLocation, useParams } from "react-router-dom";
 
 interface LocationState {

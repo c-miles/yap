@@ -6,6 +6,8 @@ import GreenRoom from "./GreenRoom";
 import useAuthUser from "../../hooks/useAuthUser";
 import useMediaStream from "./useMediaStream";
 import usePeerConnection from "./usePeerConnection";
+import VideoStatsOverlay from "./VideoStatsOverlay";
+import { VideoStatsSnapshot } from "./videoStats";
 import useRoomState, { Participant } from "./useRoomState";
 import useSocket from "../../services/useSocket";
 
@@ -23,6 +25,8 @@ const RoomContainer: React.FC = () => {
 
   const [roomName] = useState<string | undefined>(state?.friendlyName);
   const [phase, setPhase] = useState<"green-room" | "in-call">("green-room");
+  const showStats = new URLSearchParams(location.search).has("stats");
+  const [videoStats, setVideoStats] = useState<VideoStatsSnapshot | null>(null);
 
   // stable identity: the clerk user id. DirectRoomJoin guarantees we're
   // authenticated before this component renders.
@@ -76,6 +80,7 @@ const RoomContainer: React.FC = () => {
     onStreamAdded: handleStreamAdded,
     onStreamRemoved: handleStreamRemoved,
     onConnectionStateChange: handleConnectionStateChange,
+    onVideoStats: showStats ? setVideoStats : undefined,
   });
 
   const {
@@ -299,29 +304,37 @@ const RoomContainer: React.FC = () => {
   }
 
   return (
-    <Room
-      audioEnabled={audioEnabled}
-      localStream={stream}
-      localUserId={localUserId}
-      localUsername={localUsername}
-      localVideoEnabled={videoEnabled}
-      localVideoRef={localVideoRef}
-      participants={participants}
-      profilePicture={localPicture}
-      retryVideoAccess={retryVideoAccess}
-      setVideoPermissionError={setVideoPermissionError}
-      videoPermissionError={videoPermissionError}
-      roomId={roomId}
-      roomName={roomName}
-      roomError={roomError}
-      isConnecting={isConnecting}
-      toggleAudio={handleToggleAudio}
-      toggleVideo={handleToggleVideo}
-      onLeaveRoom={handleLeaveRoom}
-      onDashboard={() => navigate("/dashboard")}
-      username={localUsername}
-      socket={socket}
-    />
+    <>
+      <Room
+        audioEnabled={audioEnabled}
+        localStream={stream}
+        localUserId={localUserId}
+        localUsername={localUsername}
+        localVideoEnabled={videoEnabled}
+        localVideoRef={localVideoRef}
+        participants={participants}
+        profilePicture={localPicture}
+        retryVideoAccess={retryVideoAccess}
+        setVideoPermissionError={setVideoPermissionError}
+        videoPermissionError={videoPermissionError}
+        roomId={roomId}
+        roomName={roomName}
+        roomError={roomError}
+        isConnecting={isConnecting}
+        toggleAudio={handleToggleAudio}
+        toggleVideo={handleToggleVideo}
+        onLeaveRoom={handleLeaveRoom}
+        onDashboard={() => navigate("/dashboard")}
+        username={localUsername}
+        socket={socket}
+      />
+      {showStats && (
+        <VideoStatsOverlay
+          snapshot={videoStats}
+          names={new Map(Array.from(participants.values()).map((p) => [p.userId, p.username]))}
+        />
+      )}
+    </>
   );
 };
 

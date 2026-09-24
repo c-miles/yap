@@ -10,6 +10,7 @@ import CallHeader from "./CallHeader";
 import ChatToast from "./ChatToast";
 import WaitingForOthers from "./WaitingForOthers";
 import { useChat } from "./useChat";
+import { useVideoRequests } from "./useVideoRequests";
 import { useChromeVisibility } from "./useChromeVisibility";
 import { Participant } from "./useRoomState";
 import "./Room.css";
@@ -64,9 +65,11 @@ const Room: React.FC<RoomProps> = ({
   const [isMessageThreadOpen, setIsMessageThreadOpen] = useState(false);
   const [isShareModalOpen, setIsShareModalOpen] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
+  const [tileHeight, setTileHeight] = useState(0);
 
   const { messages, sendMessage, unreadCount, latestUnread } =
     useChat(socket, roomId, username || localUsername, isMessageThreadOpen);
+  useVideoRequests(socket, Array.from(participants.keys()), tileHeight);
 
   useEffect(() => {
     const checkMobile = () => {
@@ -160,6 +163,7 @@ const Room: React.FC<RoomProps> = ({
             localAudioEnabled={audioEnabled}
             participants={participants}
             profilePicture={profilePicture}
+            onTileHeightChange={setTileHeight}
           />
           {participants.size === 0 && (
             <div className="absolute inset-x-0 top-20 z-10 flex justify-center pointer-events-none px-4">

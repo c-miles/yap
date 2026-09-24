@@ -111,6 +111,11 @@ room is a mesh of connections and each browser encodes its video for every peer.
 This keeps the infrastructure simple and latency low, at the cost of client
 bandwidth and CPU, which is why rooms are capped at six.
 
+To keep that manageable, each browser sizes its video per viewer: quality steps
+down as the room grows, never exceeds the viewer's tile, pauses while the
+viewer's tab is hidden, and backs off when the CPU can't keep up. Add `?stats`
+to a room URL to see what's being sent.
+
 ## Scripts
 
 Server (root directory):

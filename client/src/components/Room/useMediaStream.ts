@@ -1,6 +1,6 @@
-import { useEffect, useState, useRef } from "react";
+import { useCallback, useEffect, useState, useRef } from "react";
 import { UseMediaStreamProps } from "../../types/mediaStreamTypes";
-import { VIDEO_CONSTRAINTS } from "./videoEncoding";
+import { VIDEO_CONSTRAINTS } from "./videoQuality";
 
 interface DeviceLists {
   cameras: MediaDeviceInfo[];
@@ -29,7 +29,7 @@ export default function useMediaStream({ onStreamUpdated }: UseMediaStreamProps)
   const selectedMicIdRef = useRef<string | undefined>(undefined);
 
   // Enumerate cameras/mics; re-run on permission grant and devicechange.
-  const enumerateAndSetDevices = async () => {
+  const enumerateAndSetDevices = useCallback(async () => {
     try {
       const deviceList = await navigator.mediaDevices.enumerateDevices();
       setDevices({
@@ -39,10 +39,10 @@ export default function useMediaStream({ onStreamUpdated }: UseMediaStreamProps)
     } catch (error) {
       console.error("Error enumerating devices:", error);
     }
-  };
+  }, []);
 
   // Request audio+video up front so the green room can show a live preview
-  const acquireMedia = () => {
+  const acquireMedia = useCallback(() => {
     if (acquiring.current) {
       // Already in flight (e.g. rapid retry clicks) — don't open a second concurrent capture session.
       return Promise.resolve();
@@ -92,7 +92,7 @@ export default function useMediaStream({ onStreamUpdated }: UseMediaStreamProps)
       .finally(() => {
         acquiring.current = false;
       });
-  };
+  }, [enumerateAndSetDevices]);
 
   useEffect(() => {
     if (isInitialized.current) {
@@ -111,7 +111,7 @@ export default function useMediaStream({ onStreamUpdated }: UseMediaStreamProps)
       }
       isInitialized.current = false;
     };
-  }, []); // Empty dependency array - only run once
+  }, [acquireMedia]);
 
   useEffect(() => {
     const handleDeviceChange = () => {
@@ -123,7 +123,7 @@ export default function useMediaStream({ onStreamUpdated }: UseMediaStreamProps)
     return () => {
       navigator.mediaDevices.removeEventListener("devicechange", handleDeviceChange);
     };
-  }, []);
+  }, [enumerateAndSetDevices]);
 
   useEffect(() => {
     if (localVideoRef.current && streamReady && stream) {
