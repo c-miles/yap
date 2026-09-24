@@ -22,7 +22,6 @@ interface RoomProps {
   localUserId: string;
   localUsername: string;
   localVideoEnabled: boolean;
-  localVideoRef: React.RefObject<HTMLVideoElement>;
   participants: Map<string, Participant>;
   profilePicture?: string;
   setVideoPermissionError: (error: 'denied' | 'notfound' | 'other' | null) => void;
@@ -35,7 +34,6 @@ interface RoomProps {
   toggleVideo: () => void;
   onLeaveRoom: () => void;
   onDashboard: () => void;
-  username?: string;
   socket: any;
 }
 
@@ -45,7 +43,6 @@ const Room: React.FC<RoomProps> = ({
   localUserId,
   localUsername,
   localVideoEnabled,
-  localVideoRef,
   participants,
   profilePicture,
   setVideoPermissionError,
@@ -58,7 +55,6 @@ const Room: React.FC<RoomProps> = ({
   toggleVideo,
   onLeaveRoom,
   onDashboard,
-  username,
   socket,
 }) => {
   const [isMessageThreadOpen, setIsMessageThreadOpen] = useState(false);
@@ -68,7 +64,7 @@ const Room: React.FC<RoomProps> = ({
   const [tileHeight, setTileHeight] = useState(0);
 
   const { messages, sendMessage, unreadCount, latestUnread } =
-    useChat(socket, roomId, username || localUsername, isMessageThreadOpen);
+    useChat(socket, roomId, localUsername, isMessageThreadOpen);
   useVideoRequests(socket, Array.from(participants.keys()), tileHeight);
 
   useEffect(() => {
@@ -176,8 +172,6 @@ const Room: React.FC<RoomProps> = ({
           unreadCount={unreadCount}
         />
       </div>
-
-      <video ref={localVideoRef} autoPlay muted playsInline style={{ display: "none" }} />
 
       {inviteName && (
         <ShareRoomModal

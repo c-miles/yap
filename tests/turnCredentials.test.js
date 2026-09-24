@@ -28,7 +28,7 @@ test("returns Cloudflare's server list on success", async () => {
   assert.deepEqual(servers, provided);
 });
 
-test("normalizes a single iceServers object into a list", async () => {
+test("falls back to STUN when iceServers isn't a list", async () => {
   const single = { urls: ["turn:turn.cloudflare.com:3478"], username: "u", credential: "c" };
   const fetchFn = async () => ({ ok: true, json: async () => ({ iceServers: single }) });
   const servers = await fetchIceServers({
@@ -36,7 +36,7 @@ test("normalizes a single iceServers object into a list", async () => {
     apiToken: "test-token",
     fetchFn,
   });
-  assert.deepEqual(servers, [single]);
+  assert.deepEqual(servers, STUN_FALLBACK);
 });
 
 test("sends the key id in the URL and the token as a bearer header", async () => {

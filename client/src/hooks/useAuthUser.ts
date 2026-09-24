@@ -5,7 +5,7 @@ import { User } from "../types/userTypes";
 import { authFetch } from "../services/authFetch";
 
 const useAuthUser = () => {
-  const { user: clerkUser, isLoaded, isSignedIn } = useUser();
+  const { user: clerkUser, isLoaded } = useUser();
   const [userInfo, setUserInfo] = useState<User | null>(null);
   const [userExists, setUserExists] = useState<boolean | null>(null);
   const [profileError, setProfileError] = useState(false);
@@ -149,8 +149,6 @@ const useAuthUser = () => {
     userExists,
     handleUsernameSubmit,
     clerkUser,
-    isAuthenticated: isSignedIn === true,
-    isLoading: !isLoaded,
     profileError,
     retryProfileLoad,
   };

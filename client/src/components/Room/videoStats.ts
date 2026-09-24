@@ -6,7 +6,6 @@ export interface SenderStats {
   limitation?: string;
   codec?: string;
   encoder?: string;
-  availableKbps?: number;
   bytesSent: number;
   timestamp: number;
 }
@@ -29,8 +28,6 @@ export function readSenderStats(report: RTCStatsReport, previous?: SenderStats):
 
   const outbound = entries.find((entry) => entry.type === "outbound-rtp" && entry.kind === "video");
   if (!outbound) return null;
-  const transport = entries.find((entry) => entry.type === "transport");
-  const pair = byId(transport?.selectedCandidatePairId);
   const elapsedMs = previous ? outbound.timestamp - previous.timestamp : 0;
 
   return {
@@ -41,7 +38,6 @@ export function readSenderStats(report: RTCStatsReport, previous?: SenderStats):
     limitation: outbound.qualityLimitationReason,
     codec: byId(outbound.codecId)?.mimeType?.replace("video/", ""),
     encoder: outbound.encoderImplementation,
-    availableKbps: pair?.availableOutgoingBitrate ? Math.round(pair.availableOutgoingBitrate / 1000) : undefined,
     bytesSent: outbound.bytesSent,
     timestamp: outbound.timestamp,
   };

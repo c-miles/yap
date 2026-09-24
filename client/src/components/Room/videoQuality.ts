@@ -1,4 +1,4 @@
-export const RESOLUTION_STEPS = [720, 540, 360, 270, 180];
+const RESOLUTION_STEPS = [720, 540, 360, 270, 180];
 export const MAX_STEP_DOWN = 2;
 const MAX_FRAMERATE = 30;
 const MAX_START_KBPS = 1000;
@@ -28,7 +28,7 @@ export const VIDEO_CONSTRAINTS: MediaTrackConstraints = {
 
 const rungFor = (peerCount: number) => LADDER[Math.min(Math.max(peerCount, 1), LADDER.length) - 1];
 
-export type VideoTarget = Required<
+type VideoTarget = Required<
   Pick<RTCRtpEncodingParameters, "active" | "maxBitrate" | "maxFramerate" | "scaleResolutionDownBy">
 >;
 

@@ -110,19 +110,6 @@ export const socketEvents = (io) => {
       }
     });
 
-    socket.on("getRoomMessages", async () => {
-      const roomId = registry.getRoom(socket.id);
-      if (!roomId) {
-        return;
-      }
-      try {
-        const messages = await Message.find({ roomId }).sort({ timestamp: 1 });
-        socket.emit("roomMessages", messages);
-      } catch (error) {
-        console.error("Error fetching room messages:", error);
-      }
-    });
-
     on("sendMessage", async ({ message, username }) => {
       const roomId = registry.getRoom(socket.id);
       if (!roomId) {

@@ -17,7 +17,7 @@ const DirectRoomJoin: React.FC = () => {
   const [shouldRenderRoom, setShouldRenderRoom] = useState(false);
 
   // set by the dashboard or by the name lookup below; bare links have none
-  const hasState = location.state && (location.state as any).isHost !== undefined;
+  const hasState = (location.state as { friendlyName?: string } | null)?.friendlyName !== undefined;
 
   useEffect(() => {
     if (!isLoaded) return;
@@ -51,7 +51,7 @@ const DirectRoomJoin: React.FC = () => {
           return;
         }
         navigate(`/room/${room.roomId}`, {
-          state: { isHost: false, fromDirectLink: true, friendlyName: room.friendlyName },
+          state: { friendlyName: room.friendlyName },
           replace: true,
         });
       } catch (err) {

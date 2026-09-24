@@ -21,7 +21,7 @@ const useRoomActions = () => {
       }
       const room: FoundRoom = await response.json();
       navigate(`/room/${room.roomId}`, {
-        state: { isHost: true, friendlyName: room.friendlyName },
+        state: { friendlyName: room.friendlyName },
       });
     } catch (error) {
       console.error("Error creating room:", error);
@@ -46,7 +46,7 @@ const useRoomActions = () => {
         return;
       }
       navigate(`/room/${room.roomId}`, {
-        state: { isHost: false, friendlyName: room.friendlyName },
+        state: { friendlyName: room.friendlyName },
       });
     } catch (error) {
       console.error("Error joining room:", error);

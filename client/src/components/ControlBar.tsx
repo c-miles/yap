@@ -13,7 +13,7 @@ const ControlBar: React.FC<ControlBarProps> = ({
   toggleMessageThread,
   onShareRoom,
   onLeaveRoom,
-  unreadCount = 0,
+  unreadCount,
 }) => (
   <div className="mb-4 px-4 flex items-center justify-center gap-4 sm:gap-8">
     <div className="flex items-center gap-2 sm:gap-3">
@@ -36,11 +36,9 @@ const ControlBar: React.FC<ControlBarProps> = ({
     </div>
 
     <div className="flex items-center gap-2 sm:gap-3">
-      {onShareRoom && (
-        <IconButton onClick={onShareRoom} aria-label="Share" title="Share">
-          <Icon icon={Share2} size="md" aria-hidden="true" />
-        </IconButton>
-      )}
+      <IconButton onClick={onShareRoom} aria-label="Share" title="Share">
+        <Icon icon={Share2} size="md" aria-hidden="true" />
+      </IconButton>
       <IconButton
         onClick={toggleMessageThread}
         aria-label={unreadCount > 0 ? `Chat, ${unreadCount} unread` : "Chat"}
@@ -58,12 +56,10 @@ const ControlBar: React.FC<ControlBarProps> = ({
       </IconButton>
     </div>
 
-    {onLeaveRoom && (
-      <Button variant="danger" onClick={onLeaveRoom}>
-        <Icon icon={LogOut} size="md" aria-hidden="true" />
-        <span className="sr-only sm:not-sr-only">Leave</span>
-      </Button>
-    )}
+    <Button variant="danger" onClick={onLeaveRoom}>
+      <Icon icon={LogOut} size="md" aria-hidden="true" />
+      <span className="sr-only sm:not-sr-only">Leave</span>
+    </Button>
   </div>
 );
 

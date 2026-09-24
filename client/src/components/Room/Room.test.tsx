@@ -17,7 +17,6 @@ const renderRoom = (overrides: Partial<React.ComponentProps<typeof Room>> = {}) 
       localUserId="user_1"
       localUsername="ada"
       localVideoEnabled
-      localVideoRef={React.createRef()}
       participants={new Map()}
       setVideoPermissionError={jest.fn()}
       videoPermissionError={null}

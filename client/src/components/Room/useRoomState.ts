@@ -1,9 +1,5 @@
 import { useState, useCallback } from "react";
-import { useLocation, useParams } from "react-router-dom";
-
-interface LocationState {
-  isHost?: boolean;
-}
+import { useParams } from "react-router-dom";
 
 export interface Participant {
   userId: string;
@@ -19,10 +15,6 @@ export interface Participant {
 
 export default function useRoomState() {
   const { roomId } = useParams<{ roomId: string }>();
-  const location = useLocation();
-  const state = location.state as LocationState;
-
-  const isHost = state?.isHost || false;
 
   // Track all participants in the room
   const [participants, setParticipants] = useState<Map<string, Participant>>(new Map());
@@ -100,7 +92,6 @@ export default function useRoomState() {
   }, []);
 
   return {
-    isHost,
     roomId,
     participants,
     roomError,

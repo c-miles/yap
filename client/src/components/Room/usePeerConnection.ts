@@ -76,14 +76,6 @@ export default function usePeerConnection({
     peerManagerRef.current?.removePeer(userId);
   }, []);
 
-  const toggleVideo = useCallback((enabled: boolean) => {
-    peerManagerRef.current?.toggleVideo(enabled);
-  }, []);
-
-  const toggleAudio = useCallback((enabled: boolean) => {
-    peerManagerRef.current?.toggleAudio(enabled);
-  }, []);
-
   // for switching cameras or microphones mid-call
   const updateLocalStream = useCallback(async (stream: MediaStream) => {
     await peerManagerRef.current?.updateLocalStream(stream);
@@ -98,8 +90,6 @@ export default function usePeerConnection({
     setLocalStream,
     connectToPeer,
     disconnectFromPeer,
-    toggleVideo,
-    toggleAudio,
     updateLocalStream,
     resetAllPeers,
   };

@@ -3,7 +3,7 @@ import Noise from "../../utils/perlin";
 const X_GAP = 10;
 const Y_GAP = 32;
 
-export interface WavePoint {
+interface WavePoint {
   x: number;
   y: number;
   waveX: number;
@@ -14,9 +14,9 @@ export interface WavePoint {
   velocityY: number;
 }
 
-export type WaveField = WavePoint[][];
+type WaveField = WavePoint[][];
 
-export interface Cursor {
+interface Cursor {
   x: number;
   y: number;
   smoothX: number;

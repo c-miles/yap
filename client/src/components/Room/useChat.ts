@@ -15,13 +15,11 @@ export function useChat(
   const [latestUnread, setLatestUnread] = useState<Message | null>(null);
 
   // read live open-state inside the socket handler without re-subscribing
-  // (re-subscribing would re-emit getRoomMessages on every open/close).
   const isChatOpenRef = useRef(isChatOpen);
   isChatOpenRef.current = isChatOpen;
 
   useEffect(() => {
     if (!socket || !roomId) return;
-    socket.emit("getRoomMessages");
 
     const handleRoomMessages = (roomMessages: Message[]) => setMessages(roomMessages);
     const handleReceiveMessage = (msg: Message) => {

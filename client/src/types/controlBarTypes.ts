@@ -5,7 +5,7 @@ export type ControlBarProps = {
   toggleAudio: () => void;
   toggleVideo: () => void;
   toggleMessageThread: () => void;
-  onShareRoom?: () => void;
-  onLeaveRoom?: () => void;
-  unreadCount?: number;
+  onShareRoom: () => void;
+  onLeaveRoom: () => void;
+  unreadCount: number;
 };

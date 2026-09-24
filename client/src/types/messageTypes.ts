@@ -9,5 +9,4 @@ export interface Message {
 export type MessageThreadProps = {
   messages: Message[];
   onSendMessage: (message: string) => void;
-  style?: React.CSSProperties;
 };

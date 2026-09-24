@@ -12,10 +12,9 @@ function mockSocket() {
 }
 const msg = (id: string, text: string) => ({ _id: id, message: text, username: "ann", timestamp: new Date() });
 
-test("requests history on mount and replaces on roomMessages", () => {
+test("the history sent on join replaces the messages", () => {
   const s = mockSocket();
   const { result } = renderHook(() => useChat(s, "r1", "me", false));
-  expect(s.emit).toHaveBeenCalledWith("getRoomMessages");
   act(() => s.fire("roomMessages", [msg("1", "hi")]));
   expect(result.current.messages).toHaveLength(1);
 });

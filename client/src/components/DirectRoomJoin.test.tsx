@@ -48,10 +48,12 @@ test("authenticated users with a room id render the room", async () => {
   expect(await screen.findByTestId("room")).toBeInTheDocument();
 });
 
-test("authenticated users arriving from the dashboard render the room immediately", async () => {
+test("arriving with the room already looked up skips the lookup", async () => {
   mockedUseUser.mockReturnValue({ isLoaded: true, isSignedIn: true });
-  renderAt("/room/507f1f77bcf86cd799439011", { isHost: true, friendlyName: "brave-blue-fox" });
+  mockedAuthFetch.mockClear();
+  renderAt("/room/brave-blue-fox", { friendlyName: "brave-blue-fox" });
   expect(await screen.findByTestId("room")).toBeInTheDocument();
+  expect(mockedAuthFetch).not.toHaveBeenCalled();
 });
 
 test("a room name that doesn't resolve says so, with a way back", async () => {

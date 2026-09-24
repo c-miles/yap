@@ -1,5 +1,4 @@
 import { useCallback, useEffect, useState, useRef } from "react";
-import { UseMediaStreamProps } from "../../types/mediaStreamTypes";
 import { VIDEO_CONSTRAINTS } from "./videoQuality";
 
 interface DeviceLists {
@@ -7,7 +6,7 @@ interface DeviceLists {
   mics: MediaDeviceInfo[];
 }
 
-export default function useMediaStream({ onStreamUpdated }: UseMediaStreamProps) {
+export default function useMediaStream({ onStreamUpdated }: { onStreamUpdated?: (stream: MediaStream) => Promise<void> }) {
   const [audioEnabled, setAudioEnabled] = useState(true);
   const [stream, setStream] = useState<MediaStream | null>(null);
   const [streamReady, setStreamReady] = useState(false);
@@ -19,7 +18,6 @@ export default function useMediaStream({ onStreamUpdated }: UseMediaStreamProps)
   const [selectedMicId, setSelectedMicId] = useState<string | undefined>(undefined);
   const [deviceSwitchError, setDeviceSwitchError] = useState<string | null>(null);
 
-  const localVideoRef = useRef<HTMLVideoElement>(null);
   const streamRef = useRef<MediaStream | null>(null);
   const isInitialized = useRef(false);
   const acquiring = useRef(false);
@@ -124,12 +122,6 @@ export default function useMediaStream({ onStreamUpdated }: UseMediaStreamProps)
       navigator.mediaDevices.removeEventListener("devicechange", handleDeviceChange);
     };
   }, [enumerateAndSetDevices]);
-
-  useEffect(() => {
-    if (localVideoRef.current && streamReady && stream) {
-      localVideoRef.current.srcObject = stream;
-    }
-  }, [streamReady, stream]);
 
   const toggleAudio = () => {
     if (stream) {
@@ -299,7 +291,6 @@ export default function useMediaStream({ onStreamUpdated }: UseMediaStreamProps)
   const selectMic = (deviceId: string) => selectDevice("mic", deviceId);
 
   const retryMediaAccess = async () => {
-    console.log("Retrying media access...");
     setPermissionError(null);
     setStreamReady(false);
     isInitialized.current = true;
@@ -307,12 +298,10 @@ export default function useMediaStream({ onStreamUpdated }: UseMediaStreamProps)
     await acquireMedia();
   };
 
-
   return {
     audioEnabled,
     devices,
     deviceSwitchError,
-    localVideoRef,
     permissionError,
     retryMediaAccess,
     selectCamera,

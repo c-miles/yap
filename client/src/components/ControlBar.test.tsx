@@ -12,6 +12,7 @@ const base = {
   toggleMessageThread: jest.fn(),
   onShareRoom: jest.fn(),
   onLeaveRoom: jest.fn(),
+  unreadCount: 0,
 };
 
 test("renders all five controls with anchor + leave labels", () => {

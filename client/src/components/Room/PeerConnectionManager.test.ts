@@ -279,7 +279,7 @@ describe("with the stats loop running", () => {
     await statsTick();
     await statsTick();
 
-    manager.toggleVideo(false);
+    videoSenderOf(0).track.enabled = false;
     videoSenderOf(0).limitation = "none";
     for (let i = 0; i < 8; i++) await statsTick();
 

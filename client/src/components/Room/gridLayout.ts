@@ -1,4 +1,4 @@
-export interface GridLayout {
+interface GridLayout {
   cols: number;
   rows: number;
   tileWidth: number;

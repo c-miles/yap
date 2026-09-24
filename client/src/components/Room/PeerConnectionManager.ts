@@ -8,7 +8,6 @@ import { PeerVideoStats, readSenderStats, SenderStats, VideoStatsSnapshot } from
 
 interface PeerConnection {
   connection: RTCPeerConnection;
-  stream?: MediaStream;
   userId: string;
   polite: boolean;
   makingOffer: boolean;
@@ -284,7 +283,6 @@ export class PeerConnectionManager {
 
     pc.ontrack = (event) => {
       if (event.streams && event.streams[0]) {
-        peer.stream = event.streams[0];
         this.callbacks.onStreamAdded(targetUserId, event.streams[0]);
       }
     };
@@ -514,22 +512,6 @@ export class PeerConnectionManager {
       });
     });
     await Promise.all(replacements);
-  }
-
-  toggleVideo(enabled: boolean): void {
-    if (this.localStream) {
-      this.localStream.getVideoTracks().forEach((track) => {
-        track.enabled = enabled;
-      });
-    }
-  }
-
-  toggleAudio(enabled: boolean): void {
-    if (this.localStream) {
-      this.localStream.getAudioTracks().forEach((track) => {
-        track.enabled = enabled;
-      });
-    }
   }
 
   cleanup(): void {

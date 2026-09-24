@@ -14,7 +14,6 @@ import useRoomState, { Participant } from "./useRoomState";
 import useSocket from "../../services/useSocket";
 
 interface LocationState {
-  isHost?: boolean;
   friendlyName?: string;
 }
 
@@ -74,8 +73,6 @@ const RoomContainer: React.FC = () => {
     setLocalStream,
     connectToPeer,
     disconnectFromPeer,
-    toggleVideo: togglePeerVideo,
-    toggleAudio: togglePeerAudio,
     updateLocalStream,
     resetAllPeers,
   } = usePeerConnection({
@@ -91,7 +88,6 @@ const RoomContainer: React.FC = () => {
   const {
     audioEnabled,
     devices,
-    localVideoRef,
     permissionError,
     retryMediaAccess,
     selectCamera,
@@ -106,12 +102,7 @@ const RoomContainer: React.FC = () => {
     videoEnabled,
     videoPermissionError,
     deviceSwitchError,
-  } = useMediaStream({
-    roomId,
-    socket,
-    userPicture: localPicture,
-    onStreamUpdated: updateLocalStream
-  });
+  } = useMediaStream({ onStreamUpdated: updateLocalStream });
 
   // A ref, not a closure: keeps emitJoinRoom's identity stable so toggling mic/cam doesn't re-register the socket effect's listeners. Refreshed every render.
   const mediaStateRef = useRef({ video: videoEnabled, audio: audioEnabled });
@@ -252,7 +243,6 @@ const RoomContainer: React.FC = () => {
   // Handle local video toggle
   const handleToggleVideo = useCallback(() => {
     toggleVideo();
-    togglePeerVideo(!videoEnabled);
 
     // Emit to other users
     if (socket && roomId) {
@@ -260,12 +250,11 @@ const RoomContainer: React.FC = () => {
         videoEnabled: !videoEnabled,
       });
     }
-  }, [toggleVideo, togglePeerVideo, videoEnabled, socket, roomId]);
+  }, [toggleVideo, videoEnabled, socket, roomId]);
 
   // Handle local audio toggle
   const handleToggleAudio = useCallback(() => {
     toggleAudio();
-    togglePeerAudio(!audioEnabled);
 
     // Emit to other users
     if (socket && roomId) {
@@ -273,7 +262,7 @@ const RoomContainer: React.FC = () => {
         audioEnabled: !audioEnabled,
       });
     }
-  }, [toggleAudio, togglePeerAudio, audioEnabled, socket, roomId]);
+  }, [toggleAudio, audioEnabled, socket, roomId]);
 
   const handleLeaveRoom = useCallback(() => {
     if (socket && roomId) {
@@ -319,7 +308,6 @@ const RoomContainer: React.FC = () => {
         localUserId={localUserId}
         localUsername={localUsername}
         localVideoEnabled={videoEnabled}
-        localVideoRef={localVideoRef}
         participants={participants}
         profilePicture={localPicture}
         setVideoPermissionError={setVideoPermissionError}
@@ -332,7 +320,6 @@ const RoomContainer: React.FC = () => {
         toggleVideo={handleToggleVideo}
         onLeaveRoom={handleLeaveRoom}
         onDashboard={() => navigate("/dashboard")}
-        username={localUsername}
         socket={socket}
       />
       {showStats && (

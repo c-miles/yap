@@ -4,11 +4,7 @@ const UserSchema = new mongoose.Schema({
   id: { type: String, required: true, unique: true },
   createdAt: { type: Date, default: Date.now },
   email: { type: String },
-  picture: {
-    type: String,
-    default:
-      "https://t4.ftcdn.net/jpg/00/64/67/27/240_F_64672736_U5kpdGs9keUll8CRQ3p3YaEv2M6qkVY5.jpg",
-  },
+  picture: { type: String },
   username: {
     type: String,
     unique: true,
