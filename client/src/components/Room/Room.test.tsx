@@ -42,6 +42,11 @@ test("a room error explains itself and leads back to the lounge", () => {
   expect(onDashboard).toHaveBeenCalled();
 });
 
+test("a solo call has no waiting card, since Share is in the controls", () => {
+  renderRoom({ roomName: "brave-blue-fox" });
+  expect(screen.queryByText(/waiting for others/i)).toBeNull();
+});
+
 test("connecting shows a spinner that says what it's doing", () => {
   renderRoom({ isConnecting: true });
   expect(screen.getByRole("status")).toHaveTextContent(/connecting/i);

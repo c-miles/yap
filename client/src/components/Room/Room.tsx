@@ -9,7 +9,6 @@ import PermissionErrorModal from "../PermissionErrorModal";
 import VideoGrid from "./VideoGrid";
 import CallHeader from "./CallHeader";
 import ChatToast from "./ChatToast";
-import WaitingForOthers from "./WaitingForOthers";
 import { useChat } from "./useChat";
 import { useVideoRequests } from "./useVideoRequests";
 import { useChromeVisibility } from "./useChromeVisibility";
@@ -59,6 +58,7 @@ const Room: React.FC<RoomProps> = ({
 }) => {
   const [isMessageThreadOpen, setIsMessageThreadOpen] = useState(false);
   const [isShareModalOpen, setIsShareModalOpen] = useState(false);
+  // a failed lookup leaves no friendly name, and an id invite still works
   const inviteName = roomName ?? roomId;
   const [isMobile, setIsMobile] = useState(false);
   const [tileHeight, setTileHeight] = useState(0);
@@ -133,13 +133,6 @@ const Room: React.FC<RoomProps> = ({
             profilePicture={profilePicture}
             onTileHeightChange={setTileHeight}
           />
-          {participants.size === 0 && inviteName && (
-            <div className="absolute inset-x-0 top-20 z-10 flex justify-center pointer-events-none px-4">
-              <div className="pointer-events-auto">
-                <WaitingForOthers roomName={inviteName} />
-              </div>
-            </div>
-          )}
           <ChatToast message={latestUnread} />
         </div>
 
