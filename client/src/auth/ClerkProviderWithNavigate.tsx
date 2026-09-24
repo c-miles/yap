@@ -36,6 +36,7 @@ const ClerkProviderWithNavigate: React.FC<{ children: React.ReactNode }> = ({ ch
     signInFallbackRedirectUrl: "/dashboard",
     signUpFallbackRedirectUrl: "/dashboard",
     appearance: clerkAppearance,
+    localization: { signIn: { start: { titleCombined: "" } } },
   };
 
   return (

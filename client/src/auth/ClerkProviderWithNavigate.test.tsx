@@ -11,11 +11,22 @@ jest.mock("@clerk/react", () => ({
   useAuth: () => ({ getToken: jest.fn() }),
 }));
 
-test("sign-ins land in the lounge, not back on the landing page", () => {
+const renderProvider = () => {
   process.env.REACT_APP_CLERK_PUBLISHABLE_KEY = "pk_test_x";
   const ClerkProviderWithNavigate = require("./ClerkProviderWithNavigate").default;
   render(<MemoryRouter><ClerkProviderWithNavigate>hi</ClerkProviderWithNavigate></MemoryRouter>);
+};
+
+test("sign-ins land in the lounge, not back on the landing page", () => {
+  renderProvider();
   expect(mockProviderProps).toHaveBeenCalledWith(
     expect.objectContaining({ signInFallbackRedirectUrl: "/dashboard", signUpFallbackRedirectUrl: "/dashboard" })
+  );
+});
+
+test("the first sign-in step has no title, since the wordmark sits right above it", () => {
+  renderProvider();
+  expect(mockProviderProps).toHaveBeenCalledWith(
+    expect.objectContaining({ localization: { signIn: { start: { titleCombined: "" } } } })
   );
 });

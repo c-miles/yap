@@ -31,6 +31,7 @@ const keyboardFocus = {
 };
 
 export const clerkAppearance: Appearance = {
+  options: { logoImageUrl: "/wordmark.png" },
   variables: {
     colorPrimary: colors.accent,
     colorPrimaryForeground: colors.accentFg,
@@ -56,7 +57,7 @@ export const clerkAppearance: Appearance = {
       borderRadius: "1rem",
     },
     card: { backgroundColor: "transparent", boxShadow: "none" },
-    headerTitle: { fontWeight: 650, fontStretch: "104%", letterSpacing: "-0.01em" },
+    headerTitle: { fontWeight: 650, fontStretch: "104%", letterSpacing: "-0.01em", "&:empty": { display: "none" } },
     formButtonPrimary: {
       backgroundColor: colors.action,
       color: colors.text,
