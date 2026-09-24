@@ -13,11 +13,11 @@ const IconButton: React.FC<IconButtonProps> = ({
   children,
   ...props 
 }) => {
-  const baseClasses = 'rounded-full transition-base focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-accent focus:ring-opacity-75 flex items-center justify-center';
+  const baseClasses = 'rounded-full transition-base focus-ring flex items-center justify-center';
 
   const variantClasses = {
     default: 'bg-surface hover:bg-surface-raised text-text',
-    danger: 'bg-danger hover:bg-danger text-text',
+    danger: 'bg-danger hover:brightness-110 text-accent-fg',
     primary: 'bg-accent hover:bg-accent-hover text-accent-fg'
   };
   

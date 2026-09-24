@@ -46,5 +46,5 @@
 
 /* Focus ring styles for accessibility */
 .focus-ring {
-  @apply focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-accent;
+  @apply focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent;
 }
