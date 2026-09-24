@@ -32,6 +32,9 @@ const ClerkProviderWithNavigate: React.FC<{ children: React.ReactNode }> = ({ ch
     routerPush: (to: string) => navigate(to),
     routerReplace: (to: string) => navigate(to, { replace: true }),
     afterSignOutUrl: "/",
+    // clerk defaults these to "/", so a google sign-in would reload onto the landing page first
+    signInFallbackRedirectUrl: "/dashboard",
+    signUpFallbackRedirectUrl: "/dashboard",
     appearance: clerkAppearance,
   };
 
