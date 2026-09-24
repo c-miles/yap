@@ -50,11 +50,11 @@ export default function useMediaStream({ onStreamUpdated }: { onStreamUpdated?: 
       .getUserMedia({ audio: true, video: VIDEO_CONSTRAINTS })
       .then((mediaStream) => {
         if (!isInitialized.current) {
-          // Unmounted (or retry superseded) while the permission prompt was open — don't strand a live camera/mic session.
+          // unmounted or superseded while the prompt was open, don't strand a live camera
           mediaStream.getTracks().forEach((track) => track.stop());
           return;
         }
-        // Belt-and-suspenders: stop any prior session before replacing it so an overlapping acquisition never leaks a live camera/mic.
+        // stop any prior session first so an overlapping acquire can't leak a live camera
         streamRef.current?.getTracks().forEach((track) => track.stop());
         streamRef.current = mediaStream;
         setStream(mediaStream);
@@ -101,7 +101,6 @@ export default function useMediaStream({ onStreamUpdated }: { onStreamUpdated?: 
 
     acquireMedia();
 
-    // Cleanup function that only runs on actual unmount
     return () => {
       if (streamRef.current) {
         streamRef.current.getTracks().forEach((track) => track.stop());
@@ -139,7 +138,6 @@ export default function useMediaStream({ onStreamUpdated }: { onStreamUpdated?: 
       // backgrounding/incoming calls, and a toggle-on has to recover from that
       const videoTrack = stream.getVideoTracks().find((track) => track.readyState === "live");
       if (videoTrack) {
-        // Video track exists, just toggle it
         videoTrack.enabled = !videoTrack.enabled;
         setVideoEnabled(videoTrack.enabled);
       } else {
@@ -207,7 +205,7 @@ export default function useMediaStream({ onStreamUpdated }: { onStreamUpdated?: 
   const audioConstraintsFor = (micId?: string): MediaTrackConstraints | boolean =>
     micId ? { deviceId: { exact: micId } } : true;
 
-  // Mirrors toggleVideo's iOS recovery: carry enable-states onto the new stream, swap, stop the old tracks (never strand a live session).
+  // same iOS-safe swap as toggleVideo: carry the enabled states over, swap, then stop the old tracks
   const swapToNewDevice = (
     newStream: MediaStream,
     onDone: () => void
@@ -238,7 +236,7 @@ export default function useMediaStream({ onStreamUpdated }: { onStreamUpdated?: 
     Promise.resolve(onStreamUpdated?.(newStream))
       .catch((error) => {
         console.error("Error updating peer connections with new stream:", error);
-        // Local preview switched but replaceTrack failed — remote peers see a dead track. Surface it rather than fake success.
+        // the preview switched but replaceTrack failed, so peers see a dead track
         setDeviceSwitchError("Couldn't apply the new device to the call.");
       })
       .finally(() => {
@@ -248,9 +246,7 @@ export default function useMediaStream({ onStreamUpdated }: { onStreamUpdated?: 
   };
 
   const selectDevice = (kind: "camera" | "mic", deviceId: string) => {
-    // Single guard shared across camera/mic: switching both kinds serializes
-    // switches (rather than letting a camera and mic switch interleave and
-    // re-acquire the other side from a not-yet-committed ref).
+    // one guard for both kinds, so a camera and mic switch can't interleave and read a stale ref
     if (switching.current) {
       return;
     }

@@ -90,7 +90,7 @@ const GreenRoom: React.FC<GreenRoomProps> = ({
 }) => {
   const micLevel = useMicLevel(stream);
 
-  // callback ref, not a [stream] effect: video and stream can arrive in either order, so an effect could miss the attach.
+  // callback ref, not a [stream] effect: the video and the stream can show up in either order
   const attachStream = useCallback(
     (el: HTMLVideoElement | null) => {
       if (el && stream && el.srcObject !== stream) {

@@ -1,9 +1,9 @@
 export interface Message {
-  _id?: string; // MongoDB ObjectId
+  _id?: string;
   message: string;
   timestamp: Date;
   username: string;
-  roomId?: string; // Room the message belongs to
+  roomId?: string;
 }
 
 export type MessageThreadProps = {

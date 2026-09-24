@@ -1,7 +1,5 @@
-// All Room mutations are single atomic operations: the capacity check lives
-// in the update's filter, so two concurrent joins can never both slip past
-// a stale read (the old find -> mutate -> save() pattern raced and could
-// also throw VersionError under concurrency).
+// every mutation is one atomic update with the capacity check in the filter,
+// so two concurrent joins can't both squeeze into the last seat
 
 export async function upsertParticipant(RoomModel, roomId, participant) {
   // Same user already in the room (refresh/second tab): replace their entry.
@@ -14,10 +12,8 @@ export async function upsertParticipant(RoomModel, roomId, participant) {
     return "rejoined";
   }
 
-  // New participant: push only if there is room, atomically. The same-user
-  // exclusion guards against a concurrent duplicate: if another request just
-  // inserted this user's entry between our rejoin probe and here, this push
-  // must not also match and duplicate it.
+  // push only if there's a seat. excluding this user stops a concurrent join
+  // that just added them from being duplicated
   const joined = await RoomModel.findOneAndUpdate(
     {
       _id: roomId,
@@ -31,9 +27,8 @@ export async function upsertParticipant(RoomModel, roomId, participant) {
     return "joined";
   }
 
-  // Double miss: either a concurrent join by this same user just inserted
-  // their entry (in which case retrying the rejoin update will find and
-  // update it in place), or the room is genuinely full/missing.
+  // double miss: this user's other join just landed (the rejoin retry finds it),
+  // or the room is full or gone
   const retried = await RoomModel.findOneAndUpdate(
     { _id: roomId, "participants.userId": participant.userId },
     { $set: { "participants.$": participant } },
@@ -64,7 +59,7 @@ export async function setMediaState(RoomModel, roomId, userId, kind, enabled) {
   );
 }
 
-// Normalize client-supplied pre-join mic/cam state into { video, audio }. Guards absent/malformed/non-boolean input so a hostile client can't write arbitrary mediaState.
+// whatever the client sends, this comes out as two booleans
 export function resolveJoinMediaState(mediaState) {
   if (!mediaState || typeof mediaState !== "object") {
     return { video: false, audio: true };

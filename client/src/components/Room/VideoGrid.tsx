@@ -51,9 +51,8 @@ const VideoElement: React.FC<VideoElementProps> = ({
   connectionState,
   style
 }) => {
-  // callback ref on purpose: this <video> mounts late (only once a video track
-  // exists), usually without the stream ref changing, an effect keyed on
-  // [stream] would miss the mount and leave the element unattached.
+  // callback ref: this <video> mounts late (once a track exists) without the stream
+  // changing, so a [stream] effect would miss it
   const attachStream = React.useCallback(
     (el: HTMLVideoElement | null) => {
       if (el && stream && el.srcObject !== stream) {
@@ -63,7 +62,6 @@ const VideoElement: React.FC<VideoElementProps> = ({
     [stream]
   );
 
-  // Check if video is actually enabled
   const hasActiveVideo = stream &&
     stream.getVideoTracks().length > 0 &&
     stream.getVideoTracks().some(track => track.enabled) &&
@@ -131,7 +129,7 @@ const VideoGrid: React.FC<VideoGridProps> = ({
 }) => {
   const { ref: containerRef, size } = useContainerSize<HTMLDivElement>();
 
-  // Create unified participant list with join order (Map insertion order is stable)
+  // join order: Map keeps insertion order
   const allParticipants = [
     {
       stream: localStream,
@@ -162,10 +160,8 @@ const VideoGrid: React.FC<VideoGridProps> = ({
     onTileHeightChange?.(layout.tileHeight);
   }, [layout.tileHeight, onTileHeightChange]);
 
-  // Explicit grid columns (count and width from JS) keep the column count
-  // structural, so a container resize can never reflow tiles into a stacked
-  // column. Tiles stay a flat list (parent never changes), so no tile remounts
-  // and re-attaches its video.
+  // explicit columns so a resize can't reflow tiles into a stack, and a flat
+  // list so no tile remounts and re-attaches its video
   const gridStyle = {
     gridTemplateColumns: `repeat(${layout.cols}, ${layout.tileWidth}px)`,
     gap: `${GRID_GAP}px`,

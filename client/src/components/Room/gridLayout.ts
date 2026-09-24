@@ -6,7 +6,7 @@ interface GridLayout {
 }
 
 const TILE_ASPECT_WIDE = 16 / 9;
-const TILE_ASPECT_NARROW = 1; // square
+const TILE_ASPECT_NARROW = 1;
 const NARROW_BREAKPOINT_PX = 640;
 
 // 16:9 on roomy landscape containers; square on narrow or portrait ones so a
@@ -18,13 +18,8 @@ export function chooseAspectRatio(containerWidth: number, containerHeight: numbe
   return TILE_ASPECT_WIDE;
 }
 
-// Largest fixed-ratio tile that fits `count` tiles in the container. Tries each
-// column count and keeps the arrangement with the biggest tile area (the Jitsi
-// tile-view approach). Container-shape responsiveness falls out for free: a
-// wide container makes more columns win, a tall one makes more rows win. On a
-// landscape container 2+ tiles never use a single column (they sit side by
-// side). A portrait or narrow container may stack them for bigger tiles. A
-// square container counts as landscape.
+// tries every column count and keeps the biggest tile. on a landscape (or square)
+// container 2+ tiles never stack in one column
 export function computeGridLayout(
   containerWidth: number,
   containerHeight: number,
@@ -42,15 +37,12 @@ export function computeGridLayout(
     const availW = (containerWidth - gap * (cols - 1)) / cols;
     const availH = (containerHeight - gap * (rows - 1)) / rows;
 
-    // The tile is the largest aspect-ratio box fitting the cell, then capped.
     const tileWidth = Math.min(availW, availH * aspectRatio, maxTileWidth);
     if (tileWidth <= 0) continue;
     const tileHeight = tileWidth / aspectRatio;
     const area = tileWidth * tileHeight;
 
-    // Maximize tile area. On an exact tie — e.g. maxTileWidth caps two
-    // arrangements to the same size — prefer more columns on a landscape
-    // container so two people sit side by side rather than stacked.
+    // maxTileWidth can cap two layouts to the same size; landscape then prefers side by side
     const breaksTie = area === bestArea && cols > best.cols && containerWidth >= containerHeight;
     if (area > bestArea || breaksTie) {
       bestArea = area;

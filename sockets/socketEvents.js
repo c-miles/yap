@@ -1,4 +1,3 @@
-// sockets/socketEvents.js
 import { Message } from "../models/Message.js";
 import { Room } from "../models/Room.js";
 import { createRoomRegistry } from "./roomRegistry.js";
@@ -14,11 +13,7 @@ import { normalizeRequestedHeight } from "../services/videoRequests.js";
 export const socketEvents = (io) => {
   const registry = createRoomRegistry();
 
-  // The single leave path: used by leaveRoom, disconnect, and stale-socket
-  // replacement. Removes the participant from the DB, tells the room, and
-  // clears the registry. Participants are always physically removed — the
-  // old isActive half-state left dead entries that eventually made rooms
-  // reject every join.
+  // the one leave path, for leaveRoom, disconnect and a replaced stale socket
   async function handleLeave(socket, { leaveChannel = false } = {}) {
     const left = registry.leave(socket.id);
     if (!left) {
@@ -61,7 +56,6 @@ export const socketEvents = (io) => {
 
     on("joinRoom", async ({ roomId, username, profilePicture, mediaState }) => {
       const userId = socket.data.userId;
-      // pre-join mic/cam state from the green room; resolveJoinMediaState normalizes/guards absent or malformed input.
       const joinedMediaState = resolveJoinMediaState(mediaState);
       try {
         const participant = {

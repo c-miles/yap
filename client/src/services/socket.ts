@@ -10,8 +10,7 @@ const authCallback = (cb: (data: object) => void) => {
   getAuthToken().then((token) => cb(token ? { token } : {}));
 };
 
-// One socket for the whole app. autoConnect: false so the connection's
-// lifetime is owned by useSocket's effect, not module import order.
+// autoConnect off so useSocket's effect owns the connection, not import order
 export function getSocket(): Socket {
   if (!socket) {
     socket = API_BASE_URL

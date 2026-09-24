@@ -32,8 +32,7 @@ const RoomContainer: React.FC = () => {
   const showStats = new URLSearchParams(location.search).has("stats");
   const [videoStats, setVideoStats] = useState<VideoStatsSnapshot | null>(null);
 
-  // stable identity: the clerk user id. DirectRoomJoin guarantees we're
-  // authenticated before this component renders.
+  // DirectRoomJoin only renders this once signed in
   const localUserId = clerkUser?.id ?? "";
   const localUsername = userInfo?.username || clerkUser?.username || clerkUser?.firstName || "Guest";
   const localPicture = userInfo?.picture ?? clerkUser?.imageUrl;
@@ -53,7 +52,6 @@ const RoomContainer: React.FC = () => {
     setMultipleParticipants,
   } = useRoomState();
 
-  // Callbacks for peer connection events
   const handleStreamAdded = useCallback((userId: string, stream: MediaStream) => {
     updateParticipantStream(userId, stream);
   }, [updateParticipantStream]);
@@ -104,7 +102,7 @@ const RoomContainer: React.FC = () => {
     deviceSwitchError,
   } = useMediaStream({ onStreamUpdated: updateLocalStream });
 
-  // A ref, not a closure: keeps emitJoinRoom's identity stable so toggling mic/cam doesn't re-register the socket effect's listeners. Refreshed every render.
+  // a ref keeps emitJoinRoom stable, so mic/cam toggles don't re-register the socket listeners
   const mediaStateRef = useRef({ video: videoEnabled, audio: audioEnabled });
   mediaStateRef.current = { video: videoEnabled, audio: audioEnabled };
 
@@ -120,12 +118,10 @@ const RoomContainer: React.FC = () => {
 
   const hasJoinedRef = useRef(false);
 
-  // Reset join flag when room changes
   useEffect(() => {
     hasJoinedRef.current = false;
   }, [roomId]);
 
-  // Join once past the green room, when socket + stream are ready and no permission error.
   useEffect(() => {
     if (phase === "in-call" && socket && roomId && localUserId && streamReady && stream && setLocalStream && !hasJoinedRef.current && !permissionError) {
       setLocalStream(stream);
@@ -137,7 +133,6 @@ const RoomContainer: React.FC = () => {
     }
   }, [phase, socket, roomId, localUserId, streamReady, stream, setLocalStream, setIsConnecting, permissionError, emitJoinRoom]);
 
-  // Handle socket events
   useEffect(() => {
     if (!socket) return;
 
@@ -155,9 +150,7 @@ const RoomContainer: React.FC = () => {
       }
     };
 
-    // Socket.IO does NOT auto-reconnect after a middleware (auth) rejection —
-    // a token hiccup at reconnect time would otherwise freeze the room with
-    // no signal. Retry a bounded number of times before giving up.
+    // socket.io won't reconnect on its own after an auth rejection, so retry a few times
     const handleConnectError = (err: Error) => {
       if (err.message === "unauthorized" && authRetries < 3) {
         authRetries += 1;
@@ -239,12 +232,9 @@ const RoomContainer: React.FC = () => {
     };
   }, [socket, stream, emitJoinRoom, setMultipleParticipants, addParticipant, removeParticipant, updateParticipantMediaState, connectToPeer, disconnectFromPeer, setRoomError, setIsConnecting, setLocalStream, resetAllPeers]);
 
-
-  // Handle local video toggle
   const handleToggleVideo = useCallback(() => {
     toggleVideo();
 
-    // Emit to other users
     if (socket && roomId) {
       socket.emit("toggleVideo", {
         videoEnabled: !videoEnabled,
@@ -252,11 +242,9 @@ const RoomContainer: React.FC = () => {
     }
   }, [toggleVideo, videoEnabled, socket, roomId]);
 
-  // Handle local audio toggle
   const handleToggleAudio = useCallback(() => {
     toggleAudio();
 
-    // Emit to other users
     if (socket && roomId) {
       socket.emit("toggleAudio", {
         audioEnabled: !audioEnabled,
@@ -269,7 +257,7 @@ const RoomContainer: React.FC = () => {
       socket.emit("leaveRoom");
     }
     resetAllPeers();
-    // Navigating away unmounts RoomContainer, which stops the local tracks.
+    // unmounting RoomContainer stops the local tracks
     navigate("/dashboard");
   }, [socket, roomId, resetAllPeers, navigate]);
 

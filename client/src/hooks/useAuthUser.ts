@@ -116,12 +116,10 @@ const useAuthUser = () => {
         return "Username is already taken";
       }
 
-      // For new users, create complete user record
       if (userExists === false) {
         return await createUser(username);
       }
       
-      // For existing users, update username
       if (!userInfo) return "User not found";
       
       try {

@@ -1,6 +1,4 @@
-// In-memory registry of who is connected where. Socket.IO server state is
-// per-process, so this intentionally lives in memory alongside it: if the
-// process restarts, sockets drop and clients re-join, repopulating both.
+// in memory like socket.io's own state: a restart drops every socket and clients rejoin
 export function createRoomRegistry() {
   const socketToRoom = new Map();
   const socketToUser = new Map();

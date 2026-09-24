@@ -95,9 +95,8 @@
     transition: width 0.3s ease, border-left-width 0.3s ease, visibility 0s;
   }
 
-  /* fixed-width content: the animating drawer width clips/reveals this like a
-     curtain, so the chat never reflows mid-animation and the textarea always
-     measures at real width. */
+  /* fixed width, so the sliding drawer clips it like a curtain and the chat
+     never reflows mid-slide */
   .chat-drawer-inner {
     position: absolute;
     top: 0;

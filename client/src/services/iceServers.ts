@@ -21,7 +21,7 @@ let cached: RTCIceServer[] | null = null;
 let cachedAt = 0;
 let pending: Promise<RTCIceServer[]> | null = null;
 
-// never throws — worst case we fall back to STUN-only (the pre-TURN behavior)
+// never throws, worst case is STUN only
 export async function getIceServers(): Promise<RTCIceServer[]> {
   if (cached && Date.now() - cachedAt < CACHE_TTL_MS) {
     return cached;

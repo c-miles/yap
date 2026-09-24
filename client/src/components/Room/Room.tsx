@@ -77,8 +77,7 @@ const Room: React.FC<RoomProps> = ({
     return () => window.removeEventListener('resize', checkMobile);
   }, []);
 
-  // Auto-hide only when chat is closed, an open drawer must not let the
-  // controls (Leave, mic) fade out from under the conversation.
+  // open chat pins the controls so they can't fade out mid-conversation
   const { visible, reveal, hide } = useChromeVisibility(isMobile && !isMessageThreadOpen);
   const toggleChrome = () => (visible ? hide() : reveal());
 

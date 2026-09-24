@@ -11,9 +11,7 @@
   box-sizing: border-box;
 }
 
-/* Tile sizes and the column count come from JS (the gallery layout) and drive
-   an explicit CSS grid, so the column layout is structural and never reflows on
-   resize. The video area clips any brief overflow. */
+/* sizes and columns come from JS (gridLayout.ts) */
 .video-grid {
   display: grid;
   justify-content: center;
@@ -21,8 +19,6 @@
   flex-shrink: 0; /* It is a flex child of the container, so hold width and do not squeeze */
 }
 
-/* Smoothly animate tile size as the layout changes, on join/leave and on
-   container resize alike. */
 .video-element {
   position: relative;
   min-width: 0;

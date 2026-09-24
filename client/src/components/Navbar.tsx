@@ -23,7 +23,7 @@ const Navbar: React.FC = () => {
   }, []);
 
   const handleSignOut = () => {
-    // Redirect target comes from ClerkProviderWithNavigate's afterSignOutUrl.
+    // the redirect comes from afterSignOutUrl in ClerkProviderWithNavigate
     signOut();
   };
 

@@ -1,9 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Message } from "../../types/messageTypes";
 
-// Single source of truth for in-call chat: socket wiring + message list + unread
-// tracking, so the panel, the unread badge, and the over-video toast all read
-// from one place. Unread counts messages that arrive while the panel is closed.
+// unread counts messages that arrive while the panel is closed
 export function useChat(
   socket: any,
   roomId: string | undefined,

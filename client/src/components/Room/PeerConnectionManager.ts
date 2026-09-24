@@ -214,7 +214,7 @@ export class PeerConnectionManager {
 
     const iceServers = await getIceServers();
 
-    // Re-check after the await: an offer for this peer may have raced us.
+    // re-check after the await, an offer for this peer may have raced us
     if (this.peers.has(targetUserId)) {
       return;
     }
@@ -345,7 +345,7 @@ export class PeerConnectionManager {
     }
     if (peer.restartAttempts >= MAX_ICE_RESTARTS) {
       console.error(`Connection to ${peer.userId} failed after ${MAX_ICE_RESTARTS} ICE restarts; tearing down`);
-      // out of retries — tear down. the grid shows "connection lost"; an automatic rebuild path is future work.
+      // out of retries, tear down. the grid shows "connection lost"
       this.removePeer(peer.userId);
       return;
     }

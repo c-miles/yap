@@ -1,9 +1,7 @@
 import { useLayoutEffect, useRef, useState } from "react";
 
-// Measures an element's content box with a ResizeObserver. Container-based (not
-// window) so it also tracks the chat-drawer reflow. The first measurement is
-// taken synchronously inside useLayoutEffect — before the browser paints — so
-// tiles never flash at the wrong size on room entry.
+// the container, not the window, so the chat drawer counts. the first read is sync
+// in useLayoutEffect so tiles don't flash at the wrong size
 export function useContainerSize<T extends HTMLElement>() {
   const ref = useRef<T>(null);
   const [size, setSize] = useState({ width: 0, height: 0 });
