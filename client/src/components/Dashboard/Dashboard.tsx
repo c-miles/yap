@@ -6,6 +6,7 @@ import { Button, Input, Card, Heading, Text, Icon } from "../atoms";
 import { Modal } from "../molecules";
 import DashboardCard from "../molecules/DashboardCard";
 import Footer from "../Footer";
+import WaveBackground from "../WaveBackground/WaveBackground";
 
 const Dashboard: React.FC<DashboardProps> = ({
   createRoom,
@@ -43,7 +44,8 @@ const Dashboard: React.FC<DashboardProps> = ({
   };
 
   return (
-    <div className="relative flex items-center justify-center min-h-[calc(100vh-64px)] p-8 pb-24">
+    <div className="relative isolate flex items-center justify-center min-h-[calc(100vh-64px)] p-8 pb-24">
+      <WaveBackground className="-z-10" />
       {isLoading || (isAuthenticated && userExists === null && !profileError) ? (
         <BeatLoader color="var(--primary-hov)" />
       ) : !isAuthenticated ? (

@@ -4,6 +4,8 @@ import "@testing-library/jest-dom";
 import { MemoryRouter } from "react-router-dom";
 import Dashboard from "./Dashboard";
 
+jest.mock("../WaveBackground/WaveBackground", () => () => null);
+
 const baseProps = {
   createRoom: jest.fn(),
   joinRoom: jest.fn(),
