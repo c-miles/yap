@@ -20,7 +20,7 @@ const DashboardCard: React.FC<DashboardCardProps> = ({
       onClick={onClick}
       disabled={busy}
       aria-busy={busy}
-      className="w-full p-8 bg-surface border border-border rounded-lg enabled:hover:-translate-y-0.5 enabled:hover:border-accent transition-all duration-150 text-left group disabled:opacity-60 disabled:cursor-wait"
+      className="focus-ring glass w-full p-8 rounded-lg enabled:hover:-translate-y-0.5 transition-all duration-150 text-left disabled:opacity-60 disabled:cursor-wait"
     >
       <div className="flex flex-col items-center text-center gap-4">
         <div className="w-20 h-20 bg-accent-subtle rounded-full flex items-center justify-center">

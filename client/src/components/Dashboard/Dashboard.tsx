@@ -101,7 +101,7 @@ const Dashboard: React.FC<DashboardProps> = ({
                 error={joinError}
               />
 
-              <Button type="submit" variant="primary" className="w-full mt-4" disabled={isJoining}>
+              <Button type="submit" variant="glass" className="w-full mt-4" disabled={isJoining}>
                 {isJoining ? "Joining…" : "Join room"}
               </Button>
             </form>

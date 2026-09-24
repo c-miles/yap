@@ -20,6 +20,12 @@
     --accent-fg: #0f172a;
     --accent-subtle: rgb(45 212 191 / 0.12);
 
+    /* glass — translucent slate for controls that sit over the waves */
+    --glass: rgb(30 41 59 / 0.55);
+    --glass-hover: rgb(51 65 85 / 0.75);
+    --glass-border: rgb(148 163 184 / 0.25);
+    --glass-border-hover: rgb(148 163 184 / 0.45);
+
     /* status */
     --danger: #f87171;
     --warning: #fbbf24;
@@ -42,6 +48,11 @@
 /* Base transition styles */
 .transition-base {
   @apply transition-all duration-150 ease-out;
+}
+
+/* Translucent surface for buttons and cards over the waves */
+.glass {
+  @apply bg-glass border border-glass-border backdrop-blur-sm hover:bg-glass-hover hover:border-glass-border-hover;
 }
 
 /* Focus ring styles for accessibility */
