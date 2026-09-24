@@ -2,7 +2,7 @@ import React from "react";
 import { Card, Heading, Text } from "../atoms";
 
 interface StatePanelProps {
-  title: string;
+  title: React.ReactNode;
   description?: React.ReactNode;
   headingLevel?: 1 | 2;
   className?: string;

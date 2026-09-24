@@ -13,7 +13,7 @@ const DirectRoomJoin: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { isLoaded, isSignedIn } = useUser();
-  const [error, setError] = useState<{ title: string; detail: string } | null>(null);
+  const [error, setError] = useState<{ title: React.ReactNode; detail: string } | null>(null);
   const [shouldRenderRoom, setShouldRenderRoom] = useState(false);
 
   // set by the dashboard or by the name lookup below; bare links have none
@@ -42,8 +42,9 @@ const DirectRoomJoin: React.FC = () => {
       try {
         const room = await findRoom(roomId);
         if (!room) {
-          const which = isValidRoomNameFormat(roomId) ? roomId : "that room";
-          setError({ title: `We couldn't find ${which}`, detail: "Double-check the link with whoever sent it." });
+          // inline-block keeps the name whole on its own line, unless it's wider than the card
+          const which = isValidRoomNameFormat(roomId) ? <span className="inline-block">{roomId}</span> : "that room";
+          setError({ title: <>We couldn't find {which}</>, detail: "Double-check the link with whoever sent it." });
           return;
         }
         if (!room.friendlyName) {
