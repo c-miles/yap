@@ -20,7 +20,7 @@ const LandingPage: React.FC = () => {
     }
   }, [isAuthenticated, roomPath, navigate]);
 
-  // explicit, since first-time google/github sign-ups finish on clerk's callback page and lose ?room
+  // explicit, since first-time social sign-ups finish on clerk's callback page and lose ?room
   const openSignIn = useCallback(
     () => clerk.openSignIn(roomPath ? { forceRedirectUrl: roomPath, signUpForceRedirectUrl: roomPath } : {}),
     [clerk, roomPath]

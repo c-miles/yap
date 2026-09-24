@@ -9,3 +9,8 @@ test("privacy requests go to the company inbox", () => {
   expect(links.length).toBeGreaterThan(0);
   links.forEach((link) => expect(link).toHaveAttribute("href", "mailto:contact@anomaly-labs.com"));
 });
+
+test("names every sign-in provider it can get your details from", () => {
+  render(<PrivacyPolicy />);
+  expect(screen.getAllByText(/Google, Microsoft, or GitHub/)).toHaveLength(2);
+});

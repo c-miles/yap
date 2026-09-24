@@ -41,5 +41,8 @@ export const clerkAppearance: Appearance = {
     footerActionLink: { "&:hover": { color: colors.accent } },
     formFieldInput: { "&::placeholder": { color: colors.textMuted } },
     dividerLine: { backgroundColor: colors.border },
+    // clerk lists providers alphabetically; this shows google first and github last
+    socialButtonsIconButton__google: { order: -1 },
+    socialButtonsIconButton__github: { order: 1 },
   },
 };
