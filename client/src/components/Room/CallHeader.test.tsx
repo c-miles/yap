@@ -15,13 +15,13 @@ test("singular participant reads 'person'", () => {
 });
 
 test("insets to the video column when chat is open", () => {
-  const { container } = render(<CallHeader participantCount={2} visible chatOpen />);
-  expect(container.querySelector("header")).toHaveClass("md:right-80");
+  render(<CallHeader participantCount={2} visible chatOpen />);
+  expect(screen.getByRole("banner")).toHaveClass("md:right-80");
 });
 
 test("spans full width when chat is closed", () => {
-  const { container } = render(<CallHeader participantCount={2} visible />);
-  expect(container.querySelector("header")).not.toHaveClass("md:right-80");
+  render(<CallHeader participantCount={2} visible />);
+  expect(screen.getByRole("banner")).not.toHaveClass("md:right-80");
 });
 
 test("the room name is the call's page heading", () => {
