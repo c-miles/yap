@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate, useLocation } from "react-router-dom";
-import { useClerk, useUser } from "@clerk/react";
+import { useUser } from "@clerk/react";
 import { BeatLoader } from "react-spinners";
 import { isValidRoomNameFormat } from "../utils/roomNameGenerator";
 import RoomContainer from "./Room";
@@ -11,22 +11,17 @@ const DirectRoomJoin: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { isLoaded, isSignedIn } = useUser();
-  const clerk = useClerk();
   const [error, setError] = useState<string | null>(null);
   const [shouldRenderRoom, setShouldRenderRoom] = useState(false);
 
-  // only dashboard navigations carry state, direct links don't
+  // set by the dashboard or by the name lookup below; bare links have none
   const hasState = location.state && (location.state as any).isHost !== undefined;
 
   useEffect(() => {
     if (!isLoaded) return;
 
     if (!isSignedIn) {
-      const returnTo = `/room/${roomId ?? ""}`;
-      clerk.redirectToSignIn({
-        signInForceRedirectUrl: returnTo,
-        signUpForceRedirectUrl: returnTo,
-      });
+      navigate(`/?room=${encodeURIComponent(roomId ?? "")}`, { replace: true });
       return;
     }
 
@@ -62,7 +57,7 @@ const DirectRoomJoin: React.FC = () => {
         setError("Unable to join room. Please try again.");
       }
     })();
-  }, [roomId, isLoaded, isSignedIn, clerk, navigate, hasState]);
+  }, [roomId, isLoaded, isSignedIn, navigate, hasState]);
 
   if (shouldRenderRoom) {
     return <RoomContainer />;
