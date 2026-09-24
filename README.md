@@ -85,16 +85,18 @@ Open `http://localhost:3000` and sign in to begin.
 
 ## Usage
 
-Creating a room: from the dashboard, choose "Start a room." You are taken
-straight into the call and given a room name such as `brave-blue-tiger`. Share
-that name, or the room's URL, with the people you want to invite.
+Creating a room: from the lounge, choose "Start a room." You get a room name
+such as `brave-blue-tiger` and a green room to check your camera and mic before
+joining. Share that name, or the room's URL, with the people you want to invite.
+Shared room links preview as "Join brave-blue-tiger" in chat apps.
 
-Joining a room: choose "Join by code" and enter the room name, or open a room
-link directly. After signing in, you land in the call. A room holds up to six
-people; further joins are turned away.
+Joining a room: choose "Join by name" and enter the room name, or open a room
+link directly. If you're signed out, the link opens sign-in and then brings you
+to that room's green room. A room holds up to six people; further joins are
+turned away.
 
 During a call you can toggle your camera and microphone, open the chat panel to
-message everyone in the room, and leave to return to the dashboard. Each remote
+message everyone in the room, and leave to return to the lounge. Each remote
 tile shows that participant's connection state, and dropped connections attempt
 to recover on their own.
 
