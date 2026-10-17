@@ -102,3 +102,11 @@ test("a muted participant shows the muted indicator on their tile", () => {
   const { container } = render(<VideoGrid {...baseProps} participants={parts} />);
   expect(container.querySelector('[data-user-id="remote-1"] .muted-indicator')).not.toBeNull();
 });
+
+test("mirrors your own video but not anyone else's", () => {
+  const { container } = render(
+    <VideoGrid {...baseProps} localStream={fakeStream(true)} localVideoEnabled participants={participant(fakeStream(true))} />
+  );
+  expect(container.querySelector('[data-user-id="local-1"] video')).toHaveClass("-scale-x-100");
+  expect(container.querySelector('[data-user-id="remote-1"] video')).not.toHaveClass("-scale-x-100");
+});
