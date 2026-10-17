@@ -33,3 +33,12 @@ test("the message box has a label", () => {
   render(<MessageThread messages={[]} onSendMessage={jest.fn()} />);
   expect(screen.getByRole("textbox", { name: "Message" })).toBeInTheDocument();
 });
+
+test("links in a message open in a new tab", () => {
+  const withLink = [{ _id: "2", message: "try yap.anomaly-labs.com.", username: "ann", timestamp: new Date() }];
+  render(<MessageThread messages={withLink} onSendMessage={jest.fn()} />);
+  const link = screen.getByRole("link", { name: "yap.anomaly-labs.com" });
+  expect(link).toHaveAttribute("href", "https://yap.anomaly-labs.com");
+  expect(link).toHaveAttribute("target", "_blank");
+  expect(link).toHaveAttribute("rel", "noopener noreferrer");
+});

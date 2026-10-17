@@ -2,6 +2,7 @@ import React, { useEffect, useRef } from "react";
 import { Send } from "lucide-react";
 import { Icon, IconButton, fieldClassName } from "../atoms";
 import { MessageThreadProps } from "../../types/messageTypes";
+import MessageText from "./MessageText";
 
 const MessageThread: React.FC<MessageThreadProps> = ({ messages, onSendMessage }) => {
   const [newMessage, setNewMessage] = React.useState("");
@@ -43,7 +44,7 @@ const MessageThread: React.FC<MessageThreadProps> = ({ messages, onSendMessage }
         {messages.map((msg, index) => (
           <div key={msg._id ?? index} className="text-sm break-words">
             <span className="font-semibold text-text">{msg.username}</span>{" "}
-            <span className="text-text-secondary">{msg.message}</span>
+            <MessageText text={msg.message} />
           </div>
         ))}
       </div>

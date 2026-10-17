@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
 import { Message } from "../../types/messageTypes";
+import MessageText from "../MessageThread/MessageText";
 
 const VISIBLE_MS = 5000;
 
@@ -31,7 +32,7 @@ const ChatToast: React.FC<{ message: Message | null }> = ({ message }) => {
       aria-live="polite"
     >
       <span className="font-semibold text-text">{message.username}</span>{" "}
-      <span className="text-text-secondary break-words">{message.message}</span>
+      <MessageText text={message.message} />
     </div>
   );
 };
