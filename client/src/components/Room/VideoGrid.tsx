@@ -81,7 +81,8 @@ const VideoElement: React.FC<VideoElementProps> = ({
           autoPlay
           playsInline
           muted={isLocal}
-          className="video-stream"
+          // mirror the self-view like Meet does; peers still get the unflipped stream
+          className={isLocal ? "video-stream -scale-x-100" : "video-stream"}
           tabIndex={-1}
           aria-hidden="true"
         />

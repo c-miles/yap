@@ -122,7 +122,7 @@ const GreenRoom: React.FC<GreenRoomProps> = ({
                 autoPlay
                 muted
                 playsInline
-                className="w-full h-full object-cover"
+                className="w-full h-full object-cover -scale-x-100"
               />
             ) : (
               <div className="w-full h-full flex flex-col items-center justify-center gap-2 text-text-secondary">
